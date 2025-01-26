@@ -1,8 +1,6 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
 import { Code } from "lucide-react";
+import "./App.css";
 
 function App() {
   const [method, setMethod] = useState<
@@ -11,6 +9,8 @@ function App() {
   const [url, setUrl] = useState<string>("");
   const [payload, setPayload] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState(null);
+  const [error, setError] = useState(false);
 
   const handleRequest = async () => {
     setLoading(true);
@@ -43,6 +43,12 @@ function App() {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const copyResponse = () => {
+    if (response) {
+      navigator.clipboard.writeText(JSON.stringify(response, null, 2));
     }
   };
 
@@ -100,6 +106,33 @@ function App() {
             >
               {loading ? "Sending..." : "Send Request"}
             </button>
+          </div>
+
+          <div className="p-4 space-y-4">
+            <h2 className="text-xl font-bold flex items-center">
+              <Code className="mr-2 text-purple-600" /> Response
+            </h2>
+
+            {error && (
+              <div className="bg-red-100 text-red-800 p-2 rounded">{error}</div>
+            )}
+
+            <pre className="bg-gray-100 p-2 rounded h-96 overflow-auto">
+              {loading
+                ? "Loading..."
+                : response
+                  ? JSON.stringify(response, null, 2)
+                  : "No response yet"}
+            </pre>
+
+            {response && (
+              <button
+                onClick={copyResponse}
+                className="w-full p-2 bg-purple-200 text-purple-800 rounded"
+              >
+                Copy Response
+              </button>
+            )}
           </div>
         </div>
       </div>
