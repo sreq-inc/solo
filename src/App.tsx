@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Code } from "lucide-react";
 import { SelectMethod } from "./components/SelectMethod.tsx";
+import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 
 function App() {
@@ -20,26 +21,17 @@ function App() {
     try {
       const body = payload.trim() ? JSON.parse(payload) : null;
 
-      const requestOptions: RequestInit = {
-        method: method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        ...(body && { body: JSON.stringify(body) }),
-      };
+      const result = await invoke("make_request", {
+        method,
+        url,
+        body,
+      });
 
-      const fetchResponse = await fetch(url, requestOptions);
-
-      if (!fetchResponse.ok) {
-        throw new Error(`HTTP error! Status: ${fetchResponse.status}`);
-      }
-
-      const result = await fetchResponse.json();
       setResponse(result);
     } catch (error: unknown) {
       setResponse(null);
       setError(
-        error instanceof Error ? error.message : "An unknown error occurred",
+        error instanceof Error ? error.message : "An unknown error occurred"
       );
     } finally {
       setLoading(false);
@@ -117,8 +109,8 @@ function App() {
               {loading
                 ? "Loading..."
                 : response
-                  ? JSON.stringify(response, null, 2)
-                  : "No response yet"}
+                ? JSON.stringify(response, null, 2)
+                : "No response yet"}
             </pre>
 
             {response && (
