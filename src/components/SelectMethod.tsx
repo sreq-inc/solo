@@ -1,21 +1,18 @@
 import React from "react";
 
 interface SelectMethodProps {
-  label: string;
   value: string;
   options: string[];
   onChange: (value: string) => void;
 }
 
-const SelectMethod: React.FC<SelectMethodProps> = ({
-  label,
+export const SelectMethod: React.FC<SelectMethodProps> = ({
   value,
   options,
   onChange,
 }) => {
   return (
-    <div className="flex-shrink-0 w-32">
-      <label className="block text-sm mb-2">{label}</label>
+    <div className="flex-shrink-0 w-24">
       <div className="relative">
         <select
           value={value}
@@ -48,5 +45,3 @@ const SelectMethod: React.FC<SelectMethodProps> = ({
     </div>
   );
 };
-
-export default SelectMethod;

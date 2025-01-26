@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Code } from "lucide-react";
+import { SelectMethod } from "./components/SelectMethod.tsx";
 import "./App.css";
 
 function App() {
@@ -35,7 +36,6 @@ function App() {
 
       const result = await fetchResponse.json();
       setResponse(result);
-      setError(null);
     } catch (error: unknown) {
       setResponse(null);
       setError(
@@ -53,8 +53,8 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-5xl rounded-xl shadow-lg">
+    <div className="flex items-center justify-center p-4">
+      <div className="w-full rounded-xl shadow-lg">
         <div className="grid md:grid-cols-2 gap-4">
           <div className="p-4 space-y-4">
             <h2 className="text-xl font-bold flex items-center">
@@ -62,18 +62,12 @@ function App() {
             </h2>
 
             <div className="flex items-center gap-4">
-              <div className="flex-shrink-0 w-20">
-                <select
+              <div className="flex-shrink-0 w-20 mr-2">
+                <SelectMethod
                   value={method}
-                  onChange={(e) => setMethod(e.target.value)}
-                  className="p-2 border rounded w-full"
-                >
-                  {["GET", "POST", "PUT", "DELETE", "PATCH"].map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
+                  options={["GET", "POST", "PUT", "DELETE", "PATCH"]}
+                  onChange={setMethod}
+                />
               </div>
 
               <div className="flex-grow">
