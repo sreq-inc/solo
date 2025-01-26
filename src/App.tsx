@@ -61,30 +61,40 @@ function App() {
               <Code className="mr-2 text-purple-600" /> HTTP Request
             </h2>
 
-            <div>
-              <label className="block text-sm mb-2">HTTP Method</label>
-              <select
-                value={method}
-                onChange={(e) => setMethod(e.target.value)}
-                className="w-full p-2 border rounded"
-              >
-                {["GET", "POST", "PUT", "DELETE", "PATCH"].map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex-shrink-0 w-20">
+                <select
+                  value={method}
+                  onChange={(e) => setMethod(e.target.value)}
+                  className="p-2 border rounded w-full"
+                >
+                  {["GET", "POST", "PUT", "DELETE", "PATCH"].map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <div>
-              <label className="block text-sm mb-2">URL</label>
-              <input
-                type="text"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://api.example.com/endpoint"
-                className="w-full p-2 border rounded"
-              />
+              <div className="flex-grow">
+                <input
+                  type="text"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://api.example.com/endpoint"
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+
+              <div className="flex-shrink-0">
+                <button
+                  onClick={handleRequest}
+                  disabled={loading}
+                  className="p-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                >
+                  {loading ? "Sending..." : "Send"}
+                </button>
+              </div>
             </div>
 
             <div>
@@ -98,14 +108,6 @@ function App() {
                 className="w-full p-2 border rounded h-32"
               />
             </div>
-
-            <button
-              onClick={handleRequest}
-              disabled={loading}
-              className="w-full p-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-            >
-              {loading ? "Sending..." : "Send Request"}
-            </button>
           </div>
 
           <div className="p-4 space-y-4">
