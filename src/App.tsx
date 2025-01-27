@@ -11,13 +11,13 @@ function App() {
   const [url, setUrl] = useState<string>("");
   const [payload, setPayload] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState(null);
+  const [response, setResponse] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [folders, setFolders] = useState<{ [key: string]: string[] }>({});
   const [currentFolder, setCurrentFolder] = useState<string>("");
   const [newFolderName, setNewFolderName] = useState<string>("");
   const [openFolders, setOpenFolders] = useState<{ [key: string]: boolean }>(
-    {}
+    {},
   );
 
   const handleRequest = async () => {
@@ -39,7 +39,7 @@ function App() {
         const fileName = `${method}_${url}`;
         const fileData = { method, url, payload, response: result };
         const existingFiles = JSON.parse(
-          localStorage.getItem(currentFolder) || "[]"
+          localStorage.getItem(currentFolder) || "[]",
         );
         existingFiles.push({ fileName, fileData });
         localStorage.setItem(currentFolder, JSON.stringify(existingFiles));
@@ -54,7 +54,7 @@ function App() {
     } catch (error: unknown) {
       setResponse(null);
       setError(
-        error instanceof Error ? error.message : "An unknown error occurred"
+        error instanceof Error ? error.message : "An unknown error occurred",
       );
       alert("Failed to make the request.");
     } finally {
@@ -101,7 +101,7 @@ function App() {
     if (currentFolder) {
       const files = JSON.parse(localStorage.getItem(currentFolder) || "[]");
       const updatedFiles = files.filter(
-        (file: any) => file.fileName !== fileName
+        (file: any) => file.fileName !== fileName,
       );
       localStorage.setItem(currentFolder, JSON.stringify(updatedFiles));
       setFolders((prev) => ({
@@ -145,7 +145,7 @@ function App() {
       const fileName = `${method}_${url}`;
       const fileData = { method, url, payload, response };
       const existingFiles = JSON.parse(
-        localStorage.getItem(currentFolder) || "[]"
+        localStorage.getItem(currentFolder) || "[]",
       );
       existingFiles.push({ fileName, fileData });
       localStorage.setItem(currentFolder, JSON.stringify(existingFiles));
@@ -159,11 +159,11 @@ function App() {
   };
 
   return (
-    <div className="flex items-center justify-center p-4">
+    <div className="flex items-center justify-center p-4 h-screen">
       <div className="w-full h-full rounded-xl shadow-lg">
-        <div className="grid grid-cols-12 gap-4">
+        <div className="grid grid-cols-12 gap-4 h-full">
           {/* Folders Section */}
-          <div className="p-4 space-y-4 bg-gray-50 rounded-md col-span-2">
+          <div className="p-4 space-y-4 bg-gray-50 rounded-md col-span-2 h-full">
             <h2 className="text-xl font-bold flex items-center">
               <Code className="mr-2 text-purple-600" /> Folders
             </h2>
@@ -205,27 +205,27 @@ function App() {
                     </button>
                   </div>
                   {openFolders[folder] && (
-                    <div className="mt-2 space-y-2">
+                    <div className="mt-2 space-y-2 ml-4">
                       {JSON.parse(localStorage.getItem(folder) || "[]").map(
                         (file: any) => (
                           <div
                             key={file.fileName}
-                            className="flex items-center justify-between"
+                            className="flex items-center p-1.5 justify-between bg-gray-200 rounded hover:bg-gray-300"
                           >
                             <button
                               onClick={() => handleFileClick(file.fileName)}
-                              className="w-full text-left p-2 bg-gray-200 rounded hover:bg-gray-300"
+                              className="w-full text-left"
                             >
-                              {file.fileName}
+                              {file.fileData.method}
                             </button>
                             <button
                               onClick={() => removeFile(file.fileName)}
-                              className="text-red-500"
+                              className="text-black-500"
                             >
                               <X className="w-4 h-4" />
                             </button>
                           </div>
-                        )
+                        ),
                       )}
                     </div>
                   )}
@@ -235,7 +235,7 @@ function App() {
           </div>
 
           {/* HTTP Request Section */}
-          <div className="p-4 space-y-4 col-span-5">
+          <div className="p-4 space-y-4 col-span-5 h-full">
             <h2 className="text-xl font-bold flex items-center">
               <Code className="mr-2 text-purple-600" /> HTTP Request
             </h2>
@@ -244,7 +244,11 @@ function App() {
                 <SelectMethod
                   value={method}
                   options={["GET", "POST", "PUT", "DELETE", "PATCH"]}
-                  onChange={setMethod}
+                  onChange={(value) =>
+                    setMethod(
+                      value as "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
+                    )
+                  }
                 />
               </div>
               <div className="flex-grow">
@@ -280,7 +284,7 @@ function App() {
           </div>
 
           {/* Response Section */}
-          <div className="p-4 space-y-4 col-span-5">
+          <div className="p-4 space-y-4 col-span-5 h-full">
             <h2 className="text-xl font-bold flex items-center">
               <Code className="mr-2 text-purple-600" /> Response
             </h2>
@@ -291,8 +295,8 @@ function App() {
               {loading
                 ? "Loading..."
                 : response
-                ? JSON.stringify(response, null, 2)
-                : "No response yet"}
+                  ? JSON.stringify(response, null, 2)
+                  : "No response yet"}
             </pre>
             {response && (
               <button
