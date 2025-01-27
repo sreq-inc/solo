@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Code } from "lucide-react";
+import { Code, Folder, FolderOpen, X } from "lucide-react";
 import { SelectMethod } from "./components/SelectMethod.tsx";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
@@ -12,10 +12,13 @@ function App() {
   const [payload, setPayload] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
-  const [error, setError] = useState(false);
-  const [folders, setFolders] = useState<{ [key: string]: Array<string> }>({});
+  const [error, setError] = useState<string | null>(null);
+  const [folders, setFolders] = useState<{ [key: string]: string[] }>({});
   const [currentFolder, setCurrentFolder] = useState<string>("");
   const [newFolderName, setNewFolderName] = useState<string>("");
+  const [openFolders, setOpenFolders] = useState<{ [key: string]: boolean }>(
+    {}
+  );
 
   const handleRequest = async () => {
     setLoading(true);
@@ -36,7 +39,7 @@ function App() {
         const fileName = `${method}_${url}`;
         const fileData = { method, url, payload, response: result };
         const existingFiles = JSON.parse(
-          localStorage.getItem(currentFolder) || "[]",
+          localStorage.getItem(currentFolder) || "[]"
         );
         existingFiles.push({ fileName, fileData });
         localStorage.setItem(currentFolder, JSON.stringify(existingFiles));
@@ -46,11 +49,14 @@ function App() {
           [currentFolder]: [...(prev[currentFolder] || []), fileName],
         }));
       }
+
+      alert("Request saved successfully!");
     } catch (error: unknown) {
       setResponse(null);
       setError(
-        error instanceof Error ? error.message : "An unknown error occurred",
+        error instanceof Error ? error.message : "An unknown error occurred"
       );
+      alert("Failed to make the request.");
     } finally {
       setLoading(false);
     }
@@ -59,6 +65,7 @@ function App() {
   const copyResponse = () => {
     if (response) {
       navigator.clipboard.writeText(JSON.stringify(response, null, 2));
+      alert("Response copied to clipboard!");
     }
   };
 
@@ -74,6 +81,9 @@ function App() {
       }));
       localStorage.setItem(newFolderName, JSON.stringify([]));
       setNewFolderName("");
+      alert("Folder created successfully!");
+    } else {
+      alert("Folder name is invalid or already exists.");
     }
   };
 
@@ -84,31 +94,67 @@ function App() {
       localStorage.removeItem(folder);
       return newFolders;
     });
+    alert("Folder removed successfully!");
   };
 
   const removeFile = (fileName: string) => {
     if (currentFolder) {
       const files = JSON.parse(localStorage.getItem(currentFolder) || "[]");
       const updatedFiles = files.filter(
-        (file: any) => file.fileName !== fileName,
+        (file: any) => file.fileName !== fileName
       );
       localStorage.setItem(currentFolder, JSON.stringify(updatedFiles));
       setFolders((prev) => ({
         ...prev,
         [currentFolder]: updatedFiles.map((file: any) => file.fileName),
       }));
+      alert("File removed successfully!");
     }
   };
 
   const handleFileClick = (fileName: string) => {
     if (currentFolder) {
-      const files = JSON.parse(localStorage.getItem(currentFolder) || "[]");
-      const file = files.find((f: any) => f.fileName === fileName);
-      if (file) {
-        setMethod(file.fileData.method);
-        setUrl(file.fileData.url);
-        setPayload(file.fileData.payload);
+      try {
+        const files = JSON.parse(localStorage.getItem(currentFolder) || "[]");
+        const file = files.find((f: any) => f.fileName === fileName);
+
+        if (file) {
+          setMethod(file.fileData.method);
+          setUrl(file.fileData.url);
+          setPayload(file.fileData.payload || "");
+        } else {
+          alert("File not found.");
+        }
+      } catch (error) {
+        console.error("Error accessing localStorage or parsing data", error);
+        alert("Failed to retrieve file data.");
       }
+    }
+  };
+
+  const toggleFolder = (folder: string) => {
+    setOpenFolders((prev) => ({
+      ...prev,
+      [folder]: !prev[folder],
+    }));
+    setCurrentFolder(folder);
+  };
+
+  const createFile = () => {
+    if (currentFolder) {
+      const fileName = `${method}_${url}`;
+      const fileData = { method, url, payload, response };
+      const existingFiles = JSON.parse(
+        localStorage.getItem(currentFolder) || "[]"
+      );
+      existingFiles.push({ fileName, fileData });
+      localStorage.setItem(currentFolder, JSON.stringify(existingFiles));
+
+      setFolders((prev) => ({
+        ...prev,
+        [currentFolder]: [...(prev[currentFolder] || []), fileName],
+      }));
+      alert("File created successfully!");
     }
   };
 
@@ -116,6 +162,7 @@ function App() {
     <div className="flex items-center justify-center p-4">
       <div className="w-full h-full rounded-xl shadow-lg">
         <div className="grid grid-cols-12 gap-4">
+          {/* Folders Section */}
           <div className="p-4 space-y-4 bg-gray-50 rounded-md col-span-2">
             <h2 className="text-xl font-bold flex items-center">
               <Code className="mr-2 text-purple-600" /> Folders
@@ -140,23 +187,24 @@ function App() {
                 <div key={folder}>
                   <div className="flex items-center justify-between">
                     <button
-                      onClick={() => handleFolderChange(folder)}
-                      className={`w-full p-2 text-left ${
-                        folder === currentFolder
-                          ? "bg-purple-600 text-white"
-                          : "bg-gray-200 text-gray-800"
-                      } rounded hover:bg-purple-500`}
+                      onClick={() => toggleFolder(folder)}
+                      className="w-full flex flex-row p-2 text-left cursor-pointer"
                     >
+                      {openFolders[folder] ? (
+                        <FolderOpen className="mr-2" />
+                      ) : (
+                        <Folder className="mr-2" />
+                      )}
                       {folder}
                     </button>
                     <button
                       onClick={() => removeFolder(folder)}
-                      className="text-red-500"
+                      className="text-black text-sm cursor-pointer"
                     >
-                      ❌
+                      <X className="w-4 h-4" />
                     </button>
                   </div>
-                  {folder === currentFolder && (
+                  {openFolders[folder] && (
                     <div className="mt-2 space-y-2">
                       {JSON.parse(localStorage.getItem(folder) || "[]").map(
                         (file: any) => (
@@ -174,10 +222,10 @@ function App() {
                               onClick={() => removeFile(file.fileName)}
                               className="text-red-500"
                             >
-                              ❌
+                              <X className="w-4 h-4" />
                             </button>
                           </div>
-                        ),
+                        )
                       )}
                     </div>
                   )}
@@ -186,6 +234,7 @@ function App() {
             </div>
           </div>
 
+          {/* HTTP Request Section */}
           <div className="p-4 space-y-4 col-span-5">
             <h2 className="text-xl font-bold flex items-center">
               <Code className="mr-2 text-purple-600" /> HTTP Request
@@ -230,6 +279,7 @@ function App() {
             </div>
           </div>
 
+          {/* Response Section */}
           <div className="p-4 space-y-4 col-span-5">
             <h2 className="text-xl font-bold flex items-center">
               <Code className="mr-2 text-purple-600" /> Response
@@ -241,8 +291,8 @@ function App() {
               {loading
                 ? "Loading..."
                 : response
-                  ? JSON.stringify(response, null, 2)
-                  : "No response yet"}
+                ? JSON.stringify(response, null, 2)
+                : "No response yet"}
             </pre>
             {response && (
               <button
