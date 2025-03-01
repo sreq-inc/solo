@@ -83,15 +83,39 @@ export const useRequestStorage = () => {
     }));
   };
 
+  const findRequestInAllFolders = (fileName: string): RequestData | null => {
+    for (let i = 0; i < localStorage.length; i++) {
+      const folderName = localStorage.key(i);
+      if (folderName) {
+        try {
+          const files = JSON.parse(
+            localStorage.getItem(folderName) || "[]"
+          ) as StoredFile[];
+          const file = files.find((f) => f.fileName === fileName);
+          if (file) {
+            return file.fileData;
+          }
+        } catch {
+          continue;
+        }
+      }
+    }
+    return null;
+  };
+
   const loadRequest = (
-    folder: string,
+    folder: string | null,
     fileName: string
   ): RequestData | null => {
-    const files = JSON.parse(
-      localStorage.getItem(folder) || "[]"
-    ) as StoredFile[];
-    const file = files.find((f) => f.fileName === fileName);
-    return file?.fileData || null;
+    if (folder) {
+      const files = JSON.parse(
+        localStorage.getItem(folder) || "[]"
+      ) as StoredFile[];
+      const file = files.find((f) => f.fileName === fileName);
+      return file?.fileData || null;
+    } else {
+      return findRequestInAllFolders(fileName);
+    }
   };
 
   const loadAllFolders = () => {
