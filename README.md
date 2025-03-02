@@ -5,8 +5,6 @@
 
 > I really don't care about your data
 
-An HTTP request client like Insomnia, but with a focus on privacy.
-
 ## Features
 
 - User-friendly interface for creating and managing HTTP requests
