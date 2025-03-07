@@ -19,20 +19,17 @@
 
 ```bash
 # Install dependencies
-npm install
+bun install
 
 # Start in development mode
-npm run tauri dev
+bun tauri dev
 ```
 
 ## Build
 
 ```bash
-# Prepare for production
-npm run build
-
 # Build the application
-npm run tauri build
+bun tauri build
 ```
 
 ## License
