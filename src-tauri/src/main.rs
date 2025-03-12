@@ -3,7 +3,7 @@
 use tauri::command;
 use serde::{Deserialize, Serialize};
 use reqwest::Client;
-use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
+use base64::{engine::general_purpose, Engine};
 
 #[derive(Serialize, Deserialize)]
 struct ApiResponse {
@@ -17,54 +17,54 @@ async fn make_request(
     method: String,
     url: String,
     body: Option<serde_json::Value>,
+    use_basic_auth: Option<bool>,
     username: Option<String>,
     password: Option<String>,
-    token: Option<String>,
 ) -> Result<ApiResponse, String> {
     let client = Client::new();
-    let mut headers = HeaderMap::new();
     
-    if let (Some(username), Some(password)) = (username.as_ref(), password.as_ref()) {
-        let auth_string = format!("{}:{}", username, password);
-        let encoded = base64::encode(auth_string);
-        let basic_auth = format!("Basic {}", encoded);
-        
-        headers.insert(
-            AUTHORIZATION,
-            HeaderValue::from_str(&basic_auth).map_err(|e| e.to_string())?
-        );
-    }
-    
-    else if let Some(token) = token {
-        let bearer_auth = format!("Bearer {}", token);
-        
-        headers.insert(
-            AUTHORIZATION,
-            HeaderValue::from_str(&bearer_auth).map_err(|e| e.to_string())?
-        );
-    }
-
-    let request = match method.as_str() {
+    let mut request = match method.as_str() {
         "GET" => client.get(&url),
-        "POST" => client.post(&url).json(&body.unwrap_or_default()),
-        "PUT" => client.put(&url).json(&body.unwrap_or_default()),
+        "POST" => client.post(&url),
+        "PUT" => client.put(&url),
         "DELETE" => client.delete(&url),
+        "PATCH" => client.patch(&url),
         _ => return Err("Invalid HTTP method".into()),
     };
     
-    let request_with_headers = request.headers(headers);
+    if use_basic_auth.unwrap_or(false) {
+        let username_str = username.unwrap_or_default();
+        let password_str = password.unwrap_or_default();
+        
+        if !username_str.is_empty() {
+            let auth_string = format!("{}:{}", username_str, password_str);
+            let auth_header = format!("Basic {}", general_purpose::STANDARD.encode(auth_string));
+            request = request.header("Authorization", auth_header);
+        }
+    }
     
-    match request_with_headers.send().await {
+    if method == "POST" || method == "PUT" || method == "PATCH" {
+        if let Some(body_value) = body {
+            request = request.json(&body_value);
+        }
+    }
+    
+    match request.send().await {
         Ok(resp) => {
             let status = resp.status().is_success();
-            let json = resp.json::<serde_json::Value>().await.unwrap_or_default();
-            
-            Ok(ApiResponse {
-                success: status,
-                data: Some(json),
-                error: None,
-            })
-        }
+            match resp.json::<serde_json::Value>().await {
+                Ok(json) => Ok(ApiResponse {
+                    success: status,
+                    data: Some(json),
+                    error: None,
+                }),
+                Err(err) => Ok(ApiResponse {
+                    success: false,
+                    data: None,
+                    error: Some(format!("Failed to parse response: {}", err)),
+                }),
+            }
+        },
         Err(err) => Ok(ApiResponse {
             success: false,
             data: None,

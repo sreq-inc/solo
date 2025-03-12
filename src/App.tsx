@@ -24,12 +24,16 @@ function App() {
   >("GET");
   const [url, setUrl] = useState("");
   const [payload, setPayload] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [useBasicAuth, setUseBasicAuth] = useState(false);
+  const [activeTab, setActiveTab] = useState<"body" | "auth">("body");
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [newFolderName, setNewFolderName] = useState("");
   const [openFolders, setOpenFolders] = useState<{ [key: string]: boolean }>(
-    {}
+    {},
   );
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
@@ -52,16 +56,24 @@ function App() {
           url,
           payload,
           response,
+          useBasicAuth,
+          username,
+          password,
+          activeTab,
         },
-        currentRequestId
+        currentRequestId,
       );
     }
-  }, [method]);
+  }, [method, useBasicAuth, username, password, activeTab]);
 
   const resetFields = () => {
     setMethod("GET");
     setUrl("");
     setPayload("");
+    setUsername("");
+    setPassword("");
+    setUseBasicAuth(false);
+    setActiveTab("body");
     setResponse(null);
     setError(null);
     setCurrentRequestId(null);
@@ -73,7 +85,14 @@ function App() {
 
     try {
       const body = payload.trim() ? JSON.parse(payload) : null;
-      const result = await invoke("make_request", { method, url, body });
+      const result = await invoke("make_request", {
+        method,
+        url,
+        body,
+        useBasicAuth,
+        username: useBasicAuth ? username : "",
+        password: useBasicAuth ? password : "",
+      });
       setResponse(result);
 
       if (currentFolder && currentRequestId) {
@@ -84,17 +103,19 @@ function App() {
             url,
             payload,
             response: result,
+            useBasicAuth,
+            username,
+            password,
+            activeTab,
           },
-          currentRequestId
+          currentRequestId,
         );
-        alert("Request saved successfully!");
       }
     } catch (error: unknown) {
       setResponse(null);
       setError(
-        error instanceof Error ? error.message : "An unknown error occurred"
+        error instanceof Error ? error.message : "An unknown error occurred",
       );
-      alert("Failed to make the request.");
     } finally {
       setLoading(false);
     }
@@ -104,7 +125,6 @@ function App() {
     if (createFolder(newFolderName)) {
       setNewFolderName("");
       resetFields();
-      alert("Folder created successfully!");
     } else {
       alert("Folder name is invalid or already exists.");
     }
@@ -116,7 +136,6 @@ function App() {
       if (fileName === currentRequestId) {
         resetFields();
       }
-      alert("File removed successfully!");
     }
   };
 
@@ -126,6 +145,10 @@ function App() {
       setMethod(request.method);
       setUrl(request.url);
       setPayload(request.payload || "");
+      setUseBasicAuth(request.useBasicAuth || false);
+      setUsername(request.username || "");
+      setPassword(request.password || "");
+      setActiveTab(request.activeTab || "body");
       setCurrentRequestId(fileName);
     } else {
       alert("File not found.");
@@ -164,15 +187,18 @@ function App() {
         url: "",
         payload: "",
         response: null,
+        useBasicAuth: false,
+        username: "",
+        password: "",
+        activeTab: "body",
       },
-      newRequestId
+      newRequestId,
     );
     setDropdownOpen(null);
   };
 
   const handleCopyResponse = () => {
     navigator.clipboard.writeText(JSON.stringify(response, null, 2));
-    alert("Response copied to clipboard!");
   };
 
   return (
@@ -204,9 +230,17 @@ function App() {
             url={url}
             payload={payload}
             loading={loading}
+            username={username}
+            password={password}
+            useBasicAuth={useBasicAuth}
+            activeTab={activeTab}
             onMethodChange={setMethod}
             onUrlChange={setUrl}
             onPayloadChange={setPayload}
+            onUsernameChange={setUsername}
+            onPasswordChange={setPassword}
+            onUseBasicAuthChange={setUseBasicAuth}
+            onTabChange={setActiveTab}
             onSendRequest={handleRequest}
           />
 
