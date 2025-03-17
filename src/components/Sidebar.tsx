@@ -1,4 +1,3 @@
-import { Code } from "lucide-react";
 import { FolderComponent } from "./Folder";
 
 type SidebarProps = {
@@ -34,8 +33,8 @@ export const Sidebar = ({
 }: SidebarProps) => {
   return (
     <div className="p-4 space-y-4 bg-gray-50 rounded-md col-span-2 h-full">
-      <h2 className="text-xl font-bold flex items-center">
-        <Code className="mr-2 text-purple-600" /> Folders
+      <h2 className="text-xl font-bold flex flex-row items-center justify-start gap-2">
+        <img src="/public/solo.png" className="w-8 h-8" /> <div>Solo</div>
       </h2>
       <div className="flex items-center gap-2">
         <input

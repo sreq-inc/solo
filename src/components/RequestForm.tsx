@@ -1,4 +1,3 @@
-import { Code } from "lucide-react";
 import { SelectMethod } from "./SelectMethod";
 import { TabComponent } from "./TabComponent";
 
@@ -41,9 +40,6 @@ export const RequestForm = ({
 }: RequestFormProps) => {
   return (
     <div className="p-4 space-y-4 col-span-5 h-full">
-      <h2 className="text-xl font-bold flex items-center">
-        <Code className="mr-2 text-purple-600" /> HTTP Request
-      </h2>
       <div className="flex items-center gap-4">
         <div className="flex-shrink-0 w-20 mr-2">
           <SelectMethod

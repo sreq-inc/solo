@@ -1,5 +1,3 @@
-import { Code } from "lucide-react";
-
 type ResponseViewProps = {
   response: any;
   error: string | null;
@@ -17,9 +15,6 @@ export const ResponseView = ({
 
   return (
     <div className="p-4 space-y-4 col-span-5 h-full">
-      <h2 className="text-xl font-bold flex items-center">
-        <Code className="mr-2 text-purple-600" /> Response
-      </h2>
       {error && (
         <div className="bg-red-100 text-red-800 p-2 rounded">{error}</div>
       )}
