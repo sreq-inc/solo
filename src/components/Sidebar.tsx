@@ -32,9 +32,9 @@ export const Sidebar = ({
   onRemoveFile,
 }: SidebarProps) => {
   return (
-    <div className="p-4 space-y-4 bg-gray-50 rounded-md col-span-2 h-full">
+    <div className="p-4 space-y-4 bg-gray-50 dark:bg-gray-800 rounded-md col-span-2 h-full transition-colors duration-200">
       <h2 className="text-xl font-bold flex flex-row items-center justify-start gap-2">
-        <img src="/solo.png" className="w-8 h-8" /> <div>Solo</div>
+        <img src="/public/solo.png" className="w-8 h-8" /> <div>Solo</div>
       </h2>
       <div className="flex items-center gap-2">
         <input
@@ -42,11 +42,11 @@ export const Sidebar = ({
           value={newFolderName}
           onChange={(e) => onNewFolderNameChange(e.target.value)}
           placeholder="Folder Name"
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
         />
         <button
           onClick={onCreateFolder}
-          className="p-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+          className="p-2 bg-purple-600 text-white rounded hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800"
         >
           Create
         </button>
