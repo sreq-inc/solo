@@ -34,7 +34,7 @@ export const Sidebar = ({
   return (
     <div className="p-4 space-y-4 bg-gray-50 rounded-md col-span-2 h-full">
       <h2 className="text-xl font-bold flex flex-row items-center justify-start gap-2">
-        <img src="/public/solo.png" className="w-8 h-8" /> <div>Solo</div>
+        <img src="/solo.png" className="w-8 h-8" /> <div>Solo</div>
       </h2>
       <div className="flex items-center gap-2">
         <input
