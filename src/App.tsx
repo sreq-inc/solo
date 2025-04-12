@@ -1,13 +1,16 @@
+// src/App.tsx
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useRequestStorage } from "./hooks/useRequestStorage";
 import { Sidebar } from "./components/Sidebar";
 import { RequestForm } from "./components/RequestForm";
 import { ResponseView } from "./components/ResponseView";
-import { ThemeToggle } from "./components/ThemeToggle";
+import { useTheme } from "./context/ThemeContext";
 import "./App.css";
+import clsx from "clsx";
 
 function App() {
+  const { theme } = useTheme();
   const {
     folders,
     currentFolder,
@@ -34,7 +37,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [newFolderName, setNewFolderName] = useState("");
   const [openFolders, setOpenFolders] = useState<{ [key: string]: boolean }>(
-    {}
+    {},
   );
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
@@ -62,7 +65,7 @@ function App() {
           password,
           activeTab,
         },
-        currentRequestId
+        currentRequestId,
       );
     }
   }, [method, useBasicAuth, username, password, activeTab]);
@@ -109,13 +112,13 @@ function App() {
             password,
             activeTab,
           },
-          currentRequestId
+          currentRequestId,
         );
       }
     } catch (error: unknown) {
       setResponse(null);
       setError(
-        error instanceof Error ? error.message : "An unknown error occurred"
+        error instanceof Error ? error.message : "An unknown error occurred",
       );
     } finally {
       setLoading(false);
@@ -193,7 +196,7 @@ function App() {
         password: "",
         activeTab: "body",
       },
-      newRequestId
+      newRequestId,
     );
     setDropdownOpen(null);
   };
@@ -203,8 +206,18 @@ function App() {
   };
 
   return (
-    <div className="flex items-center justify-center p-4 h-screen bg-white dark:bg-gray-900 transition-colors duration-200">
-      <div className="w-full h-full rounded-xl shadow-lg dark:shadow-gray-800">
+    <div
+      className={clsx(
+        "flex items-center justify-center p-4 h-screen transition-colors duration-200",
+        theme === "dark" ? "bg-gray-900" : "bg-gray-50",
+      )}
+    >
+      <div
+        className={clsx(
+          "w-full h-full rounded-xl shadow-lg",
+          theme === "dark" ? "shadow-gray-900" : "shadow-gray-200",
+        )}
+      >
         <div className="grid grid-cols-12 gap-4 h-full">
           <Sidebar
             folders={folders}
@@ -251,10 +264,6 @@ function App() {
             loading={loading}
             onCopyResponse={handleCopyResponse}
           />
-
-          <div className="fixed top-4 right-4">
-            <ThemeToggle />
-          </div>
         </div>
       </div>
     </div>

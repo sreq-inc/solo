@@ -1,5 +1,7 @@
 import { SelectMethod } from "./SelectMethod";
 import { TabComponent } from "./TabComponent";
+import { useTheme } from "../context/ThemeContext";
+import clsx from "clsx";
 
 type RequestFormProps = {
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -38,6 +40,8 @@ export const RequestForm = ({
   onTabChange,
   onSendRequest,
 }: RequestFormProps) => {
+  const { theme } = useTheme();
+
   return (
     <div className="p-4 space-y-4 col-span-5 h-full">
       <div className="flex items-center gap-4">
@@ -47,7 +51,7 @@ export const RequestForm = ({
             options={["GET", "POST", "PUT", "DELETE", "PATCH"]}
             onChange={(value) =>
               onMethodChange(
-                value as "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
+                value as "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
               )
             }
           />
@@ -58,14 +62,25 @@ export const RequestForm = ({
             value={url}
             onChange={(e) => onUrlChange(e.target.value)}
             placeholder="https://api.example.com/endpoint"
-            className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className={clsx(
+              "w-full p-2 border rounded",
+              theme === "dark"
+                ? "bg-gray-700 border-gray-600 text-white"
+                : "bg-white border-gray-300 text-gray-800",
+            )}
           />
         </div>
         <div className="flex-shrink-0">
           <button
             onClick={onSendRequest}
             disabled={loading}
-            className="p-2 bg-purple-600 text-white rounded hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800 disabled:opacity-50"
+            className={clsx(
+              "p-2 text-white rounded",
+              theme === "dark"
+                ? "bg-purple-700 hover:bg-purple-800"
+                : "bg-purple-600 hover:bg-purple-700",
+              loading && "opacity-50 cursor-not-allowed",
+            )}
           >
             {loading ? "Sending..." : "Send"}
           </button>
@@ -76,20 +91,37 @@ export const RequestForm = ({
 
       {activeTab === "body" && (
         <div className="mt-4">
-          <label className="block text-sm mb-2 dark:text-gray-200">
+          <label
+            className={clsx(
+              "block text-sm mb-2",
+              theme === "dark" ? "text-gray-300" : "text-gray-700",
+            )}
+          >
             JSON Payload (optional)
           </label>
           <textarea
             value={payload}
             onChange={(e) => onPayloadChange(e.target.value)}
             placeholder='{"key": "value"}'
-            className="w-full p-2 border rounded h-32 dark:bg-gray-700 dark:border-gray-600 dark:text-white font-mono"
+            className={clsx(
+              "w-full p-2 border rounded h-32",
+              theme === "dark"
+                ? "bg-gray-700 border-gray-600 text-white"
+                : "bg-white border-gray-300 text-gray-800",
+            )}
           />
         </div>
       )}
 
       {activeTab === "auth" && (
-        <div className="mt-4 p-4 border rounded dark:border-gray-600">
+        <div
+          className={clsx(
+            "mt-4 p-4 border rounded",
+            theme === "dark"
+              ? "bg-gray-800 border-gray-700"
+              : "bg-white border-gray-300",
+          )}
+        >
           <div className="flex items-center mb-4">
             <input
               type="checkbox"
@@ -100,7 +132,10 @@ export const RequestForm = ({
             />
             <label
               htmlFor="useBasicAuth"
-              className="text-sm font-medium dark:text-gray-200"
+              className={clsx(
+                "text-sm font-medium",
+                theme === "dark" ? "text-white" : "text-gray-700",
+              )}
             >
               Use Basic Authentication
             </label>
@@ -109,7 +144,12 @@ export const RequestForm = ({
           {useBasicAuth && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm mb-1 dark:text-gray-200">
+                <label
+                  className={clsx(
+                    "block text-sm mb-1",
+                    theme === "dark" ? "text-gray-300" : "text-gray-700",
+                  )}
+                >
                   Username
                 </label>
                 <input
@@ -117,11 +157,21 @@ export const RequestForm = ({
                   value={username}
                   onChange={(e) => onUsernameChange(e.target.value)}
                   placeholder="Username"
-                  className="w-full p-2 border rounded text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className={clsx(
+                    "w-full p-2 border rounded text-sm",
+                    theme === "dark"
+                      ? "bg-gray-700 border-gray-600 text-white"
+                      : "bg-white border-gray-300 text-gray-800",
+                  )}
                 />
               </div>
               <div>
-                <label className="block text-sm mb-1 dark:text-gray-200">
+                <label
+                  className={clsx(
+                    "block text-sm mb-1",
+                    theme === "dark" ? "text-gray-300" : "text-gray-700",
+                  )}
+                >
                   Password
                 </label>
                 <input
@@ -129,7 +179,12 @@ export const RequestForm = ({
                   value={password}
                   onChange={(e) => onPasswordChange(e.target.value)}
                   placeholder="Password"
-                  className="w-full p-2 border rounded text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className={clsx(
+                    "w-full p-2 border rounded text-sm",
+                    theme === "dark"
+                      ? "bg-gray-700 border-gray-600 text-white"
+                      : "bg-white border-gray-300 text-gray-800",
+                  )}
                 />
               </div>
             </div>

@@ -1,5 +1,6 @@
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
+import clsx from "clsx";
 
 export const ThemeToggle = () => {
   const { theme, toggleTheme } = useTheme();
@@ -7,13 +8,18 @@ export const ThemeToggle = () => {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+      className={clsx(
+        "p-2 rounded-md transition-colors duration-200",
+        theme === "dark"
+          ? "text-white hover:bg-gray-700"
+          : "text-gray-700 hover:bg-gray-200"
+      )}
       aria-label="Toggle theme"
     >
       {theme === "light" ? (
         <Moon className="w-5 h-5" />
       ) : (
-        <Sun className="w-5 h-5 text-yellow-400" />
+        <Sun className="w-5 h-5" />
       )}
     </button>
   );

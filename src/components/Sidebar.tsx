@@ -1,4 +1,7 @@
+import { useTheme } from "../context/ThemeContext";
 import { FolderComponent } from "./Folder";
+import { ThemeToggle } from "./ThemeToggle";
+import clsx from "clsx";
 
 type SidebarProps = {
   folders: Record<string, any>;
@@ -31,22 +34,47 @@ export const Sidebar = ({
   onFileClick,
   onRemoveFile,
 }: SidebarProps) => {
+  const { theme } = useTheme();
+
   return (
-    <div className="p-4 space-y-4 bg-gray-50 dark:bg-gray-800 rounded-md col-span-2 h-full transition-colors duration-200">
-      <h2 className="text-xl font-bold flex flex-row items-center justify-start gap-2">
-        <img src="/public/solo.png" className="w-8 h-8" /> <div>Solo</div>
-      </h2>
+    <div
+      className={clsx(
+        "p-4 space-y-4 rounded-md col-span-2 h-full transition-colors duration-200",
+        theme === "dark" ? "bg-gray-800" : "bg-white",
+      )}
+    >
+      <div className="flex justify-between items-center">
+        <h2
+          className={clsx(
+            "text-xl font-bold flex flex-row items-center justify-start gap-2",
+            theme === "dark" ? "text-white" : "text-gray-800",
+          )}
+        >
+          <img src="/public/solo.png" className="w-8 h-8" /> <div>Solo</div>
+        </h2>
+        <ThemeToggle />
+      </div>
       <div className="flex items-center gap-2">
         <input
           type="text"
           value={newFolderName}
           onChange={(e) => onNewFolderNameChange(e.target.value)}
           placeholder="Folder Name"
-          className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          className={clsx(
+            "w-full p-2 border rounded",
+            theme === "dark"
+              ? "bg-gray-700 border-gray-600 text-white"
+              : "bg-white border-gray-300 text-gray-800",
+          )}
         />
         <button
           onClick={onCreateFolder}
-          className="p-2 bg-purple-600 text-white rounded hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800"
+          className={clsx(
+            "p-2 text-white rounded",
+            theme === "dark"
+              ? "bg-purple-700 hover:bg-purple-800"
+              : "bg-purple-600 hover:bg-purple-700",
+          )}
         >
           Create
         </button>
