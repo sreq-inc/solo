@@ -1,4 +1,3 @@
-// src/App.tsx
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useRequestStorage } from "./hooks/useRequestStorage";

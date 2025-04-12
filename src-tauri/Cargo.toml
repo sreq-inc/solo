@@ -1,9 +1,10 @@
 [package]
 name = "solo"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "Solo Client HTTP"
+authors = ["Igor Vieira <igor.p.r.vieira@gmail.com>"]
 edition = "2021"
+rust-version = "1.86.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

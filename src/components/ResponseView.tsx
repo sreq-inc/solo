@@ -33,7 +33,7 @@ export const ResponseView = ({
       )}
       <div
         className={clsx(
-          "relative rounded h-full overflow-auto font-mono",
+          "relative rounded min-h-[600px] h-96 overflow-auto font-mono",
           theme === "dark" ? "bg-gray-800" : "bg-gray-100",
         )}
       >
