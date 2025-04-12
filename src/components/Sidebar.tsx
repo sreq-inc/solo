@@ -50,7 +50,7 @@ export const Sidebar = ({
             theme === "dark" ? "text-white" : "text-gray-800",
           )}
         >
-          <img src="/public/solo.png" className="w-8 h-8" /> <div>Solo</div>
+          <img src="/solo.png" className="w-8 h-8" /> <div>Solo</div>
         </h2>
         <ThemeToggle />
       </div>
