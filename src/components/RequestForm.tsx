@@ -1,5 +1,6 @@
 import { SelectMethod } from "./SelectMethod";
 import { TabComponent } from "./TabComponent";
+import { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 import clsx from "clsx";
 
@@ -41,6 +42,8 @@ export const RequestForm = ({
   onSendRequest,
 }: RequestFormProps) => {
   const { theme } = useTheme();
+
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="p-4 space-y-4 col-span-5 h-full">
@@ -174,18 +177,28 @@ export const RequestForm = ({
                 >
                   Password
                 </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => onPasswordChange(e.target.value)}
-                  placeholder="Password"
-                  className={clsx(
-                    "w-full p-2 border rounded text-sm",
-                    theme === "dark"
-                      ? "bg-gray-700 border-gray-600 text-white"
-                      : "bg-white border-gray-300 text-gray-800",
-                  )}
-                />
+                <div className="flex flex-col gap-4 justify-start">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => onPasswordChange(e.target.value)}
+                    placeholder="Password"
+                    className={clsx(
+                      "w-full p-2 border rounded text-sm",
+                      theme === "dark"
+                        ? "bg-gray-700 border-gray-600 text-white"
+                        : "bg-white border-gray-300 text-gray-800",
+                    )}
+                  />
+                  <button
+                    className="cursor-pointer text-left"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    <span className="text-sm text-gray-500 hover:text-gray-700">
+                      {showPassword ? "Hide" : "Show"}
+                    </span>
+                  </button>
+                </div>
               </div>
             </div>
           )}
