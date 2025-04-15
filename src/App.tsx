@@ -208,7 +208,7 @@ function App() {
     <div
       className={clsx(
         "flex items-center justify-center p-4 h-screen transition-colors duration-200",
-        theme === "dark" ? "bg-gray-900" : "bg-gray-50",
+        theme === "dark" ? "bg-gray-900" : "bg-[#f0eee6]",
       )}
     >
       <div
