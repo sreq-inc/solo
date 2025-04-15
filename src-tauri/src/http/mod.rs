@@ -1,4 +1,4 @@
-use reqwest::Client;
+use reqwest::{Client, RequestBuilder};
 use serde::{Deserialize, Serialize};
 use base64::{engine::general_purpose, Engine};
 use tauri::command;
@@ -8,6 +8,19 @@ pub struct ApiResponse {
     pub success: bool,
     pub data: Option<serde_json::Value>,
     pub error: Option<String>,
+}
+
+fn handle_basic_auth(request: RequestBuilder, username: Option<String>, password: Option<String>) -> RequestBuilder {
+    let username_str = username.unwrap_or_default(); 
+    let password_str = password.unwrap_or_default();
+
+    if !username_str.is_empty() {
+        let auth_string = format!("{}:{}", username_str, password_str);
+        let auth_header = format!("Basic {}", general_purpose::STANDARD.encode(auth_string));
+        request.header("Authorization", auth_header)
+    } else {
+        request
+    }
 }
 
 #[command]
@@ -31,14 +44,7 @@ pub async fn make_request(
     };
     
     if use_basic_auth.unwrap_or(false) {
-        let username_str = username.unwrap_or_default();
-        let password_str = password.unwrap_or_default();
-        
-        if !username_str.is_empty() {
-            let auth_string = format!("{}:{}", username_str, password_str);
-            let auth_header = format!("Basic {}", general_purpose::STANDARD.encode(auth_string));
-            request = request.header("Authorization", auth_header);
-        }
+        request = handle_basic_auth(request, username, password);       
     }
     
     if method == "POST" || method == "PUT" || method == "PATCH" {
