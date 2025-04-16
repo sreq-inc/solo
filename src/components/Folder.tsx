@@ -121,7 +121,7 @@ export const FolderComponent = ({
               >
                 <span
                   className={clsx(
-                    "w-12 text-center text-xs px-1.5",
+                    "w-14 text-center text-xs px-1.5",
                     file.fileData.method === "GET" && "bg-green-300",
                     file.fileData.method === "POST" && "bg-blue-300",
                     file.fileData.method === "PUT" && "bg-yellow-300",
