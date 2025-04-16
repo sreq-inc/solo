@@ -5,6 +5,7 @@ type ResponseViewProps = {
   response: any;
   error: string | null;
   loading: boolean;
+  isCopied: boolean;
   onCopyResponse: () => void;
 };
 
@@ -12,6 +13,7 @@ export const ResponseView = ({
   response,
   error,
   loading,
+  isCopied,
   onCopyResponse,
 }: ResponseViewProps) => {
   const { theme } = useTheme();
@@ -118,14 +120,16 @@ export const ResponseView = ({
       {response && (
         <button
           onClick={onCopyResponse}
+          disabled={isCopied}
           className={clsx(
-            "w-full p-2 rounded",
+            "w-full p-2 rounded cursor-pointer",
             theme === "dark"
               ? "bg-purple-900 text-purple-300 hover:bg-purple-800"
               : "bg-purple-200 text-purple-800 hover:bg-purple-300",
+            isCopied && "opacity-50 cursor-not-allowed",
           )}
         >
-          Copy Response
+          {isCopied ? "Copied!" : "Copy Response"}
         </button>
       )}
     </div>

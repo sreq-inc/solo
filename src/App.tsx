@@ -36,11 +36,12 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [newFolderName, setNewFolderName] = useState("");
   const [openFolders, setOpenFolders] = useState<{ [key: string]: boolean }>(
-    {}
+    {},
   );
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
   const [bearerToken, setBearerToken] = useState("");
+  const [isCopiedResponse, setIsCopiedResponse] = useState(false);
 
   useEffect(() => {
     loadAllFolders();
@@ -65,7 +66,7 @@ function App() {
           password,
           activeTab,
         },
-        currentRequestId
+        currentRequestId,
       );
     }
   }, [method, useBasicAuth, username, password, activeTab]);
@@ -87,6 +88,7 @@ function App() {
   const handleRequest = async () => {
     setLoading(true);
     setError(null);
+    setIsCopiedResponse(false);
 
     try {
       const body = payload.trim() ? JSON.parse(payload) : null;
@@ -115,13 +117,13 @@ function App() {
             activeTab,
             bearerToken,
           },
-          currentRequestId
+          currentRequestId,
         );
       }
     } catch (error: unknown) {
       setResponse(null);
       setError(
-        error instanceof Error ? error.message : "An unknown error occurred"
+        error instanceof Error ? error.message : "An unknown error occurred",
       );
     } finally {
       setLoading(false);
@@ -200,26 +202,27 @@ function App() {
         activeTab: "body",
         bearerToken: "",
       },
-      newRequestId
+      newRequestId,
     );
     setDropdownOpen(null);
   };
 
   const handleCopyResponse = () => {
     navigator.clipboard.writeText(JSON.stringify(response, null, 2));
+    setIsCopiedResponse(true);
   };
 
   return (
     <div
       className={clsx(
         "flex items-center justify-center p-4 h-screen transition-colors duration-200",
-        theme === "dark" ? "bg-gray-900" : "bg-[#f0eee6]"
+        theme === "dark" ? "bg-gray-900" : "bg-[#f0eee6]",
       )}
     >
       <div
         className={clsx(
           "w-full h-full rounded-xl shadow-lg",
-          theme === "dark" ? "shadow-gray-900" : "shadow-gray-200"
+          theme === "dark" ? "shadow-gray-900" : "shadow-gray-200",
         )}
       >
         <div className="grid grid-cols-12 gap-4 h-full">
@@ -268,6 +271,7 @@ function App() {
             response={response}
             error={error}
             loading={loading}
+            isCopied={isCopiedResponse}
             onCopyResponse={handleCopyResponse}
           />
         </div>

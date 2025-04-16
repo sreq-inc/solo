@@ -37,7 +37,7 @@ export const FolderComponent = ({
           onClick={() => onToggleFolder(folder)}
           className={clsx(
             "w-full flex flex-row p-2 text-left cursor-pointer",
-            theme === "dark" ? "text-white" : "text-gray-800"
+            theme === "dark" ? "text-white" : "text-gray-800",
           )}
         >
           {isOpen ? (
@@ -51,7 +51,7 @@ export const FolderComponent = ({
           onClick={(e) => onToggleDropdown(folder, e)}
           className={clsx(
             "text-sm cursor-pointer px-2",
-            theme === "dark" ? "text-white" : "text-black"
+            theme === "dark" ? "text-white" : "text-black",
           )}
         >
           <ChevronDown className="w-4 h-4" />
@@ -63,7 +63,7 @@ export const FolderComponent = ({
             "absolute right-0 mt-2 py-2 w-48 rounded-md shadow-xl z-10 border",
             theme === "dark"
               ? "bg-gray-800 border-gray-700"
-              : "bg-white border-gray-200"
+              : "bg-white border-gray-200",
           )}
         >
           <div className="px-4 py-2 text-xs font-semibold text-gray-400">
@@ -75,7 +75,7 @@ export const FolderComponent = ({
               "px-4 py-2 text-sm w-full text-left flex items-center",
               theme === "dark"
                 ? "text-gray-300 hover:bg-gray-700"
-                : "text-gray-700 hover:bg-gray-100"
+                : "text-gray-700 hover:bg-gray-100",
             )}
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -84,14 +84,14 @@ export const FolderComponent = ({
           <div
             className={clsx(
               "border-t my-2",
-              theme === "dark" ? "border-gray-700" : "border-gray-200"
+              theme === "dark" ? "border-gray-700" : "border-gray-200",
             )}
           ></div>
           <button
             onClick={() => onRemoveFolder(folder)}
             className={clsx(
               "px-4 py-2 text-sm w-full text-left flex items-center text-red-600",
-              theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"
+              theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100",
             )}
           >
             <Plus className="w-4 h-4 mr-2 rotate-45" />
@@ -111,8 +111,8 @@ export const FolderComponent = ({
                   : "bg-gray-200 hover:bg-gray-300",
                 file.fileName === currentRequestId &&
                   (theme === "dark"
-                    ? "border-l-purple-800 border-l-8"
-                    : "border-l-purple-900 border-l-8")
+                    ? "border-l-purple-800 border-l-8 transition-all"
+                    : "border-l-purple-900 border-l-8 transition-all"),
               )}
             >
               <button
@@ -121,13 +121,12 @@ export const FolderComponent = ({
               >
                 <span
                   className={clsx(
-                    "w-14 text-center text-xs px-1.5",
+                    "w-14 text-center text-xs px-1.5 text-black transition-all",
                     file.fileData.method === "GET" && "bg-green-300",
                     file.fileData.method === "POST" && "bg-blue-300",
                     file.fileData.method === "PUT" && "bg-yellow-300",
                     file.fileData.method === "DELETE" && "bg-red-300",
                     file.fileData.method === "PATCH" && "bg-purple-300",
-                    theme === "dark" ? "text-black" : "text-black"
                   )}
                 >
                   {file.fileData.method}
@@ -137,7 +136,7 @@ export const FolderComponent = ({
                 onClick={() => onRemoveFile(file.fileName)}
                 className={clsx(
                   "px-2",
-                  theme === "dark" ? "text-white" : "text-black-500"
+                  theme === "dark" ? "text-white" : "text-black-500",
                 )}
               >
                 <Plus className="w-4 h-4 rotate-45" />
