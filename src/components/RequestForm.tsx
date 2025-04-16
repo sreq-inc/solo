@@ -52,7 +52,6 @@ export const RequestForm = ({
   const options = [
     { label: "Basic Auth", value: "basic" },
     { label: "Bearer Token", value: "bearer" },
-    //{ label: "OAuth 2.0", value: "oauth2" },
   ];
   const [showPassword, setShowPassword] = useState(false);
   const [selectAuth, setSelectAuth] = useState(options[0].value);
@@ -66,7 +65,7 @@ export const RequestForm = ({
             options={["GET", "POST", "PUT", "DELETE", "PATCH"]}
             onChange={(value) =>
               onMethodChange(
-                value as "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
+                value as "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
               )
             }
           />
@@ -81,7 +80,7 @@ export const RequestForm = ({
               "w-full p-2 border rounded",
               theme === "dark"
                 ? "bg-gray-700 border-gray-600 text-white"
-                : "bg-white border-gray-300 text-gray-800"
+                : "bg-white border-gray-300 text-gray-800",
             )}
           />
         </div>
@@ -94,20 +93,22 @@ export const RequestForm = ({
               theme === "dark"
                 ? "bg-purple-700 hover:bg-purple-800"
                 : "bg-purple-600 hover:bg-purple-700",
-              loading && "opacity-50 cursor-not-allowed"
+              loading && "opacity-50 cursor-not-allowed",
             )}
           >
             {loading ? "Sending..." : "Send"}
           </button>
         </div>
       </div>
+
       <TabComponent activeTab={activeTab} onTabChange={onTabChange} />
+
       {activeTab === "body" && (
         <div className="mt-4">
           <label
             className={clsx(
               "block text-sm mb-2",
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
+              theme === "dark" ? "text-gray-300" : "text-gray-700",
             )}
           >
             JSON Payload (optional)
@@ -117,12 +118,25 @@ export const RequestForm = ({
             onChange={(e) => onPayloadChange(e.target.value)}
             placeholder='{"key": "value"}'
             className={clsx(
-              "w-full p-2 border rounded h-full",
+              "w-full p-2 border rounded h-96",
               theme === "dark"
                 ? "bg-gray-700 border-gray-600 text-white"
-                : "bg-white border-gray-300 text-gray-800"
+                : "bg-white border-gray-300 text-gray-800",
             )}
           />
+          <button
+            onClick={async () => {
+              const parsed = await JSON.parse(payload);
+              const pretty = await JSON.stringify(parsed, null, 2);
+              onPayloadChange(pretty);
+            }}
+            className={clsx(
+              "mt-2 py-2 rounded text-xs font-semibold cursor-pointer",
+              theme === "dark" ? "text-gray-600" : "text-gray-500",
+            )}
+          >
+            Format JSON
+          </button>
         </div>
       )}
       {activeTab === "auth" && (
@@ -131,7 +145,7 @@ export const RequestForm = ({
             "mt-4 p-4 border rounded",
             theme === "dark"
               ? "bg-gray-800 border-gray-700"
-              : "bg-white border-gray-300"
+              : "bg-white border-gray-300",
           )}
         >
           <div className="mb-8">

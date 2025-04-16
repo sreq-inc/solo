@@ -14,7 +14,9 @@
       {
         "title": "solo",
         "width": 1500,
-        "height": 829
+        "height": 829,
+        "minWidth": 1182,
+        "minHeight": 740
       }
     ],
     "security": {
