@@ -5,6 +5,7 @@ import { useTheme } from "../context/ThemeContext";
 import clsx from "clsx";
 import { SelectAuth } from "./SelectAuth";
 import { UsernameAndPassword } from "./UsernameAndPassword";
+import { BearerToken } from "./BearerToken";
 
 type RequestFormProps = {
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -51,6 +52,7 @@ export const RequestForm = ({
   ];
   const [showPassword, setShowPassword] = useState(false);
   const [selectAuth, setSelectAuth] = useState(options[0].value);
+  const [beearToken, setBearerToken] = useState("");
 
   return (
     <div className="p-4 space-y-4 col-span-5 h-full">
@@ -146,6 +148,12 @@ export const RequestForm = ({
               onUseBasicAuthChange={onUseBasicAuthChange}
               showPassword={showPassword}
               setShowPassword={setShowPassword}
+            />
+          )}
+          {selectAuth === "bearer" && (
+            <BearerToken
+              bearerToken={beearToken}
+              onTokenChange={setBearerToken}
             />
           )}
         </div>
