@@ -10,6 +10,7 @@ type RequestData = {
   useBasicAuth?: boolean;
   username?: string;
   password?: string;
+  bearerToken?: string;
   activeTab?: "body" | "auth";
 };
 
@@ -46,13 +47,13 @@ export const useRequestStorage = () => {
   const saveRequest = (
     folder: string,
     request: RequestData,
-    requestId: string,
+    requestId: string
   ) => {
     const files = JSON.parse(
-      localStorage.getItem(folder) || "[]",
+      localStorage.getItem(folder) || "[]"
     ) as StoredFile[];
     const existingIndex = files.findIndex(
-      (file) => file.fileName === requestId,
+      (file) => file.fileName === requestId
     );
 
     if (existingIndex !== -1) {
@@ -76,7 +77,7 @@ export const useRequestStorage = () => {
 
   const removeRequest = (folder: string, fileName: string) => {
     const files = JSON.parse(
-      localStorage.getItem(folder) || "[]",
+      localStorage.getItem(folder) || "[]"
     ) as StoredFile[];
     const updatedFiles = files.filter((file) => file.fileName !== fileName);
 
@@ -93,7 +94,7 @@ export const useRequestStorage = () => {
       if (folderName) {
         try {
           const files = JSON.parse(
-            localStorage.getItem(folderName) || "[]",
+            localStorage.getItem(folderName) || "[]"
           ) as StoredFile[];
           const file = files.find((f) => f.fileName === fileName);
           if (file) {
@@ -109,11 +110,11 @@ export const useRequestStorage = () => {
 
   const loadRequest = (
     folder: string | null,
-    fileName: string,
+    fileName: string
   ): RequestData | null => {
     if (folder) {
       const files = JSON.parse(
-        localStorage.getItem(folder) || "[]",
+        localStorage.getItem(folder) || "[]"
       ) as StoredFile[];
       const file = files.find((f) => f.fileName === fileName);
       return file?.fileData || null;
@@ -130,7 +131,7 @@ export const useRequestStorage = () => {
       if (key) {
         try {
           const files = JSON.parse(
-            localStorage.getItem(key) || "[]",
+            localStorage.getItem(key) || "[]"
           ) as StoredFile[];
           loadedFolders[key] = files.map((file) => file.fileName);
         } catch {

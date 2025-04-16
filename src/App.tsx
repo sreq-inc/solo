@@ -36,10 +36,11 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [newFolderName, setNewFolderName] = useState("");
   const [openFolders, setOpenFolders] = useState<{ [key: string]: boolean }>(
-    {},
+    {}
   );
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
+  const [bearerToken, setBearerToken] = useState("");
 
   useEffect(() => {
     loadAllFolders();
@@ -64,7 +65,7 @@ function App() {
           password,
           activeTab,
         },
-        currentRequestId,
+        currentRequestId
       );
     }
   }, [method, useBasicAuth, username, password, activeTab]);
@@ -80,6 +81,7 @@ function App() {
     setResponse(null);
     setError(null);
     setCurrentRequestId(null);
+    setBearerToken("");
   };
 
   const handleRequest = async () => {
@@ -95,6 +97,7 @@ function App() {
         useBasicAuth,
         username: useBasicAuth ? username : "",
         password: useBasicAuth ? password : "",
+        bearerToken,
       });
       setResponse(result);
 
@@ -110,14 +113,15 @@ function App() {
             username,
             password,
             activeTab,
+            bearerToken,
           },
-          currentRequestId,
+          currentRequestId
         );
       }
     } catch (error: unknown) {
       setResponse(null);
       setError(
-        error instanceof Error ? error.message : "An unknown error occurred",
+        error instanceof Error ? error.message : "An unknown error occurred"
       );
     } finally {
       setLoading(false);
@@ -194,8 +198,9 @@ function App() {
         username: "",
         password: "",
         activeTab: "body",
+        bearerToken: "",
       },
-      newRequestId,
+      newRequestId
     );
     setDropdownOpen(null);
   };
@@ -208,13 +213,13 @@ function App() {
     <div
       className={clsx(
         "flex items-center justify-center p-4 h-screen transition-colors duration-200",
-        theme === "dark" ? "bg-gray-900" : "bg-[#f0eee6]",
+        theme === "dark" ? "bg-gray-900" : "bg-[#f0eee6]"
       )}
     >
       <div
         className={clsx(
           "w-full h-full rounded-xl shadow-lg",
-          theme === "dark" ? "shadow-gray-900" : "shadow-gray-200",
+          theme === "dark" ? "shadow-gray-900" : "shadow-gray-200"
         )}
       >
         <div className="grid grid-cols-12 gap-4 h-full">
@@ -247,6 +252,7 @@ function App() {
             password={password}
             useBasicAuth={useBasicAuth}
             activeTab={activeTab}
+            bearerToken={bearerToken}
             onMethodChange={setMethod}
             onUrlChange={setUrl}
             onPayloadChange={setPayload}
@@ -255,6 +261,7 @@ function App() {
             onUseBasicAuthChange={setUseBasicAuth}
             onTabChange={setActiveTab}
             onSendRequest={handleRequest}
+            onSetBearerToken={setBearerToken}
           />
 
           <ResponseView

@@ -11,21 +11,12 @@ pub struct ApiResponse {
 }
 
 fn handle_basic_auth(request: RequestBuilder, username: Option<String>, password: Option<String>) -> RequestBuilder {
-    let username_str = username.unwrap_or_default(); 
+    let username_str = username.unwrap_or_default();
     let password_str = password.unwrap_or_default();
 
     if !username_str.is_empty() {
         let auth_string = format!("{}:{}", username_str, password_str);
         let auth_header = format!("Basic {}", general_purpose::STANDARD.encode(auth_string));
-        request.header("Authorization", auth_header)
-    } else {
-        request
-    }
-}
-
-fn apply_bearer_auth(request: RequestBuilder, token: String) -> RequestBuilder {
-    if !token.is_empty() {
-        let auth_header = format!("Bearer {}", token);
         request.header("Authorization", auth_header)
     } else {
         request
@@ -38,13 +29,12 @@ pub async fn make_request(
     url: String,
     body: Option<serde_json::Value>,
     use_basic_auth: Option<bool>,
-    use_bearer_auth: Option<bool>,
     username: Option<String>,
     password: Option<String>,
-    token: Option<String>,
+    bearer_token: Option<String>,
 ) -> Result<ApiResponse, String> {
     let client = Client::new();
-    
+
     let mut request = match method.as_str() {
         "GET" => client.get(&url),
         "POST" => client.post(&url),
@@ -53,21 +43,26 @@ pub async fn make_request(
         "PATCH" => client.patch(&url),
         _ => return Err("Invalid HTTP method".into()),
     };
-    
-    // Use basic authentication if specified
+
+    // Basic Auth
     if use_basic_auth.unwrap_or(false) {
-        request = handle_basic_auth(request, username, password);  
-    // Use bearer authentication if specified
-    } else if use_bearer_auth.unwrap_or(false) && token.is_some() {
-        request = apply_bearer_auth(request, token.unwrap());
+        request = handle_basic_auth(request, username, password);
     }
-    
-    if method == "POST" || method == "PUT" || method == "PATCH" {
+
+    // Bearer Token
+    if let Some(token) = bearer_token {
+        if !token.trim().is_empty() {
+            request = request.header("Authorization", format!("Bearer {}", token));
+        }
+    }
+
+    // Body (if applicable)
+    if matches!(method.as_str(), "POST" | "PUT" | "PATCH") {
         if let Some(body_value) = body {
             request = request.json(&body_value);
         }
     }
-    
+
     match request.send().await {
         Ok(resp) => {
             let status = resp.status().is_success();
@@ -83,7 +78,7 @@ pub async fn make_request(
                     error: Some(format!("Failed to parse response: {}", err)),
                 }),
             }
-        },
+        }
         Err(err) => Ok(ApiResponse {
             success: false,
             data: None,

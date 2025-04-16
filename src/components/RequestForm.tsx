@@ -1,6 +1,6 @@
 import { SelectMethod } from "./SelectMethod";
 import { TabComponent } from "./TabComponent";
-import { useState } from "react";
+import { useState, Dispatch } from "react";
 import { useTheme } from "../context/ThemeContext";
 import clsx from "clsx";
 import { SelectAuth } from "./SelectAuth";
@@ -16,6 +16,7 @@ type RequestFormProps = {
   password: string;
   useBasicAuth: boolean;
   activeTab: "body" | "auth";
+  bearerToken: string;
   onMethodChange: (method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH") => void;
   onUrlChange: (url: string) => void;
   onPayloadChange: (payload: string) => void;
@@ -24,6 +25,7 @@ type RequestFormProps = {
   onUseBasicAuthChange: (useBasicAuth: boolean) => void;
   onTabChange: (tab: "body" | "auth") => void;
   onSendRequest: () => void;
+  onSetBearerToken: Dispatch<React.SetStateAction<string>>;
 };
 
 export const RequestForm = ({
@@ -35,6 +37,7 @@ export const RequestForm = ({
   password,
   useBasicAuth,
   activeTab,
+  bearerToken,
   onMethodChange,
   onUrlChange,
   onPayloadChange,
@@ -43,16 +46,16 @@ export const RequestForm = ({
   onUseBasicAuthChange,
   onTabChange,
   onSendRequest,
+  onSetBearerToken,
 }: RequestFormProps) => {
   const { theme } = useTheme();
   const options = [
     { label: "Basic Auth", value: "basic" },
     { label: "Bearer Token", value: "bearer" },
-    { label: "OAuth 2.0", value: "oauth2" },
+    //{ label: "OAuth 2.0", value: "oauth2" },
   ];
   const [showPassword, setShowPassword] = useState(false);
   const [selectAuth, setSelectAuth] = useState(options[0].value);
-  const [beearToken, setBearerToken] = useState("");
 
   return (
     <div className="p-4 space-y-4 col-span-5 h-full">
@@ -152,8 +155,8 @@ export const RequestForm = ({
           )}
           {selectAuth === "bearer" && (
             <BearerToken
-              bearerToken={beearToken}
-              onTokenChange={setBearerToken}
+              bearerToken={bearerToken}
+              onTokenChange={onSetBearerToken}
             />
           )}
         </div>
