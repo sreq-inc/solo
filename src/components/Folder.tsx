@@ -110,17 +110,28 @@ export const FolderComponent = ({
                   ? "bg-gray-700 hover:bg-gray-600"
                   : "bg-gray-200 hover:bg-gray-300",
                 file.fileName === currentRequestId &&
-                  (theme === "dark" ? "bg-purple-800" : "bg-purple-100")
+                  (theme === "dark"
+                    ? "border-l-purple-800 border-l-8"
+                    : "border-l-purple-900 border-l-8")
               )}
             >
               <button
                 onClick={() => onFileClick(file.fileName)}
-                className={clsx(
-                  "w-full text-left",
-                  theme === "dark" ? "text-white" : "text-gray-800"
-                )}
+                className="flex justify-start  w-full cursor-pointer"
               >
-                {file.fileData.method}
+                <span
+                  className={clsx(
+                    "w-12 text-center text-xs px-1.5",
+                    file.fileData.method === "GET" && "bg-green-300",
+                    file.fileData.method === "POST" && "bg-blue-300",
+                    file.fileData.method === "PUT" && "bg-yellow-300",
+                    file.fileData.method === "DELETE" && "bg-red-300",
+                    file.fileData.method === "PATCH" && "bg-purple-300",
+                    theme === "dark" ? "text-black" : "text-black"
+                  )}
+                >
+                  {file.fileData.method}
+                </span>
               </button>
               <button
                 onClick={() => onRemoveFile(file.fileName)}
