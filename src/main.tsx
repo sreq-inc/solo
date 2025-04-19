@@ -2,11 +2,17 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import { ThemeProvider } from "./context/ThemeContext";
+import { RequestProvider } from "./context/RequestContext";
+import { FileProvider } from "./context/FileContext";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <ThemeProvider>
-      <App />
+      <RequestProvider>
+        <FileProvider>
+          <App />
+        </FileProvider>
+      </RequestProvider>
     </ThemeProvider>
   </React.StrictMode>
 );

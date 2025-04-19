@@ -1,58 +1,42 @@
 import { SelectMethod } from "./SelectMethod";
 import { TabComponent } from "./TabComponent";
-import { useState, Dispatch } from "react";
+import { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
+import { useRequest } from "../context/RequestContext";
 import clsx from "clsx";
 import { SelectAuth } from "./SelectAuth";
 import { UsernameAndPassword } from "./UsernameAndPassword";
 import { BearerToken } from "./BearerToken";
 
-type RequestFormProps = {
-  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-  url: string;
-  payload: string;
-  loading: boolean;
-  username: string;
-  password: string;
-  useBasicAuth: boolean;
-  activeTab: "body" | "auth";
-  bearerToken: string;
-  onMethodChange: (method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH") => void;
-  onUrlChange: (url: string) => void;
-  onPayloadChange: (payload: string) => void;
-  onUsernameChange: (username: string) => void;
-  onPasswordChange: (password: string) => void;
-  onUseBasicAuthChange: (useBasicAuth: boolean) => void;
-  onTabChange: (tab: "body" | "auth") => void;
-  onSendRequest: () => void;
-  onSetBearerToken: Dispatch<React.SetStateAction<string>>;
-};
-
-export const RequestForm = ({
-  method,
-  url,
-  payload,
-  loading,
-  username,
-  password,
-  useBasicAuth,
-  activeTab,
-  bearerToken,
-  onMethodChange,
-  onUrlChange,
-  onPayloadChange,
-  onUsernameChange,
-  onPasswordChange,
-  onUseBasicAuthChange,
-  onTabChange,
-  onSendRequest,
-  onSetBearerToken,
-}: RequestFormProps) => {
+export const RequestForm = () => {
   const { theme } = useTheme();
+  const {
+    method,
+    url,
+    payload,
+    loading,
+    username,
+    password,
+    useBasicAuth,
+    activeTab,
+    bearerToken,
+    setMethod,
+    setUrl,
+    setPayload,
+    setUsername,
+    setPassword,
+    setUseBasicAuth,
+    setActiveTab,
+    setBearerToken,
+    handleRequest,
+    formatJson,
+  } = useRequest();
+
   const options = [
     { label: "Basic Auth", value: "basic" },
     { label: "Bearer Token", value: "bearer" },
   ];
+
   const [showPassword, setShowPassword] = useState(false);
   const [selectAuth, setSelectAuth] = useState(options[0].value);
 
@@ -64,9 +48,7 @@ export const RequestForm = ({
             value={method}
             options={["GET", "POST", "PUT", "DELETE", "PATCH"]}
             onChange={(value) =>
-              onMethodChange(
-                value as "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
-              )
+              setMethod(value as "GET" | "POST" | "PUT" | "DELETE" | "PATCH")
             }
           />
         </div>
@@ -74,7 +56,7 @@ export const RequestForm = ({
           <input
             type="text"
             value={url}
-            onChange={(e) => onUrlChange(e.target.value)}
+            onChange={(e) => setUrl(e.target.value)}
             placeholder="https://api.example.com/endpoint"
             className={clsx(
               "w-full p-2 border rounded",
@@ -86,7 +68,7 @@ export const RequestForm = ({
         </div>
         <div className="flex-shrink-0">
           <button
-            onClick={onSendRequest}
+            onClick={handleRequest}
             disabled={loading}
             className={clsx(
               "p-2 text-white rounded",
@@ -100,9 +82,7 @@ export const RequestForm = ({
           </button>
         </div>
       </div>
-
-      <TabComponent activeTab={activeTab} onTabChange={onTabChange} />
-
+      <TabComponent activeTab={activeTab} onTabChange={setActiveTab} />
       {activeTab === "body" && (
         <div className="mt-4">
           <label
@@ -115,7 +95,7 @@ export const RequestForm = ({
           </label>
           <textarea
             value={payload}
-            onChange={(e) => onPayloadChange(e.target.value)}
+            onChange={(e) => setPayload(e.target.value)}
             placeholder='{"key": "value"}'
             className={clsx(
               "w-full p-2 border rounded h-96",
@@ -125,11 +105,7 @@ export const RequestForm = ({
             )}
           />
           <button
-            onClick={async () => {
-              const parsed = await JSON.parse(payload);
-              const pretty = await JSON.stringify(parsed, null, 2);
-              onPayloadChange(pretty);
-            }}
+            onClick={formatJson}
             className={clsx(
               "mt-2 py-2 rounded text-xs font-semibold cursor-pointer",
               theme === "dark" ? "text-gray-600" : "text-gray-500",
@@ -160,9 +136,9 @@ export const RequestForm = ({
               username={username}
               password={password}
               useBasicAuth={useBasicAuth}
-              onUsernameChange={onUsernameChange}
-              onPasswordChange={onPasswordChange}
-              onUseBasicAuthChange={onUseBasicAuthChange}
+              onUsernameChange={setUsername}
+              onPasswordChange={setPassword}
+              onUseBasicAuthChange={setUseBasicAuth}
               showPassword={showPassword}
               setShowPassword={setShowPassword}
             />
@@ -170,7 +146,7 @@ export const RequestForm = ({
           {selectAuth === "bearer" && (
             <BearerToken
               bearerToken={bearerToken}
-              onTokenChange={onSetBearerToken}
+              onTokenChange={setBearerToken}
             />
           )}
         </div>

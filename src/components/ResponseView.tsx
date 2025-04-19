@@ -1,22 +1,12 @@
 import { useTheme } from "../context/ThemeContext";
+import { useRequest } from "../context/RequestContext";
 import clsx from "clsx";
 
-type ResponseViewProps = {
-  response: any;
-  error: string | null;
-  loading: boolean;
-  isCopied: boolean;
-  onCopyResponse: () => void;
-};
-
-export const ResponseView = ({
-  response,
-  error,
-  loading,
-  isCopied,
-  onCopyResponse,
-}: ResponseViewProps) => {
+export const ResponseView = () => {
   const { theme } = useTheme();
+  const { response, error, loading, isCopied, handleCopyResponse } =
+    useRequest();
+
   const lines = response ? JSON.stringify(response, null, 2).split("\n") : [];
 
   return (
@@ -27,7 +17,7 @@ export const ResponseView = ({
             "p-2 rounded",
             theme === "dark"
               ? "bg-red-900 text-red-300"
-              : "bg-red-100 text-red-800",
+              : "bg-red-100 text-red-800"
           )}
         >
           {error}
@@ -36,7 +26,7 @@ export const ResponseView = ({
       <div
         className={clsx(
           "relative rounded min-h-[600px] h-96 overflow-auto font-mono",
-          theme === "dark" ? "bg-gray-800" : "bg-gray-100",
+          theme === "dark" ? "bg-gray-800" : "bg-gray-100"
         )}
       >
         <table className="w-full table-fixed">
@@ -48,7 +38,7 @@ export const ResponseView = ({
                     "text-right pr-4 select-none w-12 border-r sticky left-0",
                     theme === "dark"
                       ? "text-gray-500 border-gray-700 bg-gray-800"
-                      : "text-gray-500 border-gray-300 bg-gray-100",
+                      : "text-gray-500 border-gray-300 bg-gray-100"
                   )}
                 >
                   1
@@ -56,7 +46,7 @@ export const ResponseView = ({
                 <td
                   className={clsx(
                     "pl-4",
-                    theme === "dark" ? "text-gray-300" : "text-gray-800",
+                    theme === "dark" ? "text-gray-300" : "text-gray-800"
                   )}
                 >
                   Loading...
@@ -69,7 +59,7 @@ export const ResponseView = ({
                     "text-right pr-4 select-none w-12 border-r sticky left-0",
                     theme === "dark"
                       ? "text-gray-500 border-gray-700 bg-gray-800"
-                      : "text-gray-500 border-gray-300 bg-gray-100",
+                      : "text-gray-500 border-gray-300 bg-gray-100"
                   )}
                 >
                   1
@@ -77,7 +67,7 @@ export const ResponseView = ({
                 <td
                   className={clsx(
                     "pl-4",
-                    theme === "dark" ? "text-gray-400" : "text-gray-600",
+                    theme === "dark" ? "text-gray-400" : "text-gray-600"
                   )}
                 >
                   No response yet
@@ -88,9 +78,7 @@ export const ResponseView = ({
                 <tr
                   key={i}
                   className={clsx(
-                    theme === "dark"
-                      ? "hover:bg-gray-800"
-                      : "hover:bg-gray-200",
+                    theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-200"
                   )}
                 >
                   <td
@@ -98,7 +86,7 @@ export const ResponseView = ({
                       "text-right pr-4 select-none w-12 border-r sticky left-0",
                       theme === "dark"
                         ? "text-gray-500 border-gray-700 bg-gray-900"
-                        : "text-gray-500 border-gray-300 bg-gray-100",
+                        : "text-gray-500 border-gray-300 bg-gray-100"
                     )}
                   >
                     {i + 1}
@@ -106,7 +94,7 @@ export const ResponseView = ({
                   <td
                     className={clsx(
                       "pl-4 whitespace-pre overflow-x-auto",
-                      theme === "dark" ? "text-gray-300" : "text-gray-800",
+                      theme === "dark" ? "text-gray-300" : "text-gray-800"
                     )}
                   >
                     {line}
@@ -119,14 +107,14 @@ export const ResponseView = ({
       </div>
       {response && (
         <button
-          onClick={onCopyResponse}
+          onClick={handleCopyResponse}
           disabled={isCopied}
           className={clsx(
             "w-full p-2 rounded cursor-pointer",
             theme === "dark"
               ? "bg-purple-900 text-purple-300 hover:bg-purple-800"
               : "bg-purple-200 text-purple-800 hover:bg-purple-300",
-            isCopied && "opacity-50 cursor-not-allowed",
+            isCopied && "opacity-50 cursor-not-allowed"
           )}
         >
           {isCopied ? "Copied!" : "Copy Response"}
