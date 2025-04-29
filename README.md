@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./assets/solo.png" height="200" width="200"/>
+  <img src="./assets/logo.png" height="200" width="200"/>
   <h1>Solo is an HTTP request client</h1>
 </div>
 
