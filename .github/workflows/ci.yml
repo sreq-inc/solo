@@ -29,5 +29,5 @@ jobs:
       - name: Install JS/TS dependencies with Bun
         run: bun install
 
-      - name: Run frontend tests
-        run: bun run test:frontend
+      - name: Run backend tests
+        run: bun run test:backend
