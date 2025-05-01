@@ -5,6 +5,9 @@
 
 > I really don't care about your data
 
+
+[![CI](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml)
+
 ## Features
 
 - User-friendly interface for creating and managing HTTP requests
