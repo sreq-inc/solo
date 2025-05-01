@@ -62,3 +62,24 @@ async fn test_plain_delete_request_success() {
 
     assert!(result.is_ok());
 }
+
+#[tokio::test]
+async fn test_plain_patch_request_success() {
+    let body = serde_json::json!({
+        "id": 1,
+        "title": "foo",
+        "body": "bar",
+        "userId": 1
+    });
+
+    let result = plain_request(
+        "PATCH".into(),
+        "https://jsonplaceholder.typicode.com/posts/1".into(),
+        Some(body),
+    )
+    .await;
+
+    assert!(result.is_ok());
+}
+
+
