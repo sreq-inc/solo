@@ -10,79 +10,101 @@ pub struct ApiResponse {
     pub error: Option<String>,
 }
 
-fn handle_basic_auth(request: RequestBuilder, username: Option<String>, password: Option<String>) -> RequestBuilder {
-    let username_str = username.unwrap_or_default();
-    let password_str = password.unwrap_or_default();
+fn build_request(
+    client: &Client,
+    method: &str,
+    url: &str,
+    body: Option<serde_json::Value>,
+) -> Result<RequestBuilder, String> {
+    let request = match method.to_uppercase().as_str() {
+        "GET" => client.get(url),
+        "POST" => client.post(url),
+        "PUT" => client.put(url),
+        "DELETE" => client.delete(url),
+        "PATCH" => client.patch(url),
+        _ => return Err("Invalid HTTP method".into()),
+    };
 
-    if !username_str.is_empty() {
-        let auth_string = format!("{}:{}", username_str, password_str);
-        let auth_header = format!("Basic {}", general_purpose::STANDARD.encode(auth_string));
-        request.header("Authorization", auth_header)
+    Ok(if let Some(b) = body {
+        request.json(&b)
+    } else {
+        request
+    })
+}
+
+fn handle_basic_auth(
+    request: RequestBuilder,
+    username: Option<String>,
+    password: Option<String>,
+) -> RequestBuilder {
+    let username = username.unwrap_or_default();
+    let password = password.unwrap_or_default();
+
+    if !username.is_empty() {
+        let auth_string = format!("{}:{}", username, password);
+        let encoded = general_purpose::STANDARD.encode(auth_string);
+        request.header("Authorization", format!("Basic {}", encoded))
     } else {
         request
     }
 }
 
-#[command]
-pub async fn make_request(
-    method: String,
-    url: String,
-    body: Option<serde_json::Value>,
-    use_basic_auth: Option<bool>,
-    username: Option<String>,
-    password: Option<String>,
-    bearer_token: Option<String>,
-) -> Result<ApiResponse, String> {
-    let client = Client::new();
+async fn send_and_parse(request: RequestBuilder) -> Result<ApiResponse, String> {
+    let resp = request.send().await.map_err(|e| e.to_string())?;
+    let success = resp.status().is_success();
 
-    let mut request = match method.as_str() {
-        "GET" => client.get(&url),
-        "POST" => client.post(&url),
-        "PUT" => client.put(&url),
-        "DELETE" => client.delete(&url),
-        "PATCH" => client.patch(&url),
-        _ => return Err("Invalid HTTP method".into()),
-    };
-
-    // Basic Auth
-    if use_basic_auth.unwrap_or(false) {
-        request = handle_basic_auth(request, username, password);
-    }
-
-    // Bearer Token
-    if let Some(token) = bearer_token {
-        if !token.trim().is_empty() {
-            request = request.header("Authorization", format!("Bearer {}", token));
-        }
-    }
-
-    // Body (if applicable)
-    if matches!(method.as_str(), "POST" | "PUT" | "PATCH") {
-        if let Some(body_value) = body {
-            request = request.json(&body_value);
-        }
-    }
-
-    match request.send().await {
-        Ok(resp) => {
-            let status = resp.status().is_success();
-            match resp.json::<serde_json::Value>().await {
-                Ok(json) => Ok(ApiResponse {
-                    success: status,
-                    data: Some(json),
-                    error: None,
-                }),
-                Err(err) => Ok(ApiResponse {
-                    success: false,
-                    data: None,
-                    error: Some(format!("Failed to parse response: {}", err)),
-                }),
-            }
-        }
+    match resp.json::<serde_json::Value>().await {
+        Ok(json) => Ok(ApiResponse {
+            success,
+            data: Some(json),
+            error: None,
+        }),
         Err(err) => Ok(ApiResponse {
             success: false,
             data: None,
-            error: Some(err.to_string()),
+            error: Some(format!("Failed to parse response: {}", err)),
         }),
     }
 }
+
+#[command]
+pub async fn plain_request(
+    method: String,
+    url: String,
+    body: Option<serde_json::Value>,
+) -> Result<ApiResponse, String> {
+    let client = Client::new();
+    let request = build_request(&client, &method, &url, body)?;
+    send_and_parse(request).await
+}
+
+#[command]
+pub async fn basic_auth_request(
+    method: String,
+    url: String,
+    body: Option<serde_json::Value>,
+    username: String,
+    password: String,
+) -> Result<ApiResponse, String> {
+    let client = Client::new();
+    let request = build_request(&client, &method, &url, body)?;
+    let request = handle_basic_auth(request, Some(username), Some(password));
+    send_and_parse(request).await
+}
+
+#[command]
+pub async fn bearer_auth_request(
+    method: String,
+    url: String,
+    body: Option<serde_json::Value>,
+    bearer_token: String,
+) -> Result<ApiResponse, String> {
+    let client = Client::new();
+    let request = build_request(&client, &method, &url, body)?
+        .header("Authorization", format!("Bearer {}", bearer_token));
+    send_and_parse(request).await
+}
+
+#[cfg(test)]
+mod tests;
+

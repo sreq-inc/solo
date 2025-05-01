@@ -78,20 +78,32 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     try {
       const body = payload.trim() ? JSON.parse(payload) : null;
 
-      const result = await invoke("make_request", {
-        method,
-        url,
-        body,
-        useBasicAuth,
-        username: useBasicAuth ? username : "",
-        password: useBasicAuth ? password : "",
-        bearerToken,
-      });
+      let result;
+      if (useBasicAuth) {
+        result = await invoke("basic_auth_request", {
+          method,
+          url,
+          body,
+          username,
+          password,
+        });
+      } else if (bearerToken.trim()) {
+        result = await invoke("bearer_auth_request", {
+          method,
+          url,
+          body,
+          bearerToken,
+        });
+      } else {
+        result = await invoke("plain_request", {
+          method,
+          url,
+          body,
+        });
+      }
 
       setResponse(result);
-
-      // Storage logic will be handled in FileContext
-    } catch (error: unknown) {
+    } catch (error) {
       setResponse(null);
       setError(
         error instanceof Error ? error.message : "An unknown error occurred"
@@ -100,7 +112,6 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     }
   };
-
   const handleCopyResponse = () => {
     navigator.clipboard.writeText(JSON.stringify(response, null, 2));
     setIsCopied(true);
