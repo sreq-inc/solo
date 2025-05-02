@@ -1,9 +1,8 @@
 import clsx from "clsx";
-import React, { Dispatch } from "react";
 import { useTheme } from "../context/ThemeContext";
 
 export type BearerTokenProps = {
-  onTokenChange: Dispatch<React.SetStateAction<string>>;
+  onTokenChange: (token: string) => void;
   bearerToken: string;
 };
 
