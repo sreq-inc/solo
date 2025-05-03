@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "test:backend": "cargo test --manifest-path src-tauri/Cargo.toml"
+    "test:backend": "cargo test --manifest-path src-tauri/Cargo.toml",
+    "release": "chmod +x main.sh && ./main.sh"
   },
   "dependencies": {
     "@tailwindcss/vite": "4.0.0",
