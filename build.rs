@@ -29,18 +29,16 @@ fn main() -> io::Result<()> {
         std::process::exit(1);
     }
 
-    // Paths
-    let source = Path::new("src-tauri/target/release/bundle");
+    // Copy only contents of the dmg folder
+    let source = Path::new("src-tauri/target/release/bundle/dmg");
     let destination = Path::new("releases").join(version);
 
-    // Create versioned releases folder
     if destination.exists() {
         eprintln!("Warning: destination folder {} already exists.", destination.display());
     } else {
         fs::create_dir_all(&destination)?;
     }
 
-    // Copy files
     copy_dir_all(&source, &destination)?;
 
     println!("Build completed. Files copied to: {}", destination.display());
