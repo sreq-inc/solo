@@ -25,8 +25,8 @@ export const Sidebar = () => {
   return (
     <div
       className={clsx(
-        "p-4 space-y-4 rounded-md col-span-2 h-full transition-colors duration-200",
-        theme === "dark" ? "bg-gray-800" : "bg-gray-100"
+        "p-4 space-y-4 col-span-2 h-full transition-colors duration-200",
+        theme === "dark" ? "bg-[#10121b]" : "bg-gray-100"
       )}
     >
       <div className="flex justify-between items-center">

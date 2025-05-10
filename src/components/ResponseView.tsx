@@ -10,7 +10,7 @@ export const ResponseView = () => {
   const lines = response ? JSON.stringify(response, null, 2).split("\n") : [];
 
   return (
-    <div className="p-4 space-y-4 col-span-5 h-full">
+    <div className="p-4 space-y-4 col-span-5 h-full w-full">
       {error && (
         <div
           className={clsx(
