@@ -5,7 +5,7 @@ import { RequestForm } from "./components/RequestForm";
 import { ResponseView } from "./components/ResponseView";
 import { InputMethod } from "./components/InputMethod";
 import "./App.css";
-import Titlebar from "./components/TitleBar";
+// import Titlebar from "./components/TitleBar";
 
 function App() {
   const { theme } = useTheme();
@@ -15,7 +15,7 @@ function App() {
 
   return (
     <div className="flex flex-col h-screen">
-      <Titlebar />
+      {/* <Titlebar /> */}
       <div
         className={clsx("flex-1 flex transition-colors duration-200", appBg)}
       >

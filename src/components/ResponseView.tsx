@@ -26,7 +26,7 @@ export const ResponseView = () => {
       <div
         className={clsx(
           "relative rounded min-h-[600px] h-96 overflow-auto font-mono",
-          theme === "dark" ? "bg-gray-800" : "bg-gray-100"
+          theme === "dark" ? "bg-[#10121b]" : "bg-gray-100"
         )}
       >
         <table className="w-full table-fixed">
@@ -37,7 +37,7 @@ export const ResponseView = () => {
                   className={clsx(
                     "text-right pr-4 select-none w-12 border-r sticky left-0",
                     theme === "dark"
-                      ? "text-gray-500 border-gray-700 bg-gray-800"
+                      ? "text-gray-500 border-gray-700 bg-gray-700"
                       : "text-gray-500 border-gray-300 bg-gray-100"
                   )}
                 >
@@ -58,7 +58,7 @@ export const ResponseView = () => {
                   className={clsx(
                     "text-right pr-4 select-none w-12 border-r sticky left-0",
                     theme === "dark"
-                      ? "text-gray-500 border-gray-700 bg-gray-800"
+                      ? "text-gray-500 border-gray-700 bg-gray-700"
                       : "text-gray-500 border-gray-300 bg-gray-100"
                   )}
                 >

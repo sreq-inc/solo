@@ -52,9 +52,9 @@ export const RequestForm = () => {
               onChange={(e) => setPayload(e.target.value)}
               placeholder='{"key": "value"}'
               className={clsx(
-                "w-full p-2 border rounded h-96",
+                "w-full p-4 border rounded-xl h-[520px]",
                 theme === "dark"
-                  ? "bg-gray-700 border-gray-600 text-white"
+                  ? "bg-[#10121b] border-gray-600 text-white focus:outline-0"
                   : "bg-white border-gray-300 text-gray-800"
               )}
             />
@@ -72,13 +72,13 @@ export const RequestForm = () => {
         {activeTab === "auth" && (
           <div
             className={clsx(
-              "mt-4 p-4 border rounded",
+              "mt-4 p-4 border rounded-xl",
               theme === "dark"
-                ? "bg-gray-800 border-gray-700"
+                ? "bg-[#10121b] border-gray-700"
                 : "bg-white border-gray-300"
             )}
           >
-            <div className="mb-8">
+            <div className="mb-8 mt-4">
               <SelectAuth
                 value={selectAuth}
                 options={options}
