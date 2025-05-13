@@ -24,8 +24,8 @@ export const SelectMethod: React.FC<SelectMethodProps> = ({
           className={clsx(
             "block appearance-none w-full border rounded-lg py-2 px-4 pr-8 leading-tight focus:outline-none focus:ring-1",
             theme === "dark"
-              ? "text-white  bg-gray-800 border-purple-500 ring-purple-500 border-2"
-              : " text-gray-700 bg-white border-purple-500 ring-purple-500 border-2"
+              ? "text-white bg-[#10121b] border-purple-500 ring-purple-500 border-2"
+              : " text-gray-700 bg-white border-purple-500 ring-purple-500 border-2",
           )}
         >
           {options.map((option) => (
@@ -38,7 +38,7 @@ export const SelectMethod: React.FC<SelectMethodProps> = ({
           <svg
             className={clsx(
               "w-4 h-4",
-              theme === "dark" ? "text-gray-400" : "text-gray-500"
+              theme === "dark" ? "text-gray-400" : "text-gray-500",
             )}
             fill="none"
             stroke="currentColor"

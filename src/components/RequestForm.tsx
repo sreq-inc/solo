@@ -6,7 +6,6 @@ import clsx from "clsx";
 import { SelectAuth } from "./SelectAuth";
 import { UsernameAndPassword } from "./UsernameAndPassword";
 import { BearerToken } from "./BearerToken";
-import Titlebar from "./TitleBar";
 
 export const RequestForm = () => {
   const { theme } = useTheme();
