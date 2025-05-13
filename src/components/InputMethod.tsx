@@ -29,7 +29,7 @@ export const InputMethod = () => {
             "w-full h-10 p-2 border rounded outline-none",
             theme === "dark"
               ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500 focus:ring-0"
-              : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500 focus:ring-0",
+              : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500 focus:ring-0"
           )}
         />
       </div>
@@ -42,7 +42,7 @@ export const InputMethod = () => {
             theme === "dark"
               ? "bg-purple-700 hover:bg-purple-800"
               : "bg-purple-600 hover:bg-purple-700",
-            loading && "opacity-50 cursor-not-allowed",
+            loading && "opacity-50 cursor-not-allowed"
           )}
         >
           {loading ? "Sending..." : "Send"}
