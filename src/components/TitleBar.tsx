@@ -1,27 +1,24 @@
 import clsx from "clsx";
 import { useTheme } from "../context/ThemeContext";
-// import { getCurrentWindow } from "@tauri-apps/api/window";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 export default function Titlebar() {
   const { theme } = useTheme();
   const appBg = theme === "dark" ? "bg-[#10121b]" : "bg-gray-100";
   const textColor = theme === "dark" ? "text-gray-300" : "text-gray-700";
 
-  // const currentWindow = getCurrentWindow();
+  const currentWindow = getCurrentWindow();
 
   const minimizeWindow = async () => {
-    // await currentWindow.minimize();
-    return;
+    await currentWindow.minimize();
   };
 
   const maximizeWindow = async () => {
-    // await currentWindow.toggleMaximize();
-    return;
+    await currentWindow.maximize();
   };
 
   const closeWindow = async () => {
-    // await currentWindow.close();
-    return;
+    await currentWindow.close();
   };
 
   return (
@@ -29,7 +26,7 @@ export default function Titlebar() {
       className={clsx(
         "w-full h-8 flex items-center justify-between px-3",
         appBg,
-        textColor,
+        textColor
       )}
       data-tauri-drag-region
     >
