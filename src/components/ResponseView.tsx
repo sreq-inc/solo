@@ -143,7 +143,7 @@ export const ResponseView = () => {
                     </td>
                     <td
                       className={clsx(
-                        "pl-4 whitespace-pre overflow-x-auto",
+                        "pl-4 whitespace-pre-wrap break-words",
                         theme === "dark" ? "text-gray-300" : "text-gray-800"
                       )}
                     >
