@@ -26,7 +26,7 @@ export default function Titlebar() {
       className={clsx(
         "w-full h-8 flex items-center justify-between px-3",
         appBg,
-        textColor
+        textColor,
       )}
       data-tauri-drag-region
     >
