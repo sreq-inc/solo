@@ -73,7 +73,7 @@ export const Sidebar = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search folders..."
             className={clsx(
-              "w-full pl-10 pr-4 py-2 h-8 border rounded text-xs",
+              "w-full pl-10 pr-4 py-2 h-8 border rounded text-xs focus:outline-none ring-0",
               theme === "dark"
                 ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                 : "bg-white border-gray-300 text-gray-800 placeholder-gray-500"

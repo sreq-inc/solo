@@ -160,7 +160,7 @@ export const FolderComponent = ({
         <button
           onClick={() => onToggleFolder(folder)}
           className={clsx(
-            "w-full flex p-2 text-left",
+            "w-full flex items-center p-2 text-left h-8 text-xs",
             theme === "dark" ? "text-white" : "text-gray-800"
           )}
         >
@@ -169,12 +169,12 @@ export const FolderComponent = ({
           ) : (
             <Folder className="mr-2" />
           )}
-          {folder}
+          <span>{folder}</span>
         </button>
         <button
           onClick={(e) => onToggleDropdown(folder, e)}
           className={clsx(
-            "px-2",
+            "px-2 h-8",
             theme === "dark" ? "text-white" : "text-black"
           )}
         >
