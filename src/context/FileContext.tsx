@@ -22,7 +22,7 @@ type RequestData = {
 type StoredFile = {
   fileName: string;
   fileData: RequestData;
-  displayName?: string; // Nome customizado para o método
+  displayName?: string;
 };
 
 type FolderStructure = {
@@ -164,7 +164,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     setCurrentFolder(folder);
     setOpenFolders((prev) => ({ ...prev, [folder]: true }));
 
-    // Inicializando dados padrão da requisição
     const defaultRequest = {
       method: "GET" as const,
       url: "",
@@ -177,13 +176,10 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       bearerToken: "",
     };
 
-    // Resetando os campos do formulário
     resetFields();
 
-    // Definindo o ID da requisição atual
     setCurrentRequestId(newRequestId);
 
-    // Salvando a nova requisição no localStorage
     try {
       const files = JSON.parse(
         localStorage.getItem(folder) || "[]"
@@ -195,13 +191,11 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       });
       localStorage.setItem(folder, JSON.stringify(files));
 
-      // Atualizando o estado dos folders
       setFolders((prev) => ({
         ...prev,
         [folder]: [...(prev[folder] || []), newRequestId],
       }));
 
-      // Aplicando os valores do formulário
       setMethod(defaultRequest.method);
       setUrl(defaultRequest.url);
       setPayload(defaultRequest.payload);
@@ -214,7 +208,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       console.error("Erro ao criar nova requisição:", error);
     }
 
-    // Fechando o dropdown
     setDropdownOpen(null);
   };
 
@@ -232,7 +225,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     );
 
     if (existingIndex !== -1) {
-      // Preservar o displayName existente se não for fornecido um novo
       const existingDisplayName = files[existingIndex].displayName;
       files[existingIndex] = {
         fileName: requestId,
@@ -256,7 +248,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
 
   const saveCurrentRequest = () => {
     if (currentRequestId && currentFolder) {
-      // Obter o displayName atual para preservá-lo
       const files = JSON.parse(
         localStorage.getItem(currentFolder) || "[]"
       ) as StoredFile[];
@@ -287,10 +278,8 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
 
   const handleRemoveFile = (fileName: string) => {
     try {
-      // Encontrar a pasta que contém o arquivo
       let folderContainingFile = currentFolder;
 
-      // Se não estamos em uma pasta específica, procurar em todas as pastas
       if (!folderContainingFile) {
         for (const folderName in folders) {
           const files = JSON.parse(
@@ -304,27 +293,22 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (folderContainingFile) {
-        // Obter arquivos atuais
         const files = JSON.parse(
           localStorage.getItem(folderContainingFile) || "[]"
         ) as StoredFile[];
 
-        // Filtrar o arquivo a ser removido
         const updatedFiles = files.filter((file) => file.fileName !== fileName);
 
-        // Atualizar localStorage
         localStorage.setItem(
           folderContainingFile,
           JSON.stringify(updatedFiles)
         );
 
-        // Atualizar estado de folders
         setFolders((prev) => ({
           ...prev,
           [folderContainingFile]: updatedFiles.map((file) => file.fileName),
         }));
 
-        // Se o arquivo removido é o atual, resetar campos
         if (fileName === currentRequestId) {
           resetFields();
           setCurrentRequestId(null);

@@ -73,7 +73,7 @@ export const Sidebar = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search folders..."
             className={clsx(
-              "w-full pl-10 pr-4 py-2 border rounded text-xs",
+              "w-full pl-10 pr-4 py-2 h-8 border rounded text-xs",
               theme === "dark"
                 ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                 : "bg-white border-gray-300 text-gray-800 placeholder-gray-500"
@@ -83,7 +83,7 @@ export const Sidebar = () => {
         <button
           onClick={() => setShowModal(true)}
           className={clsx(
-            "p-2 rounded flex items-center justify-center",
+            "h-8 w-10 rounded flex items-center justify-center cursor-pointer",
             theme === "dark"
               ? "bg-purple-700 hover:bg-purple-800 text-white"
               : "bg-purple-600 hover:bg-purple-700 text-white"
@@ -157,7 +157,7 @@ export const Sidebar = () => {
               <button
                 onClick={() => setShowModal(false)}
                 className={clsx(
-                  "px-4 py-2 rounded text-xs",
+                  "px-4 py-2 rounded text-xs cursor-pointer",
                   theme === "dark"
                     ? "bg-gray-700 text-gray-300"
                     : "bg-gray-200 text-gray-800"
@@ -168,7 +168,7 @@ export const Sidebar = () => {
               <button
                 onClick={handleCreateFolder}
                 className={clsx(
-                  "px-4 py-2 rounded text-white text-xs",
+                  "px-4 py-2 rounded text-white text-xs cursor-pointer",
                   theme === "dark"
                     ? "bg-purple-700 hover:bg-purple-800"
                     : "bg-purple-600 hover:bg-purple-700",

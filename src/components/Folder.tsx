@@ -291,7 +291,7 @@ export const FolderComponent = ({
                       onBlur={() => handleRename(file.fileName)}
                       onKeyDown={(e) => handleKeyDown(e, file.fileName)}
                       className={clsx(
-                        "ml-2 px-2 py-1 rounded text-sm flex-grow",
+                        "ml-2 px-2 py-1 text-sm flex-grow focus:outline-none ring-0",
                         theme === "dark"
                           ? "bg-gray-800 text-white"
                           : "bg-white text-gray-800"
@@ -420,7 +420,7 @@ export const FolderComponent = ({
                 onChange={(e) => setNewMethodName(e.target.value)}
                 placeholder="Ex: Get users"
                 className={clsx(
-                  "w-full border mb-4 text-xs focus:none ring-0 focus:outline-none",
+                  "w-full border mb-4 text-xs focus:none ring-0 focus:outline-none h-8 p-2",
                   theme === "dark"
                     ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     : "bg-white border-gray-300 text-gray-800 placeholder-gray-500"
@@ -440,7 +440,7 @@ export const FolderComponent = ({
                 value={selectedMethod}
                 onChange={(e) => setSelectedMethod(e.target.value as any)}
                 className={clsx(
-                  "w-full p-2 border rounded text-sm",
+                  "w-full p-2 text-sm block appearance-none border rounded-lg py-2 px-4 pr-8 leading-tight focus:outline-none focus:ring-1",
                   theme === "dark"
                     ? "bg-gray-700 border-gray-600 text-white"
                     : "bg-white border-gray-300 text-gray-800"
