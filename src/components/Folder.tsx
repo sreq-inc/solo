@@ -160,7 +160,7 @@ export const FolderComponent = ({
         <button
           onClick={() => onToggleFolder(folder)}
           className={clsx(
-            "w-full flex items-center p-2 text-left h-8 text-xs",
+            "w-full flex items-center p-2 text-left h-8 text-xs cursor-pointer",
             theme === "dark" ? "text-white" : "text-gray-800"
           )}
         >
@@ -319,7 +319,7 @@ export const FolderComponent = ({
                 <button
                   onClick={(e) => toggleFileDropdown(file.fileName, e)}
                   className={clsx(
-                    "p-1 rounded",
+                    "p-1 rounded mt-1 cursor-pointer",
                     theme === "dark"
                       ? "text-gray-300 hover:bg-gray-800"
                       : "text-gray-600 hover:bg-gray-400"

@@ -41,11 +41,11 @@ export const Sidebar = () => {
   return (
     <div
       className={clsx(
-        "p-4 space-y-4 col-span-2 h-full transition-colors duration-200",
+        "p-4 flex flex-col h-full col-span-2 transition-colors duration-200",
         theme === "dark" ? "bg-[#10121b]" : "bg-gray-100"
       )}
     >
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-4">
         <h2
           className={clsx(
             "text-xl font-bold flex flex-row items-center justify-start gap-2",
@@ -57,7 +57,7 @@ export const Sidebar = () => {
         <ThemeToggle />
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 mb-4">
         <div className="relative flex-grow">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search
@@ -95,22 +95,25 @@ export const Sidebar = () => {
         </button>
       </div>
 
-      <div className="space-y-2 mt-4 h-full overflow-y-auto">
-        {filteredFolders.map((folder) => (
-          <FolderComponent
-            key={folder}
-            folder={folder}
-            isOpen={!!openFolders[folder]}
-            isDropdownOpen={dropdownOpen === folder}
-            onToggleFolder={toggleFolder}
-            onToggleDropdown={toggleDropdown}
-            onCreateNewRequest={createNewRequest}
-            onRemoveFolder={removeFolder}
-            onFileClick={handleFileClick}
-            onRemoveFile={handleRemoveFile}
-            currentRequestId={currentRequestId}
-          />
-        ))}
+      {/* Scrollable folder container */}
+      <div className="flex-grow overflow-y-auto">
+        <div className="space-y-2">
+          {filteredFolders.map((folder) => (
+            <FolderComponent
+              key={folder}
+              folder={folder}
+              isOpen={!!openFolders[folder]}
+              isDropdownOpen={dropdownOpen === folder}
+              onToggleFolder={toggleFolder}
+              onToggleDropdown={toggleDropdown}
+              onCreateNewRequest={createNewRequest}
+              onRemoveFolder={removeFolder}
+              onFileClick={handleFileClick}
+              onRemoveFile={handleRemoveFile}
+              currentRequestId={currentRequestId}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Modal to create new folder */}
