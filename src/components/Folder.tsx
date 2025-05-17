@@ -96,6 +96,12 @@ export const FolderComponent = ({
     if (e.key === "Escape") setRenameMode(null);
   };
 
+  const openCreateModal = () => {
+    setNewMethodName("");
+    setSelectedMethod("GET");
+    setCreateModal(true);
+  };
+
   const handleCreateMethod = () => {
     if (!newMethodName.trim()) return;
     onCreateNewRequest(folder);
@@ -189,7 +195,7 @@ export const FolderComponent = ({
             ACTIONS
           </div>
           <button
-            onClick={() => onCreateNewRequest(folder)}
+            onClick={openCreateModal} // Changed to directly open modal
             className={clsx(
               "px-4 py-2 text-sm w-full flex items-center",
               theme === "dark"
@@ -233,19 +239,6 @@ export const FolderComponent = ({
 
       {isOpen && (
         <div className="mt-2 space-y-2 ml-4">
-          <button
-            onClick={() => setCreateModal(true)}
-            className={clsx(
-              "w-full p-1.5 rounded flex items-center justify-center",
-              theme === "dark"
-                ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
-                : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-            )}
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            <span className="text-sm">New HTTP Request</span>
-          </button>
-
           {hasFilter && filtered.length !== files.length && (
             <div
               className={clsx(
@@ -261,7 +254,7 @@ export const FolderComponent = ({
             <div
               key={file.fileName}
               className={clsx(
-                "flex items-center p-1.5 rounded",
+                "flex items-center rounded",
                 theme === "dark"
                   ? "bg-gray-700 hover:bg-gray-600"
                   : "bg-gray-200 hover:bg-gray-300",
@@ -309,7 +302,7 @@ export const FolderComponent = ({
                   ) : (
                     <span
                       className={clsx(
-                        "ml-2 truncate w-full block",
+                        "ml-2 truncate w-full block text-xs text-left",
                         theme === "dark" ? "text-white" : "text-gray-800"
                       )}
                     >
@@ -427,7 +420,7 @@ export const FolderComponent = ({
                 onChange={(e) => setNewMethodName(e.target.value)}
                 placeholder="Ex: Get users"
                 className={clsx(
-                  "w-full p-2 border rounded mb-4 text-sm",
+                  "w-full border mb-4 text-xs focus:none ring-0 focus:outline-none",
                   theme === "dark"
                     ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     : "bg-white border-gray-300 text-gray-800 placeholder-gray-500"
