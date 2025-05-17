@@ -10,7 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import clsx from "clsx";
 
 type FolderProps = {
@@ -57,6 +57,26 @@ export const FolderComponent = ({
     loadFiles();
   }, [folder]);
 
+  // Handle ESC key press to close dropdowns
+  const handleEscKey = useCallback((event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      setFileDropdownOpen(null);
+    }
+  }, []);
+
+  // Add event listener for ESC key
+  useEffect(() => {
+    // Only add the event listener if a dropdown is open
+    if (fileDropdownOpen) {
+      document.addEventListener("keydown", handleEscKey);
+
+      // Cleanup function to remove the event listener
+      return () => {
+        document.removeEventListener("keydown", handleEscKey);
+      };
+    }
+  }, [fileDropdownOpen, handleEscKey]);
+
   const loadFiles = () => {
     try {
       const data = JSON.parse(localStorage.getItem(folder) || "[]");
@@ -93,7 +113,10 @@ export const FolderComponent = ({
 
   const handleKeyDown = (e: React.KeyboardEvent, fileName: string) => {
     if (e.key === "Enter") handleRename(fileName);
-    if (e.key === "Escape") setRenameMode(null);
+    if (e.key === "Escape") {
+      setRenameMode(null);
+      setFileDropdownOpen(null);
+    }
   };
 
   const openCreateModal = () => {
@@ -336,6 +359,12 @@ export const FolderComponent = ({
                         ? "bg-gray-800 border-gray-700"
                         : "bg-white border-gray-200"
                     )}
+                    tabIndex={0} // Make it focusable to capture keyboard events
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        setFileDropdownOpen(null);
+                      }
+                    }}
                   >
                     <button
                       onClick={(e) => {
@@ -380,6 +409,11 @@ export const FolderComponent = ({
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
           onClick={() => setCreateModal(false)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              setCreateModal(false);
+            }
+          }}
         >
           <div
             className={clsx(
@@ -488,6 +522,11 @@ export const FolderComponent = ({
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
           onClick={() => setFilterModal(false)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              setFilterModal(false);
+            }
+          }}
         >
           <div
             className={clsx(
