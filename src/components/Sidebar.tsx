@@ -118,7 +118,7 @@ export const Sidebar = () => {
 
       {/* Modal to create new folder */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-[rgb(0,0,0)]/50 bg-opacity-50 flex items-center justify-center z-50">
           <div
             className={clsx(
               "p-6 rounded-lg shadow-lg max-w-md w-full",
@@ -136,7 +136,10 @@ export const Sidebar = () => {
               </h3>
               <button
                 onClick={() => setShowModal(false)}
-                className={theme === "dark" ? "text-gray-300" : "text-gray-500"}
+                className={clsx(
+                  "cursor-pointer",
+                  theme === "dark" ? "text-gray-300" : "text-gray-500"
+                )}
               >
                 <X className="w-5 h-5" />
               </button>
