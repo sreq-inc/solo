@@ -10,7 +10,7 @@ export const InputMethod = () => {
 
   return (
     <div className="flex items-center gap-4">
-      <div className="flex-shrink-0 w-20 mr-2">
+      <div className="flex-shrink-0 w-24 mr-2">
         <SelectMethod
           value={method}
           options={["GET", "POST", "PUT", "DELETE", "PATCH"]}
