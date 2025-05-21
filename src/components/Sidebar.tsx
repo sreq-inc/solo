@@ -20,6 +20,7 @@ export const Sidebar = () => {
     handleFileClick,
     handleRemoveFile,
     createFolder,
+    renameFile,
   } = useFile();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -110,6 +111,7 @@ export const Sidebar = () => {
               onRemoveFolder={removeFolder}
               onFileClick={handleFileClick}
               onRemoveFile={handleRemoveFile}
+              onRenameFile={renameFile}
               currentRequestId={currentRequestId}
             />
           ))}

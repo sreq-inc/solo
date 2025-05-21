@@ -1,6 +1,15 @@
-import { Folder, FolderOpen, ChevronDown, Plus } from "lucide-react";
+import {
+  Folder,
+  FolderOpen,
+  ChevronDown,
+  Plus,
+  Edit,
+  Trash,
+  MoreHorizontal,
+} from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import clsx from "clsx";
+import { useState } from "react";
 
 type FolderProps = {
   folder: string;
@@ -12,6 +21,7 @@ type FolderProps = {
   onRemoveFolder: (folder: string) => void;
   onFileClick: (fileName: string) => void;
   onRemoveFile: (fileName: string) => void;
+  onRenameFile: (folder: string, fileName: string, newName: string) => void;
   currentRequestId: string | null;
 };
 
@@ -25,10 +35,36 @@ export const FolderComponent = ({
   onRemoveFolder,
   onFileClick,
   onRemoveFile,
+  onRenameFile,
   currentRequestId,
 }: FolderProps) => {
   const { theme } = useTheme();
   const files = JSON.parse(localStorage.getItem(folder) || "[]");
+  const [fileDropdownOpen, setFileDropdownOpen] = useState<string | null>(null);
+  const [editingFileName, setEditingFileName] = useState<string | null>(null);
+  const [newFileName, setNewFileName] = useState("");
+
+  const handleFileDropdownToggle = (fileName: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setFileDropdownOpen((prev) => (prev === fileName ? null : fileName));
+  };
+
+  const handleRenameClick = (
+    fileName: string,
+    currentName: string,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+    setEditingFileName(fileName);
+    setNewFileName(currentName);
+    setFileDropdownOpen(null);
+  };
+
+  const handleRenameSubmit = (fileName: string, e: React.FormEvent) => {
+    e.preventDefault();
+    onRenameFile(folder, fileName, newFileName);
+    setEditingFileName(null);
+  };
 
   return (
     <div className="relative">
@@ -95,7 +131,7 @@ export const FolderComponent = ({
               theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"
             )}
           >
-            <Plus className="w-4 h-4 mr-2 rotate-45" />
+            <Trash className="w-4 h-4 mr-2" />
             Delete Folder
           </button>
         </div>
@@ -106,7 +142,7 @@ export const FolderComponent = ({
             <div
               key={file.fileName}
               className={clsx(
-                "flex items-center p-1.5 justify-between rounded hover:bg-gray-300",
+                "flex items-center p-1.5 justify-between rounded hover:bg-gray-300 relative",
                 theme === "dark"
                   ? "bg-gray-700 hover:bg-gray-600"
                   : "bg-gray-200 hover:bg-gray-300",
@@ -116,32 +152,115 @@ export const FolderComponent = ({
                     : "border-l-purple-900 border-l-8 transition-all")
               )}
             >
-              <button
-                onClick={() => onFileClick(file.fileName)}
-                className="flex justify-start w-full cursor-pointer"
-              >
-                <span
-                  className={clsx(
-                    "w-14 text-center text-xs px-1.5 text-black transition-all",
-                    file.fileData.method === "GET" && "bg-green-300",
-                    file.fileData.method === "POST" && "bg-blue-300",
-                    file.fileData.method === "PUT" && "bg-yellow-300",
-                    file.fileData.method === "DELETE" && "bg-red-300",
-                    file.fileData.method === "PATCH" && "bg-purple-300"
-                  )}
+              {editingFileName === file.fileName ? (
+                <form
+                  onSubmit={(e) => handleRenameSubmit(file.fileName, e)}
+                  className="flex-1 flex items-center"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  {file.fileData.method}
-                </span>
-              </button>
-              <button
-                onClick={() => onRemoveFile(file.fileName)}
-                className={clsx(
-                  "px-2",
-                  theme === "dark" ? "text-white" : "text-black-500"
-                )}
-              >
-                <Plus className="w-4 h-4 rotate-45" />
-              </button>
+                  <input
+                    type="text"
+                    value={newFileName}
+                    onChange={(e) => setNewFileName(e.target.value)}
+                    autoFocus
+                    className={clsx(
+                      "flex-1 text-xs p-1 rounded mr-2 outline-none",
+                      theme === "dark"
+                        ? "bg-gray-800 text-white"
+                        : "bg-white text-gray-800"
+                    )}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <button
+                    type="submit"
+                    className={clsx(
+                      "text-xs px-2 py-1 rounded",
+                      theme === "dark"
+                        ? "bg-gray-600 text-white"
+                        : "bg-gray-300 text-gray-800"
+                    )}
+                  >
+                    OK
+                  </button>
+                </form>
+              ) : (
+                <>
+                  <button
+                    onClick={() => onFileClick(file.fileName)}
+                    className="flex items-center w-full cursor-pointer"
+                  >
+                    <span
+                      className={clsx(
+                        "w-14 text-center text-xs px-1.5 text-black transition-all",
+                        file.fileData.method === "GET" && "bg-green-300",
+                        file.fileData.method === "POST" && "bg-blue-300",
+                        file.fileData.method === "PUT" && "bg-yellow-300",
+                        file.fileData.method === "DELETE" && "bg-red-300",
+                        file.fileData.method === "PATCH" && "bg-purple-300"
+                      )}
+                    >
+                      {file.fileData.method}
+                    </span>
+                    <span className="ml-2 text-xs truncate">
+                      {file.displayName || "Request"}
+                    </span>
+                  </button>
+                  <button
+                    onClick={(e) => handleFileDropdownToggle(file.fileName, e)}
+                    className={clsx(
+                      "px-2",
+                      theme === "dark" ? "text-white" : "text-black-500"
+                    )}
+                  >
+                    <MoreHorizontal className="w-4 h-4" />
+                  </button>
+
+                  {fileDropdownOpen === file.fileName && (
+                    <div
+                      className={clsx(
+                        "absolute right-0 top-8 mt-2 py-2 w-36 rounded-md shadow-xl z-10 border",
+                        theme === "dark"
+                          ? "bg-gray-800 border-gray-700"
+                          : "bg-white border-gray-200"
+                      )}
+                    >
+                      <button
+                        onClick={(e) =>
+                          handleRenameClick(
+                            file.fileName,
+                            file.displayName || "Request",
+                            e
+                          )
+                        }
+                        className={clsx(
+                          "px-4 py-2 text-sm w-full text-left flex items-center",
+                          theme === "dark"
+                            ? "text-gray-300 hover:bg-gray-700"
+                            : "text-gray-700 hover:bg-gray-100"
+                        )}
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Rename
+                      </button>
+                      <button
+                        onClick={() => {
+                          onRemoveFile(file.fileName);
+                          setFileDropdownOpen(null);
+                        }}
+                        className={clsx(
+                          "px-4 py-2 text-sm w-full text-left flex items-center text-red-600",
+                          theme === "dark"
+                            ? "hover:bg-gray-700"
+                            : "hover:bg-gray-100"
+                        )}
+                      >
+                        <Trash className="w-4 h-4 mr-2" />
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           ))}
         </div>
