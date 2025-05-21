@@ -27,7 +27,7 @@ export const BearerToken = ({
         onChange={(e) => onTokenChange(e.target.value)}
         value={bearerToken}
         className={clsx(
-          "w-full p-2 border rounded text-sm",
+          "w-full p-2 border rounded text-sm mb-4",
           theme === "dark"
             ? "bg-gray-700 border-gray-600 text-white"
             : "bg-white border-gray-300 text-gray-800"

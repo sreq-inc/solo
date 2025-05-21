@@ -22,7 +22,7 @@ export const TabComponent = ({ activeTab, onTabChange }: TabComponentProps) => {
         <button
           onClick={() => onTabChange("body")}
           className={clsx(
-            "py-2 px-4 text-sm font-medium",
+            "py-2 px-4 text-sm font-medium cursor-pointer",
             activeTab === "body"
               ? theme === "dark"
                 ? "border-b-2 border-purple-500 text-purple-400"
@@ -37,7 +37,7 @@ export const TabComponent = ({ activeTab, onTabChange }: TabComponentProps) => {
         <button
           onClick={() => onTabChange("auth")}
           className={clsx(
-            "ml-8 py-2 px-4 text-sm font-medium",
+            "ml-8 py-2 px-4 text-sm font-medium cursor-pointer",
             activeTab === "auth"
               ? theme === "dark"
                 ? "border-b-2 border-purple-500 text-purple-400"
