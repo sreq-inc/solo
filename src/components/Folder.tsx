@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import clsx from "clsx";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type FolderProps = {
   folder: string;
@@ -60,11 +60,34 @@ export const FolderComponent = ({
     setFileDropdownOpen(null);
   };
 
-  const handleRenameSubmit = (fileName: string, e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRenameSubmit = (fileName: string) => {
     onRenameFile(folder, fileName, newFileName);
     setEditingFileName(null);
   };
+
+  const handleInputKeyDown = (fileName: string, e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleRenameSubmit(fileName);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setEditingFileName(null);
+    }
+  };
+
+  const handleEscKey = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      setFileDropdownOpen(null);
+      setEditingFileName(null);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleEscKey);
+    return () => {
+      document.removeEventListener("keydown", handleEscKey);
+    };
+  }, []);
 
   return (
     <div className="relative">
@@ -153,8 +176,7 @@ export const FolderComponent = ({
               )}
             >
               {editingFileName === file.fileName ? (
-                <form
-                  onSubmit={(e) => handleRenameSubmit(file.fileName, e)}
+                <div
                   className="flex-1 flex items-center"
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -162,27 +184,17 @@ export const FolderComponent = ({
                     type="text"
                     value={newFileName}
                     onChange={(e) => setNewFileName(e.target.value)}
+                    onKeyDown={(e) => handleInputKeyDown(file.fileName, e)}
                     autoFocus
                     className={clsx(
-                      "flex-1 text-xs p-1 rounded mr-2 outline-none",
+                      "flex-1 text-xs p-1 rounded outline-none",
                       theme === "dark"
                         ? "bg-gray-800 text-white"
                         : "bg-white text-gray-800"
                     )}
                     onClick={(e) => e.stopPropagation()}
                   />
-                  <button
-                    type="submit"
-                    className={clsx(
-                      "text-xs px-2 py-1 rounded",
-                      theme === "dark"
-                        ? "bg-gray-600 text-white"
-                        : "bg-gray-300 text-gray-800"
-                    )}
-                  >
-                    OK
-                  </button>
-                </form>
+                </div>
               ) : (
                 <>
                   <button
@@ -201,15 +213,22 @@ export const FolderComponent = ({
                     >
                       {file.fileData.method}
                     </span>
-                    <span className="ml-2 text-xs truncate">
+                    <span
+                      className={clsx(
+                        "ml-2 text-xs truncate",
+                        theme === "dark" ? "text-gray-300" : "text-gray-700"
+                      )}
+                    >
                       {file.displayName || "Request"}
                     </span>
                   </button>
                   <button
                     onClick={(e) => handleFileDropdownToggle(file.fileName, e)}
                     className={clsx(
-                      "px-2",
-                      theme === "dark" ? "text-white" : "text-black-500"
+                      "p-0.5 cursor-pointer rounded text-sm",
+                      theme === "dark"
+                        ? "text-white bg-gray-800"
+                        : "text-black-500 bg-white"
                     )}
                   >
                     <MoreHorizontal className="w-4 h-4" />
