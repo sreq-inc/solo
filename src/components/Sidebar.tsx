@@ -74,17 +74,17 @@ export const Sidebar = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search folders..."
             className={clsx(
-              "w-full pl-10 pr-4 py-2 h-8 border rounded text-xs focus:outline-none ring-0",
+              "w-full pl-10 pr-4 py-2 h-10 border rounded text-xs focus:outline-none ring-0",
               theme === "dark"
-                ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                : "bg-white border-gray-300 text-gray-800 placeholder-gray-500"
+                ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500 focus:ring-0"
+                : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500 focus:ring-0"
             )}
           />
         </div>
         <button
           onClick={() => setShowModal(true)}
           className={clsx(
-            "h-8 w-10 rounded flex items-center justify-center cursor-pointer",
+            "h-10 w-10 rounded flex items-center justify-center cursor-pointer",
             theme === "dark"
               ? "bg-purple-700 hover:bg-purple-800 text-white"
               : "bg-purple-600 hover:bg-purple-700 text-white"

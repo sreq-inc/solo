@@ -265,7 +265,7 @@ export const ResponseView = () => {
       <div
         className={clsx(
           "border-b",
-          theme === "dark" ? "border-gray-700" : "border-gray-200"
+          theme === "dark" ? "border-gray-700" : "border-gray-950"
         )}
       >
         <TabItem

@@ -15,7 +15,7 @@ export const TabComponent = ({ activeTab, onTabChange }: TabComponentProps) => {
     <div
       className={clsx(
         "border-b",
-        theme === "dark" ? "border-gray-700" : "border-gray-200"
+        theme === "dark" ? "border-gray-700" : "border-gray-950"
       )}
     >
       <nav className="flex -mb-px">

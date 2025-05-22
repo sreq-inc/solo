@@ -75,10 +75,14 @@ export const FolderComponent = ({
     }
   };
 
+  const closeView = () => {
+    setFileDropdownOpen(null);
+    setEditingFileName(null);
+  };
+
   const handleEscKey = (e: KeyboardEvent) => {
     if (e.key === "Escape") {
-      setFileDropdownOpen(null);
-      setEditingFileName(null);
+      closeView();
     }
   };
 
@@ -252,7 +256,7 @@ export const FolderComponent = ({
                           )
                         }
                         className={clsx(
-                          "px-4 py-2 text-sm w-full text-left flex items-center",
+                          "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
                           theme === "dark"
                             ? "text-gray-300 hover:bg-gray-700"
                             : "text-gray-700 hover:bg-gray-100"
@@ -267,14 +271,33 @@ export const FolderComponent = ({
                           setFileDropdownOpen(null);
                         }}
                         className={clsx(
-                          "px-4 py-2 text-sm w-full text-left flex items-center text-red-600",
+                          "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
                           theme === "dark"
-                            ? "hover:bg-gray-700"
-                            : "hover:bg-gray-100"
+                            ? "text-gray-300 hover:bg-gray-700"
+                            : "text-gray-700 hover:bg-gray-100"
                         )}
                       >
                         <Trash className="w-4 h-4 mr-2" />
                         Delete
+                      </button>
+                      <hr
+                        className={clsx(
+                          "border-t my-2",
+                          theme === "dark"
+                            ? "border-gray-700"
+                            : "border-gray-200"
+                        )}
+                      />
+                      <button
+                        onClick={closeView}
+                        className={clsx(
+                          "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
+                          theme === "dark"
+                            ? "text-gray-300 hover:bg-gray-700"
+                            : "text-gray-700 hover:bg-gray-100"
+                        )}
+                      >
+                        (ESC) Cancel
                       </button>
                     </div>
                   )}
