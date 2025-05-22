@@ -5,38 +5,33 @@
 
 > I really don't care about your data
 
-
 [![CI](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml)
 
-## Features
+## Installation
 
+### macOS
+```bash
+curl -L -o solo.zip https://github.com/sreq-inc/Solo/releases/download/0.0.1/solo_0.0.1.zip && unzip solo.zip && open *.dmg
+```
+
+## Features
 - User-friendly interface for creating and managing HTTP requests
 - Cross-platform (Windows, macOS, Linux)
-
 ## Technologies
-
 - Tauri 2
 - Tailwind CSS
-
 ## Running the project
-
 ```bash
 # Install dependencies
 bun install
-
 # Start in development mode
 bun tauri dev
 ```
-
 ## Build
-
 ```bash
 # Build the application
 bun tauri build
 ```
-
 ## License
-
 This project is licensed under the [Business Source License 1.1 (BSL 1.1)](https://mariadb.com/bsl11/).
-
 The BSL allows free use of the software while reserving commercial rights for the original author. For complete details, see the LICENSE file in the root of the repository.
