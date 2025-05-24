@@ -61,9 +61,9 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     setIsCopied(false);
   };
 
-  const formatJson = async () => {
+  const formatJson = () => {
     try {
-      const parsed = await JSON.parse(payload);
+      const parsed = JSON.parse(payload);
       setPayload(JSON.stringify(parsed, null, 2));
     } catch (error) {
       console.error("Invalid JSON");
