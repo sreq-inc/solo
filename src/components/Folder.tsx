@@ -120,7 +120,6 @@ export const FolderComponent = ({
           <ChevronDown className="w-4 h-4" />
         </button>
       </div>
-
       {isDropdownOpen && (
         <div
           className={clsx(
@@ -169,7 +168,7 @@ export const FolderComponent = ({
             <div
               key={file.fileName}
               className={clsx(
-                "flex items-center p-1.5 justify-between rounded hover:bg-gray-300 relative",
+                "flex items-center p-1.5 rounded hover:bg-gray-300 relative",
                 theme === "dark"
                   ? "bg-gray-700 hover:bg-gray-600"
                   : "bg-gray-200 hover:bg-gray-300",
@@ -203,7 +202,7 @@ export const FolderComponent = ({
                 <>
                   <button
                     onClick={() => onFileClick(file.fileName)}
-                    className="flex items-center w-full cursor-pointer"
+                    className="flex items-center w-full cursor-pointer pr-8"
                   >
                     <span
                       className={clsx(
@@ -229,7 +228,7 @@ export const FolderComponent = ({
                   <button
                     onClick={(e) => handleFileDropdownToggle(file.fileName, e)}
                     className={clsx(
-                      "p-0.5 cursor-pointer rounded text-sm",
+                      "p-0.5 cursor-pointer rounded text-sm absolute right-1 top-1/2 transform -translate-y-1/2",
                       theme === "dark"
                         ? "text-white bg-gray-800"
                         : "text-black-500 bg-white"
@@ -237,7 +236,6 @@ export const FolderComponent = ({
                   >
                     <MoreHorizontal className="w-4 h-4" />
                   </button>
-
                   {fileDropdownOpen === file.fileName && (
                     <div
                       className={clsx(
