@@ -78,7 +78,7 @@ export const ResponseView = () => {
       case "response":
         return (
           <table className="w-full table-fixed">
-            <tbody>
+            <tbody className="text-sm">
               {loading ? (
                 <tr>
                   <td
