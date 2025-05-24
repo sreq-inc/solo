@@ -63,10 +63,13 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
 
   const formatJson = () => {
     try {
-      const parsed = JSON.parse(payload);
+      const sanitized = payload.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+
+      const parsed = JSON.parse(sanitized);
       setPayload(JSON.stringify(parsed, null, 2));
     } catch (error) {
       console.error("Invalid JSON");
+      alert("Invalid JSON format. Please correct it before formatting.");
     }
   };
 
