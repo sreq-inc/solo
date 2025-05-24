@@ -52,9 +52,9 @@ export const RequestForm = () => {
               onChange={(e) => setPayload(e.target.value)}
               placeholder='{"key": "value"}'
               className={clsx(
-                "w-full p-4 border rounded-xl h-full",
+                "w-full p-4 border rounded-xl min-h-96 focus:outline-0 ring-0",
                 theme === "dark"
-                  ? "bg-[#10121b] border-gray-600 text-white focus:outline-0"
+                  ? "bg-[#10121b] border-gray-600 text-white"
                   : "bg-white border-gray-300 text-gray-800"
               )}
             />

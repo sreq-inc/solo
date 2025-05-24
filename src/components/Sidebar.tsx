@@ -72,7 +72,7 @@ export const Sidebar = () => {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search folders..."
+            placeholder="Search"
             className={clsx(
               "w-full pl-10 pr-4 py-2 h-10 border rounded text-xs focus:outline-none ring-0",
               theme === "dark"
@@ -84,7 +84,7 @@ export const Sidebar = () => {
         <button
           onClick={() => setShowModal(true)}
           className={clsx(
-            "h-10 w-10 rounded flex items-center justify-center cursor-pointer",
+            "h-7 w-7 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0",
             theme === "dark"
               ? "bg-purple-700 hover:bg-purple-800 text-white"
               : "bg-purple-600 hover:bg-purple-700 text-white"
@@ -92,11 +92,10 @@ export const Sidebar = () => {
           title="New Folder"
           aria-label="New Folder"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-3 h-3" />
         </button>
       </div>
 
-      {/* Scrollable folder container */}
       <div className="flex-grow overflow-y-auto">
         <div className="space-y-2">
           {filteredFolders.map((folder) => (
@@ -118,7 +117,6 @@ export const Sidebar = () => {
         </div>
       </div>
 
-      {/* Modal to create new folder */}
       {showModal && (
         <div className="fixed inset-0 bg-[rgb(0,0,0)]/50 bg-opacity-50 flex items-center justify-center z-50">
           <div
@@ -153,7 +151,7 @@ export const Sidebar = () => {
               onChange={(e) => setNewFolderName(e.target.value)}
               placeholder="Folder name"
               className={clsx(
-                "w-full p-2 border rounded mb-4 text-xs",
+                "w-full p-2 border rounded mb-4 text-xs ring-0 focus:outline-none",
                 theme === "dark"
                   ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                   : "bg-white border-gray-300 text-gray-800 placeholder-gray-500"
