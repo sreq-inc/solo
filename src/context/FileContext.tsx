@@ -187,7 +187,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       files.push({
         fileName: newRequestId,
         fileData: defaultRequest,
-        displayName: "Nova Requisição",
+        displayName: "New request",
       });
       localStorage.setItem(folder, JSON.stringify(files));
 

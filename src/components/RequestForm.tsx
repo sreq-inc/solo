@@ -51,16 +51,16 @@ export const RequestForm = () => {
             </label>
             <div
               className={clsx(
-                "border rounded-xl min-h-96 overflow-hidden",
+                "border rounded-xl min-h-[492px]  max-h-[492px] overflow-hidden",
                 theme === "dark"
                   ? "bg-[#10121b] border-gray-600"
                   : "bg-white border-gray-300"
               )}
             >
-              <div className="flex">
+              <div className="flex h-full">
                 <div
                   className={clsx(
-                    "select-none border-r w-12 flex flex-col text-right text-xs",
+                    "select-none border-r w-12 flex flex-col text-right text-xs overflow-y-auto",
                     theme === "dark"
                       ? "border-gray-700 bg-gray-900 text-gray-500"
                       : "border-gray-300 bg-gray-100 text-gray-500"
@@ -80,7 +80,7 @@ export const RequestForm = () => {
                   onChange={(e) => setPayload(e.target.value)}
                   placeholder='{"key": "value"}'
                   className={clsx(
-                    "flex-1 px-4 pb-4 text-xs max-h-96 focus:outline-0 ring-0 resize-none border-0 bg-transparent leading-6",
+                    "flex-1 px-4 pb-4 text-xs focus:outline-0 ring-0 resize-none border-0 bg-transparent leading-6 overflow-y-auto",
                     theme === "dark" ? "text-white" : "text-gray-800"
                   )}
                   style={{ lineHeight: "24px" }}

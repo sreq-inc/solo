@@ -83,7 +83,7 @@ export const ResponseView = () => {
                 <tr>
                   <td
                     className={clsx(
-                      "text-right pr-4 select-none w-12 border-r sticky left-0",
+                      "text-center select-none w-12 border-r sticky left-0",
                       theme === "dark"
                         ? "text-gray-500 border-gray-700 bg-gray-700"
                         : "text-gray-500 border-gray-300 bg-gray-100"
@@ -104,7 +104,7 @@ export const ResponseView = () => {
                 <tr>
                   <td
                     className={clsx(
-                      "text-right pr-4 select-none w-12 border-r sticky left-0",
+                      "text-center select-none w-12 border-r sticky left-0",
                       theme === "dark"
                         ? "text-gray-500 border-gray-700 bg-gray-700"
                         : "text-gray-500 border-gray-300 bg-gray-100"
@@ -133,7 +133,7 @@ export const ResponseView = () => {
                   >
                     <td
                       className={clsx(
-                        "text-right pr-4 select-none w-12 border-r sticky left-0",
+                        "text-center select-none w-12 border-r sticky left-0",
                         theme === "dark"
                           ? "text-gray-500 border-gray-700 bg-gray-900"
                           : "text-gray-500 border-gray-300 bg-gray-100"
@@ -290,7 +290,7 @@ export const ResponseView = () => {
 
       <div
         className={clsx(
-          "relative max-h-[520px] overflow-auto font-mono border rounded-xl pb-8",
+          "relative max-h-[490px] overflow-auto font-mono border rounded-xl pb-8",
           theme === "dark"
             ? "bg-[#10121b] border-gray-600"
             : "bg-gray-100 border-gray-300"
