@@ -7,6 +7,7 @@ import { SelectAuth } from "./SelectAuth";
 import { UsernameAndPassword } from "./UsernameAndPassword";
 import { BearerToken } from "./BearerToken";
 import { Trash2Icon } from "lucide-react";
+import { Checkbox } from "./Checkbox";
 
 interface QueryParam {
   key: string;
@@ -225,16 +226,8 @@ export const RequestForm = () => {
               {queryParams.map((param, index) => (
                 <div
                   key={index}
-                  className="grid grid-cols-12 gap-2 items-center"
+                  className="grid grid-cols-12 gap-1 items-center"
                 >
-                  <input
-                    type="checkbox"
-                    checked={param.enabled}
-                    onChange={(e) =>
-                      updateQueryParam(index, "enabled", e.target.checked)
-                    }
-                    className="col-span-1 h-4 w-4 justify-self-center"
-                  />
                   <input
                     type="text"
                     value={param.key}
@@ -245,8 +238,8 @@ export const RequestForm = () => {
                     className={clsx(
                       "col-span-5 px-3 py-2 border rounded text-sm ring-0 focus:outline-0",
                       theme === "dark"
-                        ? "bg-gray-800 text-gray-200 border-gray-600"
-                        : "bg-white text-gray-800 border-gray-300"
+                        ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500"
+                        : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500"
                     )}
                   />
                   <input
@@ -259,18 +252,27 @@ export const RequestForm = () => {
                     className={clsx(
                       "col-span-5 px-3 py-2 border rounded text-sm ring-0 focus:outline-0",
                       theme === "dark"
-                        ? "bg-gray-800 text-gray-200 border-gray-600"
-                        : "bg-white text-gray-800 border-gray-300"
+                        ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500"
+                        : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500"
                     )}
+                  />
+                  <Checkbox
+                    checked={param.enabled}
+                    onChange={(checked) =>
+                      updateQueryParam(index, "enabled", checked)
+                    }
+                    theme={theme}
+                    className="col-span-1 justify-self-center"
                   />
                   <button
                     onClick={() => removeQueryParam(index)}
                     className={clsx(
-                      "col-span-1 h-10 w-10 flex items-center justify-center rounded hover:bg-red-100 cursor-pointer",
-                      theme === "dark"
-                        ? "text-red-400 hover:bg-red-900/20"
-                        : "text-red-600 hover:bg-red-50"
+                      "col-span-1 h-5 w-5 flex items-center justify-center rounded cursor-pointer",
+                      theme === "dark" ? "text-gray-400" : "text-gray-600"
                     )}
+                    type="button"
+                    aria-label="Remove Parameter"
+                    title="Remove Parameter"
                   >
                     <Trash2Icon className="h-4 w-4" />
                   </button>
