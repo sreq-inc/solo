@@ -2,7 +2,7 @@ import { createContext, useContext, useState, ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-type Tab = "body" | "auth";
+type Tab = "body" | "auth" | "params";
 
 type RequestContextType = {
   method: HttpMethod;

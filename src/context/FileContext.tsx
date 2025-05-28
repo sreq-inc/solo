@@ -16,7 +16,7 @@ type RequestData = {
   username?: string;
   password?: string;
   bearerToken?: string;
-  activeTab?: "body" | "auth";
+  activeTab?: "body" | "auth" | "params";
 };
 
 type StoredFile = {

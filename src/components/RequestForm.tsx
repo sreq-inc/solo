@@ -1,11 +1,18 @@
 import { TabComponent } from "./TabComponent";
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useRequest } from "../context/RequestContext";
 import clsx from "clsx";
 import { SelectAuth } from "./SelectAuth";
 import { UsernameAndPassword } from "./UsernameAndPassword";
 import { BearerToken } from "./BearerToken";
+import { Trash2Icon } from "lucide-react";
+
+interface QueryParam {
+  key: string;
+  value: string;
+  enabled: boolean;
+}
 
 export const RequestForm = () => {
   const { theme } = useTheme();
@@ -16,6 +23,7 @@ export const RequestForm = () => {
     useBasicAuth,
     activeTab,
     bearerToken,
+    url,
     setPayload,
     setUsername,
     setPassword,
@@ -23,6 +31,7 @@ export const RequestForm = () => {
     setActiveTab,
     setBearerToken,
     formatJson,
+    setUrl,
   } = useRequest();
 
   const options = [
@@ -32,8 +41,68 @@ export const RequestForm = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [selectAuth, setSelectAuth] = useState(options[0].value);
+  const [queryParams, setQueryParams] = useState<QueryParam[]>([
+    { key: "", value: "", enabled: true },
+  ]);
+  const isInternalUpdate = useRef(false);
+
+  useEffect(() => {
+    if (isInternalUpdate.current) {
+      isInternalUpdate.current = false;
+      return;
+    }
+
+    const urlParams = new URLSearchParams(url.split("?")[1]);
+    const params: QueryParam[] = [];
+    urlParams.forEach((value, key) => {
+      params.push({ key, value, enabled: true });
+    });
+    if (params.length > 0) {
+      setQueryParams(params);
+    }
+  }, [url]);
 
   const lines = payload.split("\n");
+
+  const addQueryParam = () => {
+    setQueryParams([...queryParams, { key: "", value: "", enabled: true }]);
+  };
+
+  const removeQueryParam = (index: number) => {
+    setQueryParams(queryParams.filter((_, i) => i !== index));
+  };
+
+  const updateQueryParam = (
+    index: number,
+    field: keyof QueryParam,
+    value: string | boolean
+  ) => {
+    const updated = queryParams.map((param, i) =>
+      i === index ? { ...param, [field]: value } : param
+    );
+    setQueryParams(updated);
+    updateUrlWithParams(updated);
+  };
+
+  const updateUrlWithParams = (params: QueryParam[]) => {
+    const baseUrl = url.split("?")[0];
+    const enabledParams = params.filter(
+      (p) => p.enabled && p.key.trim() && p.value.trim()
+    );
+
+    isInternalUpdate.current = true;
+
+    if (enabledParams.length === 0) {
+      setUrl(baseUrl);
+      return;
+    }
+
+    const queryString = enabledParams
+      .map((p) => `${encodeURIComponent(p.key)}=${encodeURIComponent(p.value)}`)
+      .join("&");
+
+    setUrl(`${baseUrl}?${queryString}`);
+  };
 
   return (
     <>
@@ -132,6 +201,113 @@ export const RequestForm = () => {
                 onTokenChange={setBearerToken}
               />
             )}
+          </div>
+        )}
+        {activeTab === "params" && (
+          <div>
+            <label
+              className={clsx(
+                "block text-sm mb-2",
+                theme === "dark" ? "text-gray-300" : "text-gray-700"
+              )}
+            >
+              Query Parameters
+            </label>
+
+            <div
+              className={clsx(
+                "mt-4 p-4 border rounded-xl space-y-3",
+                theme === "dark"
+                  ? "bg-[#10121b] border-gray-700"
+                  : "bg-white border-gray-300"
+              )}
+            >
+              {queryParams.map((param, index) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-12 gap-2 items-center"
+                >
+                  <input
+                    type="checkbox"
+                    checked={param.enabled}
+                    onChange={(e) =>
+                      updateQueryParam(index, "enabled", e.target.checked)
+                    }
+                    className="col-span-1 h-4 w-4 justify-self-center"
+                  />
+                  <input
+                    type="text"
+                    value={param.key}
+                    onChange={(e) =>
+                      updateQueryParam(index, "key", e.target.value)
+                    }
+                    placeholder="Key"
+                    className={clsx(
+                      "col-span-5 px-3 py-2 border rounded text-sm ring-0 focus:outline-0",
+                      theme === "dark"
+                        ? "bg-gray-800 text-gray-200 border-gray-600"
+                        : "bg-white text-gray-800 border-gray-300"
+                    )}
+                  />
+                  <input
+                    type="text"
+                    value={param.value}
+                    onChange={(e) =>
+                      updateQueryParam(index, "value", e.target.value)
+                    }
+                    placeholder="Value"
+                    className={clsx(
+                      "col-span-5 px-3 py-2 border rounded text-sm ring-0 focus:outline-0",
+                      theme === "dark"
+                        ? "bg-gray-800 text-gray-200 border-gray-600"
+                        : "bg-white text-gray-800 border-gray-300"
+                    )}
+                  />
+                  <button
+                    onClick={() => removeQueryParam(index)}
+                    className={clsx(
+                      "col-span-1 h-10 w-10 flex items-center justify-center rounded hover:bg-red-100 cursor-pointer",
+                      theme === "dark"
+                        ? "text-red-400 hover:bg-red-900/20"
+                        : "text-red-600 hover:bg-red-50"
+                    )}
+                  >
+                    <Trash2Icon className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+
+              <button
+                onClick={addQueryParam}
+                className={clsx(
+                  "mt-2 px-4 py-2 text-sm rounded border-2 cursor-pointer",
+                  theme === "dark"
+                    ? "border-gray-600 text-gray-400 hover:border-gray-500"
+                    : "border-gray-300 text-gray-600 hover:border-gray-400"
+                )}
+              >
+                + Add Parameter
+              </button>
+            </div>
+
+            <label
+              className={clsx(
+                "block text-sm mb-2 mt-6",
+                theme === "dark" ? "text-gray-300" : "text-gray-700"
+              )}
+            >
+              URL Preview
+            </label>
+            <div
+              className={clsx(
+                "mt-2 p-4 border rounded-xl",
+                theme === "dark"
+                  ? "bg-[#10121b] border-gray-700"
+                  : "bg-white border-gray-300"
+              )}
+            >
+              <p className="text-sm text-gray-500 break-all">{url}</p>
+            </div>
           </div>
         )}
       </div>
