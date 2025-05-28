@@ -52,7 +52,7 @@ export const FolderComponent = ({
   const handleRenameClick = (
     fileName: string,
     currentName: string,
-    e: React.MouseEvent
+    e: React.MouseEvent,
   ) => {
     e.stopPropagation();
     setEditingFileName(fileName);
@@ -100,7 +100,7 @@ export const FolderComponent = ({
           onClick={() => onToggleFolder(folder)}
           className={clsx(
             "w-full flex items-center p-2 text-left h-8 text-xs cursor-pointer",
-            theme === "dark" ? "text-white" : "text-gray-800"
+            theme === "dark" ? "text-white" : "text-gray-800",
           )}
         >
           {isOpen ? (
@@ -113,8 +113,8 @@ export const FolderComponent = ({
         <button
           onClick={(e) => onToggleDropdown(folder, e)}
           className={clsx(
-            "px-2 h-8",
-            theme === "dark" ? "text-white" : "text-black"
+            "px-2 h-8 cursor-pointer",
+            theme === "dark" ? "text-white" : "text-black",
           )}
         >
           <ChevronDown className="w-4 h-4" />
@@ -123,10 +123,10 @@ export const FolderComponent = ({
       {isDropdownOpen && (
         <div
           className={clsx(
-            "absolute right-0 mt-2 py-2 w-48 rounded-md shadow-xl z-10 border",
+            "absolute right-0 mt-2 py-2 w-40 rounded-md shadow-xl z-10 border",
             theme === "dark"
               ? "bg-gray-800 border-gray-700"
-              : "bg-white border-gray-200"
+              : "bg-white border-gray-200",
           )}
         >
           <div className="px-4 py-2 text-xs font-semibold text-gray-400">
@@ -135,10 +135,10 @@ export const FolderComponent = ({
           <button
             onClick={() => onCreateNewRequest(folder)}
             className={clsx(
-              "px-4 py-2 text-sm w-full text-left flex items-center",
+              "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
               theme === "dark"
                 ? "text-gray-300 hover:bg-gray-700"
-                : "text-gray-700 hover:bg-gray-100"
+                : "text-gray-700 hover:bg-gray-100",
             )}
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -147,18 +147,18 @@ export const FolderComponent = ({
           <div
             className={clsx(
               "border-t my-2",
-              theme === "dark" ? "border-gray-700" : "border-gray-200"
+              theme === "dark" ? "border-gray-700" : "border-gray-200",
             )}
           ></div>
           <button
             onClick={() => onRemoveFolder(folder)}
             className={clsx(
-              "px-4 py-2 text-sm w-full text-left flex items-center text-red-600",
-              theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"
+              "px-4 py-2 text-sm w-full text-left flex items-center text-red-600 cursor-pointer",
+              theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100",
             )}
           >
             <Trash className="w-4 h-4 mr-2" />
-            Delete Folder
+            Delete
           </button>
         </div>
       )}
@@ -175,7 +175,7 @@ export const FolderComponent = ({
                 file.fileName === currentRequestId &&
                   (theme === "dark"
                     ? "border-l-purple-800 border-l-8 transition-all"
-                    : "border-l-purple-900 border-l-8 transition-all")
+                    : "border-l-purple-900 border-l-8 transition-all"),
               )}
             >
               {editingFileName === file.fileName ? (
@@ -193,7 +193,7 @@ export const FolderComponent = ({
                       "flex-1 text-xs p-1 rounded outline-none",
                       theme === "dark"
                         ? "bg-gray-800 text-white"
-                        : "bg-white text-gray-800"
+                        : "bg-white text-gray-800",
                     )}
                     onClick={(e) => e.stopPropagation()}
                   />
@@ -211,7 +211,7 @@ export const FolderComponent = ({
                         file.fileData.method === "POST" && "bg-blue-300",
                         file.fileData.method === "PUT" && "bg-yellow-300",
                         file.fileData.method === "DELETE" && "bg-red-300",
-                        file.fileData.method === "PATCH" && "bg-purple-300"
+                        file.fileData.method === "PATCH" && "bg-purple-300",
                       )}
                     >
                       {file.fileData.method}
@@ -219,7 +219,7 @@ export const FolderComponent = ({
                     <span
                       className={clsx(
                         "ml-2 text-xs truncate",
-                        theme === "dark" ? "text-gray-300" : "text-gray-700"
+                        theme === "dark" ? "text-gray-300" : "text-gray-700",
                       )}
                     >
                       {file.displayName || "Request"}
@@ -231,7 +231,7 @@ export const FolderComponent = ({
                       "p-0.5 cursor-pointer rounded text-sm absolute right-1 top-1/2 transform -translate-y-1/2",
                       theme === "dark"
                         ? "text-white bg-gray-800"
-                        : "text-black-500 bg-white"
+                        : "text-black-500 bg-white",
                     )}
                   >
                     <MoreHorizontal className="w-4 h-4" />
@@ -242,7 +242,7 @@ export const FolderComponent = ({
                         "absolute right-0 top-8 mt-2 py-2 w-36 rounded-md shadow-xl z-10 border",
                         theme === "dark"
                           ? "bg-gray-800 border-gray-700"
-                          : "bg-white border-gray-200"
+                          : "bg-white border-gray-200",
                       )}
                     >
                       <button
@@ -250,14 +250,14 @@ export const FolderComponent = ({
                           handleRenameClick(
                             file.fileName,
                             file.displayName || "Request",
-                            e
+                            e,
                           )
                         }
                         className={clsx(
                           "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
                           theme === "dark"
                             ? "text-gray-300 hover:bg-gray-700"
-                            : "text-gray-700 hover:bg-gray-100"
+                            : "text-gray-700 hover:bg-gray-100",
                         )}
                       >
                         <Edit className="w-4 h-4 mr-2" />
@@ -272,7 +272,7 @@ export const FolderComponent = ({
                           "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
                           theme === "dark"
                             ? "text-gray-300 hover:bg-gray-700"
-                            : "text-gray-700 hover:bg-gray-100"
+                            : "text-gray-700 hover:bg-gray-100",
                         )}
                       >
                         <Trash className="w-4 h-4 mr-2" />
@@ -283,7 +283,7 @@ export const FolderComponent = ({
                           "border-t my-2",
                           theme === "dark"
                             ? "border-gray-700"
-                            : "border-gray-200"
+                            : "border-gray-200",
                         )}
                       />
                       <button
@@ -292,7 +292,7 @@ export const FolderComponent = ({
                           "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
                           theme === "dark"
                             ? "text-gray-300 hover:bg-gray-700"
-                            : "text-gray-700 hover:bg-gray-100"
+                            : "text-gray-700 hover:bg-gray-100",
                         )}
                       >
                         (ESC) Cancel
