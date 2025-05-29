@@ -13,6 +13,8 @@ export const Sidebar = () => {
     openFolders,
     dropdownOpen,
     currentRequestId,
+    showModal,
+    setShowModal,
     toggleFolder,
     toggleDropdown,
     createNewRequest,
@@ -24,7 +26,7 @@ export const Sidebar = () => {
   } = useFile();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [showModal, setShowModal] = useState(false);
+
   const [newFolderName, setNewFolderName] = useState("");
 
   const filteredFolders = Object.keys(folders).filter((folder) =>

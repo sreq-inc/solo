@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useRequest } from "../context/RequestContext";
 import clsx from "clsx";
+import { ShortcutsDisplay } from "./ShortcutsDisplay";
 
 type TabType = "response" | "headers" | "timeline";
 
@@ -101,26 +102,7 @@ export const ResponseView = () => {
                   </td>
                 </tr>
               ) : !response ? (
-                <tr>
-                  <td
-                    className={clsx(
-                      "text-center select-none w-12 border-r sticky left-0",
-                      theme === "dark"
-                        ? "text-gray-500 border-gray-700 bg-gray-700"
-                        : "text-gray-500 border-gray-300 bg-gray-100"
-                    )}
-                  >
-                    1
-                  </td>
-                  <td
-                    className={clsx(
-                      "pl-4",
-                      theme === "dark" ? "text-gray-400" : "text-gray-600"
-                    )}
-                  >
-                    No response yet
-                  </td>
-                </tr>
+                <ShortcutsDisplay />
               ) : (
                 lines.map((line, i) => (
                   <tr
@@ -290,7 +272,7 @@ export const ResponseView = () => {
 
       <div
         className={clsx(
-          "relative max-h-[490px] overflow-auto font-mono border rounded-xl pb-8",
+          "relative max-h-[600px] overflow-auto font-mono border rounded-xl pb-8",
           theme === "dark"
             ? "bg-[#10121b] border-gray-600"
             : "bg-gray-100 border-gray-300"
