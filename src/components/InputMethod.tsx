@@ -26,10 +26,10 @@ export const InputMethod = () => {
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://api.example.com/endpoint"
           className={clsx(
-            "w-full h-10 p-2 border rounded outline-none",
+            "w-full h-10 p-2 border rounded outline-none focus:ring-0",
             theme === "dark"
-              ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500 focus:ring-0"
-              : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500 focus:ring-0"
+              ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500"
+              : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500"
           )}
         />
       </div>

@@ -5,7 +5,7 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { useRequest } from "./RequestContext";
+import { useRequest, QueryParam } from "./RequestContext";
 
 type RequestData = {
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -16,7 +16,8 @@ type RequestData = {
   username?: string;
   password?: string;
   bearerToken?: string;
-  activeTab?: "body" | "auth";
+  activeTab?: "body" | "auth" | "params";
+  queryParams?: QueryParam[];
 };
 
 type StoredFile = {
@@ -59,6 +60,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     activeTab,
     response,
     bearerToken,
+    queryParams,
     resetFields,
     setMethod,
     setUrl,
@@ -68,6 +70,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     setUseBasicAuth,
     setActiveTab,
     setBearerToken,
+    setQueryParams,
   } = useRequest();
 
   const [folders, setFolders] = useState<FolderStructure>({});
@@ -97,6 +100,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     password,
     activeTab,
     bearerToken,
+    queryParams,
   ]);
 
   const handleClickOutside = () => {
@@ -174,6 +178,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       password: "",
       activeTab: "body" as const,
       bearerToken: "",
+      queryParams: [{ key: "", value: "", enabled: true }],
     };
 
     resetFields();
@@ -204,6 +209,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       setPassword(defaultRequest.password);
       setActiveTab(defaultRequest.activeTab);
       setBearerToken(defaultRequest.bearerToken);
+      setQueryParams(defaultRequest.queryParams);
     } catch (error) {
       console.error("Erro ao criar nova requisição:", error);
     }
@@ -269,6 +275,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
           password,
           activeTab,
           bearerToken,
+          queryParams,
         },
         currentRequestId,
         currentDisplayName
@@ -396,6 +403,9 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       setPassword(data.password || "");
       setActiveTab(data.activeTab || "body");
       setBearerToken(data.bearerToken || "");
+      setQueryParams(
+        data.queryParams || [{ key: "", value: "", enabled: true }]
+      );
       setCurrentRequestId(fileName);
     } else {
       alert("File not found.");

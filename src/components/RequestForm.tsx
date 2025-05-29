@@ -1,11 +1,13 @@
 import { TabComponent } from "./TabComponent";
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
-import { useRequest } from "../context/RequestContext";
+import { useRequest, QueryParam } from "../context/RequestContext";
 import clsx from "clsx";
 import { SelectAuth } from "./SelectAuth";
 import { UsernameAndPassword } from "./UsernameAndPassword";
 import { BearerToken } from "./BearerToken";
+import { Trash2Icon, Copy, Check } from "lucide-react";
+import { Checkbox } from "./Checkbox";
 
 export const RequestForm = () => {
   const { theme } = useTheme();
@@ -16,6 +18,8 @@ export const RequestForm = () => {
     useBasicAuth,
     activeTab,
     bearerToken,
+    url,
+    queryParams,
     setPayload,
     setUsername,
     setPassword,
@@ -23,6 +27,8 @@ export const RequestForm = () => {
     setActiveTab,
     setBearerToken,
     formatJson,
+    setUrl,
+    setQueryParams,
   } = useRequest();
 
   const options = [
@@ -32,8 +38,87 @@ export const RequestForm = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [selectAuth, setSelectAuth] = useState(options[0].value);
+  const [urlCopied, setUrlCopied] = useState(false);
+  const isInternalUpdate = useRef(false);
+  const isLoadingParams = useRef(false);
+
+  useEffect(() => {
+    if (isInternalUpdate.current || isLoadingParams.current) {
+      isInternalUpdate.current = false;
+      return;
+    }
+
+    const urlObj = new URL(url || "https://example.com");
+    const urlParams = new URLSearchParams(urlObj.search);
+    const params: QueryParam[] = [];
+
+    urlParams.forEach((value, key) => {
+      params.push({ key, value, enabled: true });
+    });
+
+    if (params.length === 0) {
+      params.push({ key: "", value: "", enabled: true });
+    }
+
+    const paramsChanged =
+      JSON.stringify(params) !== JSON.stringify(queryParams);
+
+    if (paramsChanged && url.includes("?")) {
+      isLoadingParams.current = true;
+      setQueryParams(params);
+      setTimeout(() => {
+        isLoadingParams.current = false;
+      }, 100);
+    }
+  }, [url]);
 
   const lines = payload.split("\n");
+
+  const addQueryParam = () => {
+    setQueryParams([...queryParams, { key: "", value: "", enabled: true }]);
+  };
+
+  const removeQueryParam = (index: number) => {
+    const newParams = queryParams.filter((_, i) => i !== index);
+    if (newParams.length === 0) {
+      setQueryParams([{ key: "", value: "", enabled: true }]);
+    } else {
+      setQueryParams(newParams);
+    }
+    updateUrlWithParams(newParams);
+  };
+
+  const updateQueryParam = (
+    index: number,
+    field: keyof QueryParam,
+    value: string | boolean
+  ) => {
+    const updated = queryParams.map((param, i) =>
+      i === index ? { ...param, [field]: value } : param
+    );
+    setQueryParams(updated);
+    updateUrlWithParams(updated);
+  };
+
+  const updateUrlWithParams = (params: QueryParam[]) => {
+    const baseUrl = url.split("?")[0] || "";
+    const enabledParams = params.filter(
+      (p) => p.enabled && p.key.trim() && p.value.trim()
+    );
+
+    isInternalUpdate.current = true;
+
+    if (enabledParams.length === 0) {
+      setUrl(baseUrl);
+      return;
+    }
+
+    const queryString = enabledParams
+      .map((p) => `${encodeURIComponent(p.key)}=${encodeURIComponent(p.value)}`)
+      .join("&");
+
+    setUrl(`${baseUrl}?${queryString}`);
+  };
 
   return (
     <>
@@ -132,6 +217,131 @@ export const RequestForm = () => {
                 onTokenChange={setBearerToken}
               />
             )}
+          </div>
+        )}
+        {activeTab === "params" && (
+          <div>
+            <label
+              className={clsx(
+                "block text-sm mb-2",
+                theme === "dark" ? "text-gray-300" : "text-gray-700"
+              )}
+            >
+              Query Parameters
+            </label>
+
+            <div
+              className={clsx(
+                "mt-4 p-4 border rounded-xl space-y-2",
+                theme === "dark"
+                  ? "bg-[#10121b] border-gray-700"
+                  : "bg-white border-gray-300"
+              )}
+            >
+              {queryParams.map((param, index) => (
+                <div key={index} className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    value={param.key}
+                    onChange={(e) =>
+                      updateQueryParam(index, "key", e.target.value)
+                    }
+                    placeholder="Key"
+                    className={clsx(
+                      "flex-1 px-2 py-1 border rounded text-xs ring-0 focus:outline-0",
+                      theme === "dark"
+                        ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500"
+                        : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500"
+                    )}
+                  />
+                  <input
+                    type="text"
+                    value={param.value}
+                    onChange={(e) =>
+                      updateQueryParam(index, "value", e.target.value)
+                    }
+                    placeholder="Value"
+                    className={clsx(
+                      "flex-1 px-2 py-1 border rounded text-xs ring-0 focus:outline-0",
+                      theme === "dark"
+                        ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500"
+                        : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500"
+                    )}
+                  />
+                  <Checkbox
+                    checked={param.enabled}
+                    onChange={(checked) =>
+                      updateQueryParam(index, "enabled", checked)
+                    }
+                    theme={theme}
+                    className="flex-shrink-0"
+                  />
+                  <button
+                    onClick={() => removeQueryParam(index)}
+                    className={clsx(
+                      "h-4 w-4 flex items-center justify-center rounded cursor-pointer flex-shrink-0",
+                      theme === "dark" ? "text-gray-400" : "text-gray-600"
+                    )}
+                    type="button"
+                    aria-label="Remove Parameter"
+                    title="Remove Parameter"
+                  >
+                    <Trash2Icon className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+
+              <button
+                onClick={addQueryParam}
+                className={clsx(
+                  "mt-2 px-3 py-1 text-xs rounded border-2 cursor-pointer",
+                  theme === "dark"
+                    ? "border-gray-600 text-gray-400 hover:border-gray-500"
+                    : "border-gray-300 text-gray-600 hover:border-gray-400"
+                )}
+              >
+                + Add Parameter
+              </button>
+            </div>
+
+            <label
+              className={clsx(
+                "block text-sm mb-2 mt-6",
+                theme === "dark" ? "text-gray-300" : "text-gray-700"
+              )}
+            >
+              URL Preview
+            </label>
+            <div
+              className={clsx(
+                "mt-2 p-4 border rounded-xl relative group",
+                theme === "dark"
+                  ? "bg-[#10121b] border-gray-700"
+                  : "bg-white border-gray-300"
+              )}
+            >
+              <p className="text-sm text-gray-500 break-all pr-8">{url}</p>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(url);
+                  setUrlCopied(true);
+                  setTimeout(() => setUrlCopied(false), 2000);
+                }}
+                className={clsx(
+                  "absolute top-3 right-3 p-1 rounded transition-opacity cursor-pointer",
+                  theme === "dark"
+                    ? "hover:bg-gray-700 text-gray-400"
+                    : "hover:bg-gray-200 text-gray-600"
+                )}
+                title="Copy URL"
+              >
+                {urlCopied ? (
+                  <Check className="w-4 h-4 text-green-500" />
+                ) : (
+                  <Copy className="w-4 h-4" />
+                )}
+              </button>
+            </div>
           </div>
         )}
       </div>

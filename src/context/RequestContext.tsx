@@ -2,7 +2,13 @@ import { createContext, useContext, useState, ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-type Tab = "body" | "auth";
+type Tab = "body" | "auth" | "params";
+
+export type QueryParam = {
+  key: string;
+  value: string;
+  enabled: boolean;
+};
 
 type RequestContextType = {
   method: HttpMethod;
@@ -13,6 +19,7 @@ type RequestContextType = {
   useBasicAuth: boolean;
   activeTab: Tab;
   bearerToken: string;
+  queryParams: QueryParam[];
   loading: boolean;
   response: any;
   error: string | null;
@@ -25,6 +32,7 @@ type RequestContextType = {
   setUseBasicAuth: (useBasicAuth: boolean) => void;
   setActiveTab: (tab: Tab) => void;
   setBearerToken: (token: string) => void;
+  setQueryParams: (params: QueryParam[]) => void;
   handleRequest: () => Promise<void>;
   resetFields: () => void;
   formatJson: () => void;
@@ -42,6 +50,9 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
   const [useBasicAuth, setUseBasicAuth] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("body");
   const [bearerToken, setBearerToken] = useState("");
+  const [queryParams, setQueryParams] = useState<QueryParam[]>([
+    { key: "", value: "", enabled: true },
+  ]);
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -59,12 +70,12 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     setError(null);
     setBearerToken("");
     setIsCopied(false);
+    setQueryParams([{ key: "", value: "", enabled: true }]);
   };
 
   const formatJson = () => {
     try {
-      const sanitized = payload.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
-
+      const sanitized = payload.replace(/[""]/g, '"').replace(/['']/g, "'");
       const parsed = JSON.parse(sanitized);
       setPayload(JSON.stringify(parsed, null, 2));
     } catch (error) {
@@ -115,6 +126,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     }
   };
+
   const handleCopyResponse = () => {
     navigator.clipboard.writeText(JSON.stringify(response, null, 2));
     setIsCopied(true);
@@ -131,6 +143,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
         useBasicAuth,
         activeTab,
         bearerToken,
+        queryParams,
         loading,
         response,
         error,
@@ -143,6 +156,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
         setUseBasicAuth,
         setActiveTab,
         setBearerToken,
+        setQueryParams,
         handleRequest,
         resetFields,
         formatJson,
