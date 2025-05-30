@@ -274,8 +274,12 @@ export const ResponseView = () => {
         className={clsx(
           "relative max-h-[600px] overflow-auto font-mono border rounded-xl pb-8",
           theme === "dark"
-            ? "bg-[#10121b] border-gray-600"
-            : "bg-gray-100 border-gray-300"
+            ? response
+              ? "bg-[#10121b] border-gray-600"
+              : "bg-transparent border-transparent"
+            : response
+            ? "bg-gray-100 border-gray-300"
+            : "bg-transparent border-transparent"
         )}
       >
         {renderContent()}

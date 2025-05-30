@@ -2,11 +2,14 @@ import { useTheme } from "../context/ThemeContext";
 import { useFile } from "../context/FileContext";
 import { FolderComponent } from "./Folder";
 import { ThemeToggle } from "./ThemeToggle";
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { Search, Plus, X } from "lucide-react";
 import clsx from "clsx";
 
 export const Sidebar = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [newFolderName, setNewFolderName] = useState("");
+
   const { theme } = useTheme();
   const {
     folders,
@@ -25,9 +28,37 @@ export const Sidebar = () => {
     renameFile,
   } = useFile();
 
-  const [searchTerm, setSearchTerm] = useState("");
+  useLayoutEffect(() => {
+    if (showModal) {
+      const handleEscape = (event: KeyboardEvent) => {
+        if (event.key === "Escape") {
+          setShowModal(false);
+        }
+      };
+      window.addEventListener("keydown", handleEscape);
 
-  const [newFolderName, setNewFolderName] = useState("");
+      return () => {
+        window.removeEventListener("keydown", handleEscape);
+      };
+    }
+  }, [showModal, setShowModal]);
+
+  useLayoutEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const modal = document.querySelector(".modal");
+      if (modal && !modal.contains(event.target as Node)) {
+        setShowModal(false);
+      }
+    };
+
+    if (showModal) {
+      window.addEventListener("click", handleClickOutside);
+    }
+
+    return () => {
+      window.removeEventListener("click", handleClickOutside);
+    };
+  }, [showModal, setShowModal]);
 
   const filteredFolders = Object.keys(folders).filter((folder) =>
     folder.toLowerCase().includes(searchTerm.toLowerCase())

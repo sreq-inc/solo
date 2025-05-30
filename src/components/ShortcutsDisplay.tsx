@@ -59,7 +59,7 @@ export const ShortcutsDisplay = () => {
           theme === "dark" ? "text-gray-500" : "text-gray-600"
         )}
       >
-        <p className="italic">
+        <p className="italic text-center">
           Tip: Press any shortcut to quickly perform actions
         </p>
       </div>
