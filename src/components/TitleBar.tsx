@@ -24,7 +24,7 @@ export default function Titlebar() {
   return (
     <div
       className={clsx(
-        "w-full h-8 flex items-center justify-between px-3",
+        "w-full h-8 flex items-center justify-between px-3 cursor-pointer",
         appBg,
         textColor
       )}
