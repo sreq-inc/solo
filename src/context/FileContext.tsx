@@ -36,6 +36,8 @@ type FileContextType = {
   dropdownOpen: string | null;
   currentFolder: string;
   currentRequestId: string | null;
+  showModal: boolean;
+  setShowModal: (show: boolean) => void;
   createFolder: (folderName: string) => void;
   toggleFolder: (folder: string) => void;
   toggleDropdown: (folder: string, e: React.MouseEvent) => void;
@@ -77,6 +79,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
   const [openFolders, setOpenFolders] = useState<{ [key: string]: boolean }>(
     {}
   );
+  const [showModal, setShowModal] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [currentFolder, setCurrentFolder] = useState<string>("");
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
@@ -420,6 +423,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         dropdownOpen,
         currentFolder,
         currentRequestId,
+        showModal,
         createFolder,
         toggleFolder,
         toggleDropdown,
@@ -429,6 +433,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         handleRemoveFile,
         saveCurrentRequest,
         renameFile,
+        setShowModal,
       }}
     >
       {children}

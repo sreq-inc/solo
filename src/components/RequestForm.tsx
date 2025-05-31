@@ -314,7 +314,7 @@ export const RequestForm = () => {
             </label>
             <div
               className={clsx(
-                "mt-2 p-4 border rounded-xl relative group",
+                "mt-2 p-4 border rounded-xl h-28 relative group",
                 theme === "dark"
                   ? "bg-[#10121b] border-gray-700"
                   : "bg-white border-gray-300"
