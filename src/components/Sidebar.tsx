@@ -5,6 +5,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { useLayoutEffect, useState } from "react";
 import { Search, Plus, X, Github } from "lucide-react";
 import { open } from "@tauri-apps/plugin-shell";
+import { LatestRelease } from "./LatestRelease";
 
 import clsx from "clsx";
 
@@ -63,7 +64,7 @@ export const Sidebar = () => {
   }, [showModal, setShowModal]);
 
   const filteredFolders = Object.keys(folders).filter((folder) =>
-    folder.toLowerCase().includes(searchTerm.toLowerCase())
+    folder.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleCreateFolder = () => {
@@ -78,14 +79,14 @@ export const Sidebar = () => {
     <div
       className={clsx(
         "p-4 flex flex-col h-full col-span-2 transition-colors duration-200",
-        theme === "dark" ? "bg-[#10121b]" : "bg-gray-100"
+        theme === "dark" ? "bg-[#10121b]" : "bg-gray-100",
       )}
     >
       <div className="flex justify-between items-center mb-4">
         <h2
           className={clsx(
             "text-xl font-bold flex flex-row items-center justify-start gap-2",
-            theme === "dark" ? "text-white" : "text-gray-800"
+            theme === "dark" ? "text-white" : "text-gray-800",
           )}
         >
           <img src="/solo.png" className="w-8 h-8" /> <div>Solo</div>
@@ -99,7 +100,7 @@ export const Sidebar = () => {
             <Search
               className={clsx(
                 "w-4 h-4",
-                theme === "dark" ? "text-gray-400" : "text-gray-500"
+                theme === "dark" ? "text-gray-400" : "text-gray-500",
               )}
             />
           </div>
@@ -112,7 +113,7 @@ export const Sidebar = () => {
               "w-full pl-10 pr-4 py-2 h-10 border rounded text-xs focus:outline-none ring-0",
               theme === "dark"
                 ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500 focus:ring-0"
-                : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500 focus:ring-0"
+                : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500 focus:ring-0",
             )}
           />
         </div>
@@ -122,7 +123,7 @@ export const Sidebar = () => {
             "h-7 w-7 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0",
             theme === "dark"
               ? "bg-purple-700 hover:bg-purple-800 text-white"
-              : "bg-purple-600 hover:bg-purple-700 text-white"
+              : "bg-purple-600 hover:bg-purple-700 text-white",
           )}
           title="New Folder"
           aria-label="New Folder"
@@ -152,27 +153,36 @@ export const Sidebar = () => {
         </div>
       </div>
 
-      <div>
+      <div className="flex flex-row items-center justify-between mt-4">
         <button
-          className="flex cursor-pointer items-center justify-center mt-4 text-gray-500 hover:text-gray-700"
+          className="flex cursor-pointer items-center justify-center text-gray-500 hover:text-gray-700"
           onClick={async () => await open("https://github.com/sreq-inc/Solo")}
         >
           <Github className="h-4 w-4" />
         </button>
+
+        <LatestRelease
+          owner="sreq-inc"
+          repo="Solo"
+          className={clsx(
+            "text-xs font-medium",
+            theme === "dark" ? "text-gray-500" : "text-gray-900",
+          )}
+        />
       </div>
       {showModal && (
         <div className="fixed inset-0 bg-[rgb(0,0,0)]/50 bg-opacity-50 flex items-center justify-center z-50">
           <div
             className={clsx(
               "p-6 rounded-lg shadow-lg max-w-md w-full",
-              theme === "dark" ? "bg-gray-800" : "bg-white"
+              theme === "dark" ? "bg-gray-800" : "bg-white",
             )}
           >
             <div className="flex justify-between items-center mb-4">
               <h3
                 className={clsx(
                   "text-lg font-medium",
-                  theme === "dark" ? "text-white" : "text-gray-900"
+                  theme === "dark" ? "text-white" : "text-gray-900",
                 )}
               >
                 Create New Folder
@@ -181,7 +191,7 @@ export const Sidebar = () => {
                 onClick={() => setShowModal(false)}
                 className={clsx(
                   "cursor-pointer",
-                  theme === "dark" ? "text-gray-300" : "text-gray-500"
+                  theme === "dark" ? "text-gray-300" : "text-gray-500",
                 )}
               >
                 <X className="w-5 h-5" />
@@ -197,7 +207,7 @@ export const Sidebar = () => {
                 "w-full p-2 border rounded mb-4 text-xs ring-0 focus:outline-none",
                 theme === "dark"
                   ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                  : "bg-white border-gray-300 text-gray-800 placeholder-gray-500"
+                  : "bg-white border-gray-300 text-gray-800 placeholder-gray-500",
               )}
               autoFocus
             />
@@ -209,7 +219,7 @@ export const Sidebar = () => {
                   "px-4 py-2 rounded text-xs cursor-pointer",
                   theme === "dark"
                     ? "bg-gray-700 text-gray-300"
-                    : "bg-gray-200 text-gray-800"
+                    : "bg-gray-200 text-gray-800",
                 )}
               >
                 Cancel
@@ -221,7 +231,7 @@ export const Sidebar = () => {
                   theme === "dark"
                     ? "bg-purple-700 hover:bg-purple-800"
                     : "bg-purple-600 hover:bg-purple-700",
-                  !newFolderName.trim() && "opacity-50 cursor-not-allowed"
+                  !newFolderName.trim() && "opacity-50 cursor-not-allowed",
                 )}
                 disabled={!newFolderName.trim()}
               >
