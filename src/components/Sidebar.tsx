@@ -6,13 +6,13 @@ import { useLayoutEffect, useState } from "react";
 import { Search, Plus, X, Github } from "lucide-react";
 import { open } from "@tauri-apps/plugin-shell";
 import { LatestRelease } from "./LatestRelease";
-
 import clsx from "clsx";
 
 export const Sidebar = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [newFolderName, setNewFolderName] = useState("");
-
+  const [sidebarWidth, setSidebarWidth] = useState(320);
+  const [isResizing, setIsResizing] = useState(false);
   const { theme } = useTheme();
   const {
     folders,
@@ -39,7 +39,6 @@ export const Sidebar = () => {
         }
       };
       window.addEventListener("keydown", handleEscape);
-
       return () => {
         window.removeEventListener("keydown", handleEscape);
       };
@@ -53,18 +52,41 @@ export const Sidebar = () => {
         setShowModal(false);
       }
     };
-
     if (showModal) {
       window.addEventListener("click", handleClickOutside);
     }
-
     return () => {
       window.removeEventListener("click", handleClickOutside);
     };
   }, [showModal, setShowModal]);
 
+  useLayoutEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+
+      const newWidth = e.clientX;
+      if (newWidth >= 240 && newWidth <= 600) {
+        setSidebarWidth(newWidth);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isResizing]);
+
   const filteredFolders = Object.keys(folders).filter((folder) =>
-    folder.toLowerCase().includes(searchTerm.toLowerCase()),
+    folder.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleCreateFolder = () => {
@@ -75,172 +97,180 @@ export const Sidebar = () => {
     }
   };
 
-  return (
-    <div
-      className={clsx(
-        "p-4 flex flex-col h-full col-span-2 transition-colors duration-200",
-        theme === "dark" ? "bg-[#10121b]" : "bg-gray-100",
-      )}
-    >
-      <div className="flex justify-between items-center mb-4">
-        <h2
-          className={clsx(
-            "text-xl font-bold flex flex-row items-center justify-start gap-2",
-            theme === "dark" ? "text-white" : "text-gray-800",
-          )}
-        >
-          <img src="/solo.png" className="w-8 h-8" /> <div>Solo</div>
-        </h2>
-        <ThemeToggle />
-      </div>
+  const handleResizeStart = () => {
+    setIsResizing(true);
+  };
 
-      <div className="flex items-center gap-2 mb-4">
-        <div className="relative flex-grow">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search
+  return (
+    <div className="flex">
+      <div
+        className={clsx(
+          "p-4 flex flex-col h-full transition-colors duration-200 relative",
+          theme === "dark" ? "bg-[#10121b]" : "bg-gray-100"
+        )}
+        style={{ width: `${sidebarWidth}px` }}
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h2
+            className={clsx(
+              "text-xl font-bold flex flex-row items-center justify-start gap-2",
+              theme === "dark" ? "text-white" : "text-gray-800"
+            )}
+          >
+            <img src="/solo.png" className="w-8 h-8" /> <div>Solo</div>
+          </h2>
+          <ThemeToggle />
+        </div>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="relative flex-grow">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search
+                className={clsx(
+                  "w-4 h-4",
+                  theme === "dark" ? "text-gray-400" : "text-gray-500"
+                )}
+              />
+            </div>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search"
               className={clsx(
-                "w-4 h-4",
-                theme === "dark" ? "text-gray-400" : "text-gray-500",
+                "w-full pl-10 pr-4 py-2 h-10 border rounded text-xs focus:outline-none ring-0",
+                theme === "dark"
+                  ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500 focus:ring-0"
+                  : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500 focus:ring-0"
               )}
             />
           </div>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search"
+          <button
+            onClick={() => setShowModal(true)}
             className={clsx(
-              "w-full pl-10 pr-4 py-2 h-10 border rounded text-xs focus:outline-none ring-0",
+              "h-7 w-7 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0",
               theme === "dark"
-                ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500 focus:ring-0"
-                : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500 focus:ring-0",
+                ? "bg-purple-700 hover:bg-purple-800 text-white"
+                : "bg-purple-600 hover:bg-purple-700 text-white"
+            )}
+            title="New Folder"
+            aria-label="New Folder"
+          >
+            <Plus className="w-3 h-3" />
+          </button>
+        </div>
+        <div className="flex-grow overflow-y-auto relative z-10">
+          <div className="space-y-2">
+            {filteredFolders.map((folder) => (
+              <FolderComponent
+                key={folder}
+                folder={folder}
+                isOpen={!!openFolders[folder]}
+                isDropdownOpen={dropdownOpen === folder}
+                onToggleFolder={toggleFolder}
+                onToggleDropdown={toggleDropdown}
+                onCreateNewRequest={createNewRequest}
+                onRemoveFolder={removeFolder}
+                onFileClick={handleFileClick}
+                onRemoveFile={handleRemoveFile}
+                onRenameFile={renameFile}
+                currentRequestId={currentRequestId}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-row items-center justify-between mt-4">
+          <button
+            className="flex cursor-pointer items-center justify-center text-gray-500 hover:text-gray-700"
+            onClick={async () => await open("https://github.com/sreq-inc/Solo")}
+          >
+            <Github className="h-4 w-4" />
+          </button>
+          <LatestRelease
+            owner="sreq-inc"
+            repo="Solo"
+            className={clsx(
+              "text-xs font-medium",
+              theme === "dark" ? "text-gray-500" : "text-gray-900"
             )}
           />
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className={clsx(
-            "h-7 w-7 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0",
-            theme === "dark"
-              ? "bg-purple-700 hover:bg-purple-800 text-white"
-              : "bg-purple-600 hover:bg-purple-700 text-white",
-          )}
-          title="New Folder"
-          aria-label="New Folder"
-        >
-          <Plus className="w-3 h-3" />
-        </button>
-      </div>
-
-      <div className="flex-grow overflow-y-auto">
-        <div className="space-y-2">
-          {filteredFolders.map((folder) => (
-            <FolderComponent
-              key={folder}
-              folder={folder}
-              isOpen={!!openFolders[folder]}
-              isDropdownOpen={dropdownOpen === folder}
-              onToggleFolder={toggleFolder}
-              onToggleDropdown={toggleDropdown}
-              onCreateNewRequest={createNewRequest}
-              onRemoveFolder={removeFolder}
-              onFileClick={handleFileClick}
-              onRemoveFile={handleRemoveFile}
-              onRenameFile={renameFile}
-              currentRequestId={currentRequestId}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className="flex flex-row items-center justify-between mt-4">
-        <button
-          className="flex cursor-pointer items-center justify-center text-gray-500 hover:text-gray-700"
-          onClick={async () => await open("https://github.com/sreq-inc/Solo")}
-        >
-          <Github className="h-4 w-4" />
-        </button>
-
-        <LatestRelease
-          owner="sreq-inc"
-          repo="Solo"
-          className={clsx(
-            "text-xs font-medium",
-            theme === "dark" ? "text-gray-500" : "text-gray-900",
-          )}
-        />
-      </div>
-      {showModal && (
-        <div className="fixed inset-0 bg-[rgb(0,0,0)]/50 bg-opacity-50 flex items-center justify-center z-50">
-          <div
-            className={clsx(
-              "p-6 rounded-lg shadow-lg max-w-md w-full",
-              theme === "dark" ? "bg-gray-800" : "bg-white",
-            )}
-          >
-            <div className="flex justify-between items-center mb-4">
-              <h3
-                className={clsx(
-                  "text-lg font-medium",
-                  theme === "dark" ? "text-white" : "text-gray-900",
-                )}
-              >
-                Create New Folder
-              </h3>
-              <button
-                onClick={() => setShowModal(false)}
-                className={clsx(
-                  "cursor-pointer",
-                  theme === "dark" ? "text-gray-300" : "text-gray-500",
-                )}
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <input
-              type="text"
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              placeholder="Folder name"
+        {showModal && (
+          <div className="fixed inset-0 bg-[rgb(0,0,0)]/50 bg-opacity-50 flex items-center justify-center z-50">
+            <div
               className={clsx(
-                "w-full p-2 border rounded mb-4 text-xs ring-0 focus:outline-none",
-                theme === "dark"
-                  ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                  : "bg-white border-gray-300 text-gray-800 placeholder-gray-500",
+                "p-6 rounded-lg shadow-lg max-w-md w-full",
+                theme === "dark" ? "bg-gray-800" : "bg-white"
               )}
-              autoFocus
-            />
-
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setShowModal(false)}
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h3
+                  className={clsx(
+                    "text-lg font-medium",
+                    theme === "dark" ? "text-white" : "text-gray-900"
+                  )}
+                >
+                  Create New Folder
+                </h3>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className={clsx(
+                    "cursor-pointer",
+                    theme === "dark" ? "text-gray-300" : "text-gray-500"
+                  )}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <input
+                type="text"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                placeholder="Folder name"
                 className={clsx(
-                  "px-4 py-2 rounded text-xs cursor-pointer",
+                  "w-full p-2 border rounded mb-4 text-xs ring-0 focus:outline-none",
                   theme === "dark"
-                    ? "bg-gray-700 text-gray-300"
-                    : "bg-gray-200 text-gray-800",
+                    ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    : "bg-white border-gray-300 text-gray-800 placeholder-gray-500"
                 )}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateFolder}
-                className={clsx(
-                  "px-4 py-2 rounded text-white text-xs cursor-pointer",
-                  theme === "dark"
-                    ? "bg-purple-700 hover:bg-purple-800"
-                    : "bg-purple-600 hover:bg-purple-700",
-                  !newFolderName.trim() && "opacity-50 cursor-not-allowed",
-                )}
-                disabled={!newFolderName.trim()}
-              >
-                Create
-              </button>
+                autoFocus
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className={clsx(
+                    "px-4 py-2 rounded text-xs cursor-pointer",
+                    theme === "dark"
+                      ? "bg-gray-700 text-gray-300"
+                      : "bg-gray-200 text-gray-800"
+                  )}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateFolder}
+                  className={clsx(
+                    "px-4 py-2 rounded text-white text-xs cursor-pointer",
+                    theme === "dark"
+                      ? "bg-purple-700 hover:bg-purple-800"
+                      : "bg-purple-600 hover:bg-purple-700",
+                    !newFolderName.trim() && "opacity-50 cursor-not-allowed"
+                  )}
+                  disabled={!newFolderName.trim()}
+                >
+                  Create
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+
+      <div
+        className="w-1 cursor-col-resize relative"
+        onMouseDown={handleResizeStart}
+      >
+        <div className="absolute inset-0 w-0.5 -ml-0.5" />
+      </div>
     </div>
   );
 };

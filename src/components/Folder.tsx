@@ -12,7 +12,6 @@ import { useTheme } from "../context/ThemeContext";
 import clsx from "clsx";
 import { useState, useEffect } from "react";
 import { generateCurl } from "../utils/curlGenerator";
-import { CopyIcon } from "./CopyIcon";
 
 type FolderProps = {
   folder: string;
@@ -126,7 +125,7 @@ export const FolderComponent = ({
       {isDropdownOpen && (
         <div
           className={clsx(
-            "absolute right-0 mt-2 py-2 w-40 rounded-md shadow-xl z-10 border",
+            "absolute right-0 mt-2 py-2 w-40 rounded-md shadow-xl border z-50",
             theme === "dark"
               ? "bg-gray-800 border-gray-700"
               : "bg-white border-gray-200"
@@ -166,7 +165,7 @@ export const FolderComponent = ({
         </div>
       )}
       {isOpen && (
-        <div className="mt-2 space-y-2 ml-4">
+        <div className="mt-2 space-y-2 ml-4 relative z-40">
           {files.map((file: any) => (
             <div
               key={file.fileName}
@@ -246,7 +245,7 @@ export const FolderComponent = ({
                   {fileDropdownOpen === file.fileName && (
                     <div
                       className={clsx(
-                        "absolute right-0 top-8 mt-2 py-2 w-36 rounded-md shadow-xl z-10 border",
+                        "absolute right-0 top-8 mt-2 py-2 w-48 rounded-md shadow-xl border z-40",
                         theme === "dark"
                           ? "bg-gray-800 border-gray-700"
                           : "bg-white border-gray-200"
