@@ -3,7 +3,9 @@ import { useFile } from "../context/FileContext";
 import { FolderComponent } from "./Folder";
 import { ThemeToggle } from "./ThemeToggle";
 import { useLayoutEffect, useState } from "react";
-import { Search, Plus, X } from "lucide-react";
+import { Search, Plus, X, Github } from "lucide-react";
+import { open } from "@tauri-apps/plugin-shell";
+
 import clsx from "clsx";
 
 export const Sidebar = () => {
@@ -150,6 +152,14 @@ export const Sidebar = () => {
         </div>
       </div>
 
+      <div>
+        <button
+          className="flex cursor-pointer items-center justify-center mt-4 text-gray-500 hover:text-gray-700"
+          onClick={async () => await open("https://github.com/sreq-inc/Solo")}
+        >
+          <Github className="h-4 w-4" />
+        </button>
+      </div>
       {showModal && (
         <div className="fixed inset-0 bg-[rgb(0,0,0)]/50 bg-opacity-50 flex items-center justify-center z-50">
           <div

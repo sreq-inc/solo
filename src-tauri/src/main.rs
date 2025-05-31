@@ -4,6 +4,7 @@ pub mod http;
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             http::plain_request,
             http::basic_auth_request,
