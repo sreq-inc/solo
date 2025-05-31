@@ -239,7 +239,7 @@ export const RequestForm = () => {
               )}
             >
               {queryParams.map((param, index) => (
-                <div key={index} className="flex gap-2 items-center">
+                <div key={index} className="flex gap-2 items-center min-w-0">
                   <input
                     type="text"
                     value={param.key}
@@ -248,7 +248,7 @@ export const RequestForm = () => {
                     }
                     placeholder="Key"
                     className={clsx(
-                      "flex-1 px-2 py-1 border rounded text-xs ring-0 focus:outline-0",
+                      "flex-1 min-w-0 px-2 py-1 border rounded text-xs ring-0 focus:outline-0",
                       theme === "dark"
                         ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500"
                         : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500"
@@ -262,32 +262,35 @@ export const RequestForm = () => {
                     }
                     placeholder="Value"
                     className={clsx(
-                      "flex-1 px-2 py-1 border rounded text-xs ring-0 focus:outline-0",
+                      "flex-1 min-w-0 px-2 py-1 border rounded text-xs ring-0 focus:outline-0",
                       theme === "dark"
                         ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500"
                         : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500"
                     )}
                   />
-                  <Checkbox
-                    checked={param.enabled}
-                    onChange={(checked) =>
-                      updateQueryParam(index, "enabled", checked)
-                    }
-                    theme={theme}
-                    className="flex-shrink-0"
-                  />
-                  <button
-                    onClick={() => removeQueryParam(index)}
-                    className={clsx(
-                      "h-4 w-4 flex items-center justify-center rounded cursor-pointer flex-shrink-0",
-                      theme === "dark" ? "text-gray-400" : "text-gray-600"
-                    )}
-                    type="button"
-                    aria-label="Remove Parameter"
-                    title="Remove Parameter"
-                  >
-                    <Trash2Icon className="h-3 w-3" />
-                  </button>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Checkbox
+                      checked={param.enabled}
+                      onChange={(checked) =>
+                        updateQueryParam(index, "enabled", checked)
+                      }
+                      theme={theme}
+                    />
+                    <button
+                      onClick={() => removeQueryParam(index)}
+                      className={clsx(
+                        "h-5 w-5 flex items-center justify-center rounded cursor-pointer",
+                        theme === "dark"
+                          ? "text-gray-400 hover:text-gray-200"
+                          : "text-gray-600 hover:text-gray-800"
+                      )}
+                      type="button"
+                      aria-label="Remove Parameter"
+                      title="Remove Parameter"
+                    >
+                      <Trash2Icon className="h-5 w-5" />
+                    </button>
+                  </div>
                 </div>
               ))}
 
