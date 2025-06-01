@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2.0.0",
   "productName": "solo",
-  "version": "0.1.0",
+  "version": "0.0.4",
   "identifier": "com.solo.app",
   "build": {
     "beforeDevCommand": "bun run dev",
@@ -19,7 +19,7 @@
         "https://api.github.com/repos/sreq-inc/Solo/releases/latest"
       ],
       "dialog": true,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDI4RDgyQjBBNTc3RkEwQjkKUldTNW9IOVhDaXZZS0lGMDRzOHdQUDVIQ3hHaHFJQkcxdFp6SnlwcW05QnNMZ09BdDU5U0o5Uk0K"
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDIxNDIzOUI1NzJDOURCODgKUldTSTI4bHl0VGxDSWNVbXEycHlJVXBPNHBiYnVITE5CbGVCb3V1YTlLVnR6eFdtbWJBWjJ5SFYK"
     }
   },
   "app": {
