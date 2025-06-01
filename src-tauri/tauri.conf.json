@@ -16,7 +16,7 @@
         "https://api.github.com/repos/sreq-inc/Solo/releases/latest"
       ],
       "dialog": true,
-      "pubkey": "SEU_PUBLIC_KEY_AQUI"
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDI4RDgyQjBBNTc3RkEwQjkKUldTNW9IOVhDaXZZS0lGMDRzOHdQUDVIQ3hHaHFJQkcxdFp6SnlwcW05QnNMZ09BdDU5U0o5Uk0K"
     }
   },
   "app": {
