@@ -1,0 +1,67 @@
+name: Version Bump
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: "Type of version bump"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: "patch"
+
+jobs:
+  bump-version:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Bump version
+        id: bump
+        run: |
+          OLD_VERSION=$(node -pe "require('./package.json').version")
+          NEW_VERSION=$(npm version ${{ github.event.inputs.bump_type }} --no-git-tag-version)
+          NEW_VERSION=${NEW_VERSION#v}
+
+          echo "old_version=$OLD_VERSION" >> $GITHUB_OUTPUT
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: bump version from ${{ steps.bump.outputs.old_version }} to ${{ steps.bump.outputs.new_version }}"
+          title: "🔖 Version Bump: ${{ steps.bump.outputs.old_version }} → ${{ steps.bump.outputs.new_version }}"
+          body: |
+            ## 📋 Version Bump
+
+            **Tipo:** ${{ github.event.inputs.bump_type }}
+            **De:** `${{ steps.bump.outputs.old_version }}`
+            **Para:** `${{ steps.bump.outputs.new_version }}`
+
+            ### ✅ Checklist antes do merge:
+            - [ ] Changelog atualizado
+            - [ ] Documentação revisada
+            - [ ] Testes passando
+            - [ ] Build local funcionando
+
+            Quando este PR for mergeado na `main`, uma nova release será criada automaticamente.
+          branch: version-bump-${{ steps.bump.outputs.new_version }}
+          delete-branch: true
