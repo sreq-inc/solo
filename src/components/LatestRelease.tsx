@@ -1,8 +1,5 @@
-import React, { useEffect, useState } from "react";
-
-type Release = {
-  tag: string;
-};
+import React from "react";
+import { useLatestRelease } from "../hooks/useLatestRelease";
 
 type Props = {
   owner: string;
@@ -11,40 +8,10 @@ type Props = {
 };
 
 export const LatestRelease: React.FC<Props> = ({ owner, repo, className }) => {
-  const [release, setRelease] = useState<Release | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchLatestRelease = async () => {
-      try {
-        const res = await fetch(
-          `https://api.github.com/repos/${owner}/${repo}/releases/latest`,
-          {
-            headers: {
-              Accept: "application/vnd.github+json",
-              "User-Agent": "latest-release-component",
-            },
-          },
-        );
-
-        if (!res.ok) {
-          throw new Error(`Erro ao buscar release: ${res.status}`);
-        }
-
-        const data = await res.json();
-        setRelease({
-          tag: data.tag_name,
-        });
-      } catch (err: any) {
-        setError(err.message || "Erro desconhecido");
-      }
-    };
-
-    fetchLatestRelease();
-  }, [owner, repo]);
+  const { release, error, loading } = useLatestRelease(owner, repo);
 
   if (error) return <div>Erro: {error}</div>;
-  if (!release) return <div>Carregando...</div>;
+  if (loading || !release) return <div>Carregando...</div>;
 
   return <div className={className}>({release.tag})</div>;
 };
