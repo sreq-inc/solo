@@ -11,6 +11,9 @@
   },
   "plugins": {
     "updater": {
+      "windows": {
+        "installMode": "passive"
+      },
       "active": true,
       "endpoints": [
         "https://api.github.com/repos/sreq-inc/Solo/releases/latest"
@@ -40,6 +43,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
