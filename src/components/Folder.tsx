@@ -165,7 +165,7 @@ export const FolderComponent = ({
         </div>
       )}
       {isOpen && (
-        <div className="mt-2 space-y-2 ml-4 relative z-40">
+        <div className="mt-2 space-y-2 ml-4">
           {files.map((file: any) => (
             <div
               key={file.fileName}
@@ -245,7 +245,7 @@ export const FolderComponent = ({
                   {fileDropdownOpen === file.fileName && (
                     <div
                       className={clsx(
-                        "absolute right-0 top-8 mt-2 py-2 w-48 rounded-md shadow-xl border z-40",
+                        "absolute right-0 top-8 mt-2 py-2 w-48 rounded-md shadow-xl border z-[60]",
                         theme === "dark"
                           ? "bg-gray-800 border-gray-700"
                           : "bg-white border-gray-200"
