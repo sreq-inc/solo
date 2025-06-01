@@ -6,10 +6,12 @@ import {
   Edit,
   Trash,
   MoreHorizontal,
+  Copy,
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import clsx from "clsx";
 import { useState, useEffect } from "react";
+import { generateCurl } from "../utils/curlGenerator";
 
 type FolderProps = {
   folder: string;
@@ -123,7 +125,7 @@ export const FolderComponent = ({
       {isDropdownOpen && (
         <div
           className={clsx(
-            "absolute right-0 mt-2 py-2 w-40 rounded-md shadow-xl z-10 border",
+            "absolute right-0 mt-2 py-2 w-40 rounded-md shadow-xl border z-50",
             theme === "dark"
               ? "bg-gray-800 border-gray-700"
               : "bg-white border-gray-200"
@@ -202,7 +204,7 @@ export const FolderComponent = ({
                 <>
                   <button
                     onClick={() => onFileClick(file.fileName)}
-                    className="flex items-center w-full cursor-pointer pr-8"
+                    className="flex items-center w-full cursor-pointer pr-16"
                   >
                     <span
                       className={clsx(
@@ -225,21 +227,25 @@ export const FolderComponent = ({
                       {file.displayName || "Request"}
                     </span>
                   </button>
-                  <button
-                    onClick={(e) => handleFileDropdownToggle(file.fileName, e)}
-                    className={clsx(
-                      "p-0.5 cursor-pointer rounded text-sm absolute right-1 top-1/2 transform -translate-y-1/2",
-                      theme === "dark"
-                        ? "text-white bg-gray-800"
-                        : "text-black-500 bg-white"
-                    )}
-                  >
-                    <MoreHorizontal className="w-4 h-4" />
-                  </button>
+                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                    <button
+                      onClick={(e) =>
+                        handleFileDropdownToggle(file.fileName, e)
+                      }
+                      className={clsx(
+                        "p-0.5 cursor-pointer rounded text-sm",
+                        theme === "dark"
+                          ? "text-white bg-gray-800"
+                          : "text-black-500 bg-white"
+                      )}
+                    >
+                      <MoreHorizontal className="w-4 h-4" />
+                    </button>
+                  </div>
                   {fileDropdownOpen === file.fileName && (
                     <div
                       className={clsx(
-                        "absolute right-0 top-8 mt-2 py-2 w-36 rounded-md shadow-xl z-10 border",
+                        "absolute right-0 top-8 mt-2 py-2 w-48 rounded-md shadow-xl border z-[60]",
                         theme === "dark"
                           ? "bg-gray-800 border-gray-700"
                           : "bg-white border-gray-200"
@@ -262,6 +268,23 @@ export const FolderComponent = ({
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Rename
+                      </button>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(
+                            generateCurl(file.fileData)
+                          );
+                          setFileDropdownOpen(null);
+                        }}
+                        className={clsx(
+                          "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
+                          theme === "dark"
+                            ? "text-gray-300 hover:bg-gray-700"
+                            : "text-gray-700 hover:bg-gray-100"
+                        )}
+                      >
+                        <Copy className="w-4 h-4 mr-2" />
+                        Copy as cURL
                       </button>
                       <button
                         onClick={() => {

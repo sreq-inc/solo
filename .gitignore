@@ -26,3 +26,6 @@ dist-ssr
 # Mac System files
 .DS_Store
 __MACOSX
+
+generate-snapshot.sh
+solo-project.md

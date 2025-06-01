@@ -9,7 +9,6 @@ import { InputMethod } from "./components/InputMethod";
 
 function App() {
   const { theme } = useTheme();
-
   const appBg = theme === "dark" ? "bg-[#10121b]" : "bg-[#f0eee6]";
   const cardBg = theme === "dark" ? "bg-[#1a1c25]" : "bg-gray-200";
 
@@ -20,9 +19,9 @@ function App() {
         className={clsx("flex-1 flex transition-colors duration-200", appBg)}
       >
         <div className={clsx("w-full flex rounded-xl shadow-lg", cardBg)}>
-          <div className="grid grid-cols-12 w-full">
+          <div className="flex w-full">
             <Sidebar />
-            <section className="col-span-10 flex flex-col w-full px-4">
+            <section className="flex flex-col w-full px-4">
               <div className="p-4 space-y-4">
                 <InputMethod />
               </div>

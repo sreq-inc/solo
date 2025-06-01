@@ -3,6 +3,8 @@ import { useTheme } from "../context/ThemeContext";
 import { useRequest } from "../context/RequestContext";
 import clsx from "clsx";
 import { ShortcutsDisplay } from "./ShortcutsDisplay";
+import { generateCurl } from "../utils/curlGenerator";
+import { CopyIcon } from "./CopyIcon";
 
 type TabType = "response" | "headers" | "timeline";
 
@@ -15,7 +17,6 @@ interface TabItemProps {
 
 const TabItem = ({ label, value, active, onClick }: TabItemProps) => {
   const { theme } = useTheme();
-
   return (
     <button
       onClick={() => onClick(value)}
@@ -37,9 +38,33 @@ const TabItem = ({ label, value, active, onClick }: TabItemProps) => {
 
 export const ResponseView = () => {
   const { theme } = useTheme();
-  const { response, error, loading, isCopied, handleCopyResponse } =
-    useRequest();
+  const {
+    response,
+    error,
+    loading,
+    isCopied,
+    handleCopyResponse,
+    method,
+    url,
+    payload,
+    useBasicAuth,
+    username,
+    password,
+    bearerToken,
+    queryParams,
+  } = useRequest();
   const [activeTab, setActiveTab] = useState<TabType>("response");
+
+  const currentRequestData = {
+    method,
+    url,
+    payload,
+    useBasicAuth,
+    username,
+    password,
+    bearerToken,
+    queryParams,
+  };
 
   const lines = response ? JSON.stringify(response, null, 2).split("\n") : [];
 
@@ -243,33 +268,42 @@ export const ResponseView = () => {
           {error}
         </div>
       )}
-
       <div
         className={clsx(
-          "border-b",
+          "border-b flex items-center",
           theme === "dark" ? "border-gray-700" : "border-gray-950"
         )}
       >
-        <TabItem
-          label="Response"
-          value="response"
-          active={activeTab === "response"}
-          onClick={setActiveTab}
-        />
-        <TabItem
-          label="Headers"
-          value="headers"
-          active={activeTab === "headers"}
-          onClick={setActiveTab}
-        />
-        <TabItem
-          label="Timeline"
-          value="timeline"
-          active={activeTab === "timeline"}
-          onClick={setActiveTab}
-        />
+        <div className="flex items-center gap-2 flex-1">
+          <TabItem
+            label="Response"
+            value="response"
+            active={activeTab === "response"}
+            onClick={setActiveTab}
+          />
+          <TabItem
+            label="Headers"
+            value="headers"
+            active={activeTab === "headers"}
+            onClick={setActiveTab}
+          />
+          <TabItem
+            label="Timeline"
+            value="timeline"
+            active={activeTab === "timeline"}
+            onClick={setActiveTab}
+          />
+        </div>
+        {url && (
+          <div className="ml-auto">
+            <CopyIcon
+              content={generateCurl(currentRequestData)}
+              size={16}
+              className="mr-2"
+            />
+          </div>
+        )}
       </div>
-
       <div
         className={clsx(
           "relative max-h-[600px] overflow-auto font-mono border rounded-xl pb-8",
@@ -284,7 +318,6 @@ export const ResponseView = () => {
       >
         {renderContent()}
       </div>
-
       {response && activeTab === "response" && (
         <button
           onClick={handleCopyResponse}
