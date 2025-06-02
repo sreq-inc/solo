@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 import {
   useUpdateSettings,
@@ -50,10 +50,7 @@ export const UpdateSettingsModal = ({
           </div>
           <button
             onClick={onClose}
-            className={clsx(
-              "p-1 rounded hover:bg-opacity-10",
-              theme === "dark" ? "hover:bg-white" : "hover:bg-black"
-            )}
+            className="p-1 rounded hover:bg-opacity-10 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -190,7 +187,7 @@ export const UpdateSettingsModal = ({
           <button
             onClick={onClose}
             className={clsx(
-              "px-4 py-2 rounded text-sm",
+              "px-4 py-2 rounded text-sm cursor-pointer",
               theme === "dark"
                 ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -201,7 +198,7 @@ export const UpdateSettingsModal = ({
           <button
             onClick={handleSave}
             className={clsx(
-              "px-4 py-2 rounded text-sm text-white flex-1",
+              "px-4 py-2 rounded text-sm text-white flex-1 cursor-pointer",
               theme === "dark"
                 ? "bg-purple-700 hover:bg-purple-800"
                 : "bg-purple-600 hover:bg-purple-700"
