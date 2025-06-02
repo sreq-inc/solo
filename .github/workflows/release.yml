@@ -30,13 +30,11 @@ jobs:
         with:
           node-version: 20
 
-      - name: Setup and run pnpm install
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-          run_install: |
-            - recursive: true
-              args: [--frozen-lockfile, --strict-peer-dependencies]
+      - name: Install bun (development only)
+        if: matrix.platform == 'ubuntu-20.04' || matrix.platform == 'macos-latest'
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> $GITHUB_PATH
 
       - name: Install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-20.04'
