@@ -6,7 +6,6 @@ import { ResponseView } from "./components/ResponseView";
 import "./App.css";
 import Titlebar from "./components/TitleBar";
 import { InputMethod } from "./components/InputMethod";
-import { UpdateChecker } from "./components/UpdateChecker";
 
 function App() {
   const { theme } = useTheme();
@@ -16,7 +15,6 @@ function App() {
   return (
     <div className="flex flex-col h-screen">
       <Titlebar />
-      <UpdateChecker />
       <div
         className={clsx("flex-1 flex transition-colors duration-200", appBg)}
       >

@@ -4,6 +4,16 @@ import { useTheme } from "../context/ThemeContext";
 import { useUpdateSettings } from "../hooks/useUpdateSettings";
 import { UpdateSettingsModal } from "./UpdateSettingsModal";
 import clsx from "clsx";
+import { Settings } from "lucide-react";
+
+type UpdateState =
+  | "checking"
+  | "available"
+  | "downloading"
+  | "ready"
+  | "installing"
+  | "none"
+  | "error";
 
 type UpdateState =
   | "checking"

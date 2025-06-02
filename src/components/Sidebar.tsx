@@ -7,6 +7,7 @@ import { Search, Plus, X, Github } from "lucide-react";
 import { open } from "@tauri-apps/plugin-shell";
 import { LatestRelease } from "./LatestRelease";
 import clsx from "clsx";
+import { UpdateChecker } from "./UpdateChecker";
 
 export const Sidebar = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -179,15 +180,20 @@ export const Sidebar = () => {
           </div>
         </div>
         <div className="flex flex-row items-center justify-between mt-4">
-          <button
-            title="GitHub Repository"
-            aria-label="GitHub Repository"
-            type="button"
-            className="flex cursor-pointer items-center justify-center text-gray-500 hover:text-gray-700"
-            onClick={async () => await open("https://github.com/sreq-inc/Solo")}
-          >
-            <Github className="h-4 w-4" />
-          </button>
+          <section className="flex flex-row items-center gap-2">
+            <button
+              title="GitHub Repository"
+              aria-label="GitHub Repository"
+              type="button"
+              className="flex cursor-pointer items-center justify-center text-gray-500 hover:text-gray-700"
+              onClick={async () =>
+                await open("https://github.com/sreq-inc/Solo")
+              }
+            >
+              <Github className="h-4 w-4" />
+            </button>
+            <UpdateChecker />
+          </section>
           <LatestRelease
             owner="sreq-inc"
             repo="Solo"
