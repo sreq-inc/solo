@@ -4,6 +4,7 @@ import { useTheme } from "../context/ThemeContext";
 import { useUpdateSettings } from "../hooks/useUpdateSettings";
 import { UpdateSettingsModal } from "./UpdateSettingsModal";
 import clsx from "clsx";
+import { Settings } from "lucide-react";
 
 type UpdateState =
   | "checking"
@@ -142,18 +143,13 @@ export const UpdateChecker = () => {
     return (
       <>
         {/* Small buttons for manual check or settings */}
-        <div className="fixed bottom-4 right-4 flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
           <button
             onClick={() => setShowSettings(true)}
-            className={clsx(
-              "p-2 rounded-full shadow-lg opacity-70 hover:opacity-100 transition-opacity",
-              theme === "dark"
-                ? "bg-gray-800 text-white"
-                : "bg-white text-gray-800"
-            )}
+            className="flex cursor-pointer items-center justify-center text-gray-500 hover:text-gray-700"
             title="Update settings"
           >
-            ⚙️
+            <Settings className="w-4 h-4" />
           </button>
 
           {settings.preference === "manual" && (
