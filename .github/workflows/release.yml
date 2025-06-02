@@ -1,10 +1,9 @@
-name: Release
+name: "publish"
 
 on:
   push:
-    tags:
-      - v*
-  workflow_dispatch:
+    branches:
+      - release
 
 jobs:
   publish-tauri:
@@ -13,51 +12,46 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, ubuntu-20.04, windows-latest]
+        include:
+          - platform: "macos-latest"
+            args: "--target aarch64-apple-darwin"
+          - platform: "macos-latest"
+            args: "--target x86_64-apple-darwin"
 
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          lfs: true
-          fetch-depth: 0
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Setup node
+      - name: setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: lts/*
 
-      - name: Install bun (development only)
-        if: matrix.platform == 'ubuntu-20.04' || matrix.platform == 'macos-latest'
+      - name: install bun
         run: |
           curl -fsSL https://bun.sh/install | bash
           echo "$HOME/.bun/bin" >> $GITHUB_PATH
 
-      - name: Install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-20.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
 
-      - name: Build and upload a GitHub release
-        uses: tauri-apps/tauri-action@v0
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "./src-tauri -> target"
+
+      - name: install frontend dependencies
+        run: bun install
+
+      - uses: tauri-apps/tauri-action@v0
         env:
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v__VERSION__
+          tagName: app-v__VERSION__
           releaseName: "App v__VERSION__"
-          releaseBody: |
-            See the assets to download and install this version.
-
-            If you get a virus warning read this article: https://tauri.by.simon.hyll.nu/concepts/security/false_positives/.
-
-            Mac: Extract the .app from the .dmg and run `xattr -d com.apple.quarantine your-app.app`.
-            Windows: Run `attrib -r your-app.msi:Zone.Identifier`.
-          releaseDraft: false
+          releaseBody: "See the assets to download this version and install."
+          releaseDraft: true
           prerelease: false
-          includeUpdaterJson: true
+          args: ${{ matrix.args }}
