@@ -152,7 +152,6 @@ export const UpdateChecker = () => {
           )}
         </div>
 
-        {/* Tooltip para nova versão disponível */}
         {showTooltip && updateState === "available" && updateInfo && (
           <div
             className={clsx(
@@ -209,7 +208,6 @@ export const UpdateChecker = () => {
               </button>
             </div>
 
-            {/* Seta do tooltip */}
             <div
               className={clsx(
                 "absolute top-full right-4 border-4 border-transparent",
@@ -220,7 +218,6 @@ export const UpdateChecker = () => {
         )}
       </div>
 
-      {/* Notificação quando atualização estiver pronta para instalar */}
       {showNotification && updateState === "ready" && (
         <div
           className={clsx(
@@ -275,7 +272,6 @@ export const UpdateChecker = () => {
         </div>
       )}
 
-      {/* Indicador de estado (loading, error, etc.) */}
       {(updateState === "downloading" ||
         updateState === "installing" ||
         updateState === "error") && (

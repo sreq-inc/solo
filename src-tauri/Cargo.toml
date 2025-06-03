@@ -1,6 +1,6 @@
 [package]
 name = "solo"
-version = "0.0.11"
+version = "0.0.12"
 description = "Solo Client HTTP"
 authors = ["Igor Vieira <igor.p.r.vieira@gmail.com>"]
 edition = "2021"

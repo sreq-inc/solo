@@ -57,7 +57,6 @@ export const UpdateSettingsModal = ({
         </div>
 
         <div className="space-y-6">
-          {/* Update preference */}
           <div>
             <label className="block text-sm font-medium mb-3">
               How do you want to be notified about updates?
