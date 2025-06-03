@@ -4,7 +4,7 @@ import { useTheme } from "../context/ThemeContext";
 import { useUpdateSettings } from "../hooks/useUpdateSettings";
 import { UpdateSettingsModal } from "./UpdateSettingsModal";
 import clsx from "clsx";
-import { Settings } from "lucide-react";
+import { Settings, Download, X, RefreshCw } from "lucide-react";
 
 type UpdateState =
   | "checking"
@@ -30,22 +30,18 @@ export const UpdateChecker = () => {
   const [showNotification, setShowNotification] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [changelogExpanded, setChangelogExpanded] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
-    // Check for updates based on user settings
     if (shouldCheckForUpdates()) {
       checkForUpdates();
     }
-
-    // Set up periodic checking if not manual
     if (settings.preference !== "manual") {
       const interval = setInterval(() => {
         if (shouldCheckForUpdates()) {
           checkForUpdates();
         }
-      }, settings.checkInterval * 60 * 60 * 1000); // convert hours to ms
-
+      }, settings.checkInterval * 60 * 60 * 1000);
       return () => clearInterval(interval);
     }
   }, [settings]);
@@ -55,19 +51,11 @@ export const UpdateChecker = () => {
     try {
       const update = await check();
       markUpdateCheckTime();
-
       if (update?.available) {
         setUpdateInfo(update);
-
-        // Check if this version was already dismissed by user
         if (!isUpdateDismissed(update.version)) {
           setUpdateState("available");
-          setShowNotification(true);
-
-          // If auto mode, download automatically
-          if (settings.preference === "auto") {
-            await downloadUpdate(update);
-          }
+          setShowTooltip(true);
         } else {
           setUpdateState("none");
         }
@@ -75,6 +63,7 @@ export const UpdateChecker = () => {
         setUpdateState("none");
       }
     } catch (err: any) {
+      console.error("Error checking for updates:", err);
       setError(err.message || "Error checking for updates");
       setUpdateState("error");
     }
@@ -82,16 +71,12 @@ export const UpdateChecker = () => {
 
   const downloadUpdate = async (update = updateInfo) => {
     if (!update) return;
-
     setUpdateState("downloading");
+    setShowTooltip(false);
     try {
       await update.download();
       setUpdateState("ready");
-
-      // If auto mode, install automatically
-      if (settings.preference === "auto") {
-        await installUpdate(update);
-      }
+      setShowNotification(true);
     } catch (err: any) {
       setError(err.message || "Error downloading update");
       setUpdateState("error");
@@ -100,7 +85,6 @@ export const UpdateChecker = () => {
 
   const installUpdate = async (update = updateInfo) => {
     if (!update) return;
-
     setUpdateState("installing");
     try {
       await update.install();
@@ -110,44 +94,43 @@ export const UpdateChecker = () => {
     }
   };
 
-  const dismissNotification = () => {
+  const handleTooltipAccept = () => {
+    downloadUpdate();
+  };
+
+  const handleTooltipDismiss = () => {
     if (updateInfo) {
       dismissUpdate(updateInfo.version);
     }
-    setShowNotification(false);
+    setShowTooltip(false);
+    setUpdateState("none");
   };
 
   const getStateMessage = () => {
     switch (updateState) {
       case "checking":
-        return "Checking for updates...";
+        return "Verificando atualizações...";
       case "downloading":
-        return "Downloading update...";
+        return "Baixando atualização...";
       case "ready":
-        return "Update downloaded and ready to install";
+        return "Atualização baixada e pronta para instalar";
       case "installing":
-        return "Installing update...";
+        return "Instalando atualização...";
       case "error":
-        return `Error: ${error}`;
+        return `Erro: ${error}`;
       default:
         return "";
     }
   };
 
-  // Don't show notification if manual preference or already dismissed
-  if (
-    !showNotification ||
-    updateState === "none" ||
-    settings.preference === "manual"
-  ) {
-    return (
-      <>
-        {/* Small buttons for manual check or settings */}
-        <div className="flex flex-col gap-2">
+  return (
+    <>
+      <div className="relative">
+        <div className="flex flex-row gap-2">
           <button
             onClick={() => setShowSettings(true)}
             className="flex cursor-pointer items-center justify-center text-gray-500 hover:text-gray-700"
-            title="Update settings"
+            title="Configurações de atualização"
           >
             <Settings className="w-4 h-4" />
           </button>
@@ -156,193 +139,167 @@ export const UpdateChecker = () => {
             <button
               onClick={checkForUpdates}
               disabled={updateState === "checking"}
-              className={clsx(
-                "p-2 rounded-full shadow-lg opacity-70 hover:opacity-100 transition-opacity",
-                theme === "dark"
-                  ? "bg-gray-800 text-white"
-                  : "bg-white text-gray-800",
-                updateState === "checking" && "animate-pulse"
-              )}
+              className="flex cursor-pointer items-center justify-center text-gray-500 hover:text-gray-700"
               title="Check for updates"
             >
-              🔄
+              <RefreshCw
+                className={clsx(
+                  "w-4 h-4",
+                  updateState === "checking" && "animate-spin"
+                )}
+              />
             </button>
           )}
         </div>
 
-        <UpdateSettingsModal
-          isOpen={showSettings}
-          onClose={() => setShowSettings(false)}
-        />
-      </>
-    );
-  }
-
-  return (
-    <>
-      <div
-        className={clsx(
-          "fixed top-4 right-4 p-4 rounded-lg shadow-lg max-w-sm z-50 border",
-          theme === "dark"
-            ? "bg-gray-800 border-gray-700 text-white"
-            : "bg-white border-gray-300 text-gray-900"
-        )}
-      >
-        <div className="flex items-start gap-3">
+        {/* Tooltip para nova versão disponível */}
+        {showTooltip && updateState === "available" && updateInfo && (
           <div
             className={clsx(
-              "w-3 h-3 rounded-full flex-shrink-0 mt-1",
-              updateState === "available" && "bg-blue-500",
-              updateState === "downloading" && "bg-yellow-500 animate-pulse",
-              updateState === "ready" && "bg-green-500",
-              updateState === "installing" && "bg-blue-500 animate-pulse",
-              updateState === "error" && "bg-red-500"
+              "absolute bottom-full right-0 mb-2 p-3 rounded-lg shadow-xl z-50 w-64",
+              "border transition-all duration-200",
+              theme === "dark"
+                ? "bg-gray-800 border-gray-700 text-white"
+                : "bg-white border-gray-300 text-gray-900"
             )}
-          />
-
-          <div className="flex-1">
-            <h3 className="font-medium text-sm mb-1">
-              {updateState === "available" && "New version available"}
-              {updateState === "ready" && "Ready to install"}
-              {updateState === "error" && "Update error"}
-              {(updateState === "downloading" ||
-                updateState === "installing") &&
-                "Updating..."}
-            </h3>
-
-            <p
-              className={clsx(
-                "text-xs",
-                theme === "dark" ? "text-gray-300" : "text-gray-600"
-              )}
-            >
-              {updateState === "available" && (
-                <>
-                  Version {updateInfo?.version} is available.
-                  {updateInfo?.notes && (
-                    <button
-                      onClick={() => setChangelogExpanded(!changelogExpanded)}
-                      className="ml-1 underline hover:no-underline"
-                    >
-                      {changelogExpanded ? "Hide" : "View"} changelog
-                    </button>
-                  )}
-                </>
-              )}
-              {(updateState === "downloading" ||
-                updateState === "installing" ||
-                updateState === "ready") &&
-                getStateMessage()}
-              {updateState === "error" && error}
-            </p>
-
-            {changelogExpanded && updateInfo?.notes && (
-              <div
-                className={clsx(
-                  "mt-2 p-2 rounded text-xs max-h-32 overflow-y-auto",
-                  theme === "dark" ? "bg-gray-900" : "bg-gray-100"
-                )}
-              >
-                <pre className="whitespace-pre-wrap font-mono">
-                  {updateInfo.notes}
-                </pre>
+          >
+            <div className="flex items-start gap-2">
+              <Download className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <h4 className="font-medium text-sm mb-1">
+                  Nova versão disponível
+                </h4>
+                <p className="text-xs mb-3 opacity-80">
+                  Versão {updateInfo.version} está disponível. Deseja baixar
+                  agora?
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleTooltipAccept}
+                    className={clsx(
+                      "px-3 py-1 text-xs rounded font-medium flex-1",
+                      theme === "dark"
+                        ? "bg-blue-700 hover:bg-blue-800 text-white"
+                        : "bg-blue-600 hover:bg-blue-700 text-white"
+                    )}
+                  >
+                    Baixar
+                  </button>
+                  <button
+                    onClick={handleTooltipDismiss}
+                    className={clsx(
+                      "px-3 py-1 text-xs rounded",
+                      theme === "dark"
+                        ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                        : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                    )}
+                  >
+                    Depois
+                  </button>
+                </div>
               </div>
-            )}
+              <button
+                onClick={handleTooltipDismiss}
+                className={clsx(
+                  "text-xs hover:opacity-70 flex-shrink-0",
+                  theme === "dark" ? "text-gray-400" : "text-gray-500"
+                )}
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+
+            {/* Seta do tooltip */}
+            <div
+              className={clsx(
+                "absolute top-full right-4 border-4 border-transparent",
+                theme === "dark" ? "border-t-gray-800" : "border-t-white"
+              )}
+            />
           </div>
-
-          <div className="flex flex-col gap-1">
-            <button
-              onClick={() => setShowSettings(true)}
-              className={clsx(
-                "text-xs hover:opacity-70 flex-shrink-0",
-                theme === "dark" ? "text-gray-400" : "text-gray-500"
-              )}
-              title="Settings"
-            >
-              ⚙️
-            </button>
-            <button
-              onClick={dismissNotification}
-              className={clsx(
-                "text-xs hover:opacity-70 flex-shrink-0",
-                theme === "dark" ? "text-gray-400" : "text-gray-500"
-              )}
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-
-        <div className="flex gap-2 mt-3">
-          {updateState === "available" && (
-            <>
-              <button
-                onClick={() => downloadUpdate()}
-                className={clsx(
-                  "px-3 py-1 text-xs rounded font-medium flex-1",
-                  theme === "dark"
-                    ? "bg-blue-700 hover:bg-blue-800 text-white"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"
-                )}
-              >
-                Download
-              </button>
-              <button
-                onClick={dismissNotification}
-                className={clsx(
-                  "px-3 py-1 text-xs rounded",
-                  theme === "dark"
-                    ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
-                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                )}
-              >
-                Not now
-              </button>
-            </>
-          )}
-
-          {updateState === "ready" && (
-            <>
-              <button
-                onClick={() => installUpdate()}
-                className={clsx(
-                  "px-3 py-1 text-xs rounded font-medium flex-1",
-                  theme === "dark"
-                    ? "bg-green-700 hover:bg-green-800 text-white"
-                    : "bg-green-600 hover:bg-green-700 text-white"
-                )}
-              >
-                Install & Restart
-              </button>
-              <button
-                onClick={dismissNotification}
-                className={clsx(
-                  "px-3 py-1 text-xs rounded",
-                  theme === "dark"
-                    ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
-                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                )}
-              >
-                Later
-              </button>
-            </>
-          )}
-
-          {updateState === "error" && (
-            <button
-              onClick={checkForUpdates}
-              className={clsx(
-                "px-3 py-1 text-xs rounded font-medium",
-                theme === "dark"
-                  ? "bg-red-700 hover:bg-red-800 text-white"
-                  : "bg-red-600 hover:bg-red-700 text-white"
-              )}
-            >
-              Try again
-            </button>
-          )}
-        </div>
+        )}
       </div>
+
+      {/* Notificação quando atualização estiver pronta para instalar */}
+      {showNotification && updateState === "ready" && (
+        <div
+          className={clsx(
+            "fixed top-4 right-4 p-4 rounded-lg shadow-lg max-w-sm z-50 border",
+            theme === "dark"
+              ? "bg-gray-800 border-gray-700 text-white"
+              : "bg-white border-gray-300 text-gray-900"
+          )}
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-3 h-3 rounded-full bg-green-500 flex-shrink-0 mt-1" />
+            <div className="flex-1">
+              <h3 className="font-medium text-sm mb-1">Pronto para instalar</h3>
+              <p className="text-xs mb-3 opacity-80">
+                A atualização foi baixada com sucesso.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => installUpdate()}
+                  className={clsx(
+                    "px-3 py-1 text-xs rounded font-medium flex-1",
+                    theme === "dark"
+                      ? "bg-green-700 hover:bg-green-800 text-white"
+                      : "bg-green-600 hover:bg-green-700 text-white"
+                  )}
+                >
+                  Instalar e Reiniciar
+                </button>
+                <button
+                  onClick={() => setShowNotification(false)}
+                  className={clsx(
+                    "px-3 py-1 text-xs rounded",
+                    theme === "dark"
+                      ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                      : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                  )}
+                >
+                  Mais tarde
+                </button>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowNotification(false)}
+              className={clsx(
+                "text-xs hover:opacity-70 flex-shrink-0",
+                theme === "dark" ? "text-gray-400" : "text-gray-500"
+              )}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Indicador de estado (loading, error, etc.) */}
+      {(updateState === "downloading" ||
+        updateState === "installing" ||
+        updateState === "error") && (
+        <div
+          className={clsx(
+            "fixed bottom-4 right-4 p-3 rounded-lg shadow-lg z-50",
+            theme === "dark"
+              ? "bg-gray-800 text-white"
+              : "bg-white text-gray-900",
+            updateState === "error" && "border-l-4 border-red-500"
+          )}
+        >
+          <div className="flex items-center gap-2">
+            {(updateState === "downloading" ||
+              updateState === "installing") && (
+              <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse" />
+            )}
+            {updateState === "error" && (
+              <div className="w-3 h-3 rounded-full bg-red-500" />
+            )}
+            <span className="text-sm">{getStateMessage()}</span>
+          </div>
+        </div>
+      )}
 
       <UpdateSettingsModal
         isOpen={showSettings}
