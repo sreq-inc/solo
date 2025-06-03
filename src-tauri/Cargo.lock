@@ -4392,7 +4392,7 @@ dependencies = [
 
 [[package]]
 name = "solo"
-version = "0.0.10"
+version = "0.0.11"
 dependencies = [
  "base64 0.21.7",
  "httpmock",
