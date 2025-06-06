@@ -2,7 +2,7 @@ import { createContext, useContext, useState, ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-type Tab = "body" | "auth" | "params";
+type Tab = "body" | "auth" | "params" | "variables";
 
 export type QueryParam = {
   key: string;
@@ -33,7 +33,7 @@ type RequestContextType = {
   setActiveTab: (tab: Tab) => void;
   setBearerToken: (token: string) => void;
   setQueryParams: (params: QueryParam[]) => void;
-  handleRequest: () => Promise<void>;
+  handleRequest: (customUrl?: string) => Promise<void>;
   resetFields: () => void;
   formatJson: () => void;
   handleCopyResponse: () => void;
@@ -41,7 +41,11 @@ type RequestContextType = {
 
 const RequestContext = createContext<RequestContextType | undefined>(undefined);
 
-export const RequestProvider = ({ children }: { children: ReactNode }) => {
+interface RequestProviderProps {
+  children: ReactNode;
+}
+
+function RequestProvider({ children }: RequestProviderProps) {
   const [method, setMethod] = useState<HttpMethod>("GET");
   const [url, setUrl] = useState("");
   const [payload, setPayload] = useState("");
@@ -84,46 +88,101 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const handleRequest = async () => {
+  const handleRequest = async (customUrl?: string) => {
+    console.log("🔥 HANDLEREQUEST INICIADO");
+
+    // Usa a URL customizada se fornecida, senão usa a URL do estado
+    const finalUrl = customUrl || url;
+
+    console.log("📋 Parâmetros da requisição:");
+    console.log("  - Method:", method);
+    console.log("  - URL do estado:", url);
+    console.log("  - URL customizada:", customUrl);
+    console.log("  - URL final:", finalUrl);
+    console.log("  - Payload:", payload);
+    console.log("  - UseBasicAuth:", useBasicAuth);
+    console.log("  - BearerToken:", bearerToken);
+    console.log("  - Username:", username);
+    console.log("  - Password:", password ? "***" : "(vazio)");
+
     setLoading(true);
     setError(null);
     setIsCopied(false);
+    setResponse(null);
 
     try {
+      const urlToUse = finalUrl.trim();
+      console.log("🌐 URL final para requisição:", urlToUse);
+
+      if (!urlToUse) {
+        throw new Error("URL is required");
+      }
+      if (!urlToUse.startsWith("http://") && !urlToUse.startsWith("https://")) {
+        throw new Error("URL must start with http:// or https://");
+      }
+
       const body = payload.trim() ? JSON.parse(payload) : null;
+      console.log("📦 Body da requisição:", body);
 
       let result;
+      let invokeCommand;
+      let invokeParams;
+
       if (useBasicAuth) {
-        result = await invoke("basic_auth_request", {
+        invokeCommand = "basic_auth_request";
+        invokeParams = {
           method,
-          url,
+          url: urlToUse,
           body,
           username,
           password,
-        });
+        };
       } else if (bearerToken.trim()) {
-        result = await invoke("bearer_auth_request", {
+        invokeCommand = "bearer_auth_request";
+        invokeParams = {
           method,
-          url,
+          url: urlToUse,
           body,
           bearerToken,
-        });
+        };
       } else {
-        result = await invoke("plain_request", {
+        invokeCommand = "plain_request";
+        invokeParams = {
           method,
-          url,
+          url: urlToUse,
           body,
-        });
+        };
       }
 
+      console.log("🚀 Chamando invoke:");
+      console.log("  - Comando:", invokeCommand);
+      console.log("  - Parâmetros:", invokeParams);
+
+      result = await invoke(invokeCommand, invokeParams);
+
+      console.log("✅ Resposta recebida do backend:");
+      console.log("  - Tipo:", typeof result);
+      console.log("  - Conteúdo:", result);
+
       setResponse(result);
+      console.log("✅ Response setado no estado");
     } catch (error) {
+      console.error("❌ Erro na requisição:");
+      console.error("  - Tipo:", typeof error);
+      console.error("  - Erro:", error);
+      console.error("  - Stack:", error instanceof Error ? error.stack : "N/A");
+
       setResponse(null);
       setError(
         error instanceof Error ? error.message : "An unknown error occurred"
       );
+      console.log(
+        "❌ Error setado no estado:",
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
     } finally {
       setLoading(false);
+      console.log("🏁 Loading definido como false");
     }
   };
 
@@ -132,46 +191,48 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     setIsCopied(true);
   };
 
+  const contextValue: RequestContextType = {
+    method,
+    url,
+    payload,
+    username,
+    password,
+    useBasicAuth,
+    activeTab,
+    bearerToken,
+    queryParams,
+    loading,
+    response,
+    error,
+    isCopied,
+    setMethod,
+    setUrl,
+    setPayload,
+    setUsername,
+    setPassword,
+    setUseBasicAuth,
+    setActiveTab,
+    setBearerToken,
+    setQueryParams,
+    handleRequest,
+    resetFields,
+    formatJson,
+    handleCopyResponse,
+  };
+
   return (
-    <RequestContext.Provider
-      value={{
-        method,
-        url,
-        payload,
-        username,
-        password,
-        useBasicAuth,
-        activeTab,
-        bearerToken,
-        queryParams,
-        loading,
-        response,
-        error,
-        isCopied,
-        setMethod,
-        setUrl,
-        setPayload,
-        setUsername,
-        setPassword,
-        setUseBasicAuth,
-        setActiveTab,
-        setBearerToken,
-        setQueryParams,
-        handleRequest,
-        resetFields,
-        formatJson,
-        handleCopyResponse,
-      }}
-    >
+    <RequestContext.Provider value={contextValue}>
       {children}
     </RequestContext.Provider>
   );
-};
+}
 
-export const useRequest = () => {
+function useRequest(): RequestContextType {
   const context = useContext(RequestContext);
   if (context === undefined) {
     throw new Error("useRequest must be used within a RequestProvider");
   }
   return context;
-};
+}
+
+export { RequestProvider, useRequest };
