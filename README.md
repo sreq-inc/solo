@@ -1,6 +1,6 @@
 <div align="center">
   <img src="https://res.cloudinary.com/dje6m1lab/image/upload/v1745970240/solo_vdht4s.webp" height="200" width="200"/>
-  <h1>Solo is an HTTP request client</h1>
+  <h1>Solo - Your next HTTP Client ⚡</h1>
 </div>
 
 
