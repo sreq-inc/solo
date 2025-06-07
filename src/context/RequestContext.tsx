@@ -89,21 +89,7 @@ function RequestProvider({ children }: RequestProviderProps) {
   };
 
   const handleRequest = async (customUrl?: string) => {
-    console.log("🔥 HANDLEREQUEST INICIADO");
-
-    // Usa a URL customizada se fornecida, senão usa a URL do estado
     const finalUrl = customUrl || url;
-
-    console.log("📋 Parâmetros da requisição:");
-    console.log("  - Method:", method);
-    console.log("  - URL do estado:", url);
-    console.log("  - URL customizada:", customUrl);
-    console.log("  - URL final:", finalUrl);
-    console.log("  - Payload:", payload);
-    console.log("  - UseBasicAuth:", useBasicAuth);
-    console.log("  - BearerToken:", bearerToken);
-    console.log("  - Username:", username);
-    console.log("  - Password:", password ? "***" : "(vazio)");
 
     setLoading(true);
     setError(null);
@@ -112,7 +98,6 @@ function RequestProvider({ children }: RequestProviderProps) {
 
     try {
       const urlToUse = finalUrl.trim();
-      console.log("🌐 URL final para requisição:", urlToUse);
 
       if (!urlToUse) {
         throw new Error("URL is required");
@@ -122,7 +107,6 @@ function RequestProvider({ children }: RequestProviderProps) {
       }
 
       const body = payload.trim() ? JSON.parse(payload) : null;
-      console.log("📦 Body da requisição:", body);
 
       let result;
       let invokeCommand;
@@ -154,35 +138,15 @@ function RequestProvider({ children }: RequestProviderProps) {
         };
       }
 
-      console.log("🚀 Chamando invoke:");
-      console.log("  - Comando:", invokeCommand);
-      console.log("  - Parâmetros:", invokeParams);
-
       result = await invoke(invokeCommand, invokeParams);
-
-      console.log("✅ Resposta recebida do backend:");
-      console.log("  - Tipo:", typeof result);
-      console.log("  - Conteúdo:", result);
-
       setResponse(result);
-      console.log("✅ Response setado no estado");
     } catch (error) {
-      console.error("❌ Erro na requisição:");
-      console.error("  - Tipo:", typeof error);
-      console.error("  - Erro:", error);
-      console.error("  - Stack:", error instanceof Error ? error.stack : "N/A");
-
       setResponse(null);
       setError(
         error instanceof Error ? error.message : "An unknown error occurred"
       );
-      console.log(
-        "❌ Error setado no estado:",
-        error instanceof Error ? error.message : "An unknown error occurred"
-      );
     } finally {
       setLoading(false);
-      console.log("🏁 Loading definido como false");
     }
   };
 

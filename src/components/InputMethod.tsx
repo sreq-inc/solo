@@ -12,58 +12,37 @@ export const InputMethod = () => {
   const { theme } = useTheme();
 
   const handleRequestWithVariables = async () => {
-    console.log("🚀 INICIANDO REQUISIÇÃO");
-    console.log("📝 URL original:", url);
-
-    // Primeiro, substitui as variáveis na URL
     const processedUrl = replaceVariablesInUrl(url);
 
-    console.log("✅ URL após substituição:", processedUrl);
-    console.log("🔄 URLs são diferentes?", url !== processedUrl);
-
-    // Verifica se ainda há variáveis não resolvidas
     if (processedUrl.includes("{{")) {
       const unresolvedVars = processedUrl.match(/\{\{[^}]+\}\}/g);
-      console.error("❌ Variáveis não resolvidas:", unresolvedVars);
       alert(
-        `Algumas variáveis não estão definidas: ${unresolvedVars?.join(
+        `Some variables are not defined: ${unresolvedVars?.join(
           ", "
-        )}\nVerifique a aba Variables.`
+        )}\nCheck the Variables tab.`
       );
       return;
     }
 
-    // Verifica se a URL processada está vazia
     if (!processedUrl.trim()) {
-      console.error("❌ URL vazia após processamento");
-      alert("URL é obrigatória");
+      alert("URL is required");
       return;
     }
 
-    // Verifica se a URL processada tem protocolo válido
     if (
       !processedUrl.startsWith("http://") &&
       !processedUrl.startsWith("https://")
     ) {
-      console.error("❌ URL sem protocolo válido:", processedUrl);
       alert(
-        `URL deve começar com http:// ou https://\nURL atual: "${processedUrl}"`
+        `URL must start with http:// or https://\nCurrent URL: "${processedUrl}"`
       );
       return;
     }
 
-    console.log(
-      "✅ Validações passaram, fazendo requisição para:",
-      processedUrl
-    );
-    console.log("📡 Passando URL processada diretamente para handleRequest...");
-
     try {
-      // Passa a URL processada diretamente para handleRequest
       await handleRequest(processedUrl);
-      console.log("✅ Requisição concluída com sucesso");
     } catch (error) {
-      console.error("❌ Erro na requisição:", error);
+      console.error("Request error:", error);
     }
   };
 
@@ -82,7 +61,7 @@ export const InputMethod = () => {
         <SmartUrlInput
           value={url}
           onChange={setUrl}
-          placeholder="https://api.example.com/users ou {{baseUrl}}/users"
+          placeholder="https://api.example.com/users or {{baseUrl}}/users"
           className={clsx(
             "w-full h-10 p-2 border rounded outline-none focus:ring-0",
             theme === "dark"

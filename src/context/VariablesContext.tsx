@@ -72,11 +72,6 @@ function VariablesProvider({ children }: VariablesProviderProps) {
   const replaceVariablesInUrl = (url: string): string => {
     let processedUrl = url;
 
-    console.log("=== SUBSTITUIÇÃO DE VARIÁVEIS ===");
-    console.log("URL original:", url);
-    console.log("Variáveis disponíveis:", variables);
-
-    // Filtra apenas variáveis habilitadas e com chave/valor preenchidos
     const enabledVariables = variables.filter(
       (variable) =>
         variable.enabled &&
@@ -84,24 +79,13 @@ function VariablesProvider({ children }: VariablesProviderProps) {
         variable.value.trim() !== ""
     );
 
-    console.log("Variáveis habilitadas:", enabledVariables);
-
     enabledVariables.forEach((variable) => {
       const pattern = new RegExp(
         `\\{\\{\\s*${variable.key.trim()}\\s*\\}\\}`,
         "g"
       );
-      const oldUrl = processedUrl;
       processedUrl = processedUrl.replace(pattern, variable.value.trim());
-
-      if (oldUrl !== processedUrl) {
-        console.log(`Substituiu {{${variable.key}}} por "${variable.value}"`);
-        console.log("URL após substituição:", processedUrl);
-      }
     });
-
-    console.log("URL final:", processedUrl);
-    console.log("=== FIM DA SUBSTITUIÇÃO ===");
 
     return processedUrl;
   };
