@@ -126,10 +126,7 @@ export const SmartUrlInput = ({
           <span
             key={`var-${index}`}
             className={clsx(
-              "text-white font-mono font-medium text-xs",
-              isLightTheme
-                ? "px-2 py-1 rounded-md shadow-sm"
-                : "px-1 py-0.5 rounded",
+              "text-white font-mono font-medium text-xs px-1 py-0.5 rounded",
               match.exists
                 ? index === 0
                   ? isLightTheme
