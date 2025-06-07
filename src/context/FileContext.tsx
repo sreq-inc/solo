@@ -16,7 +16,7 @@ type RequestData = {
   username?: string;
   password?: string;
   bearerToken?: string;
-  activeTab?: "body" | "auth" | "params";
+  activeTab?: "body" | "auth" | "params" | "variables";
   queryParams?: QueryParam[];
 };
 

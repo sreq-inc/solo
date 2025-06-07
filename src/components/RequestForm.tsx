@@ -1,4 +1,5 @@
 import { TabComponent } from "./TabComponent";
+import { VariablesTab } from "./VariablesTab";
 import { useEffect, useState, useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useRequest, QueryParam } from "../context/RequestContext";
@@ -48,27 +49,42 @@ export const RequestForm = () => {
       return;
     }
 
-    const urlObj = new URL(url || "https://example.com");
-    const urlParams = new URLSearchParams(urlObj.search);
-    const params: QueryParam[] = [];
-
-    urlParams.forEach((value, key) => {
-      params.push({ key, value, enabled: true });
-    });
-
-    if (params.length === 0) {
-      params.push({ key: "", value: "", enabled: true });
+    if (!url || !url.includes("?")) {
+      return;
     }
 
-    const paramsChanged =
-      JSON.stringify(params) !== JSON.stringify(queryParams);
+    try {
+      // Try to parse the URL and extract query parameters
+      // If the URL is relative, prepend a base URL for parsing
+      let urlToProcess = url;
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        urlToProcess =
+          "https://example.com" + (url.startsWith("/") ? url : "/" + url);
+      }
 
-    if (paramsChanged && url.includes("?")) {
-      isLoadingParams.current = true;
-      setQueryParams(params);
-      setTimeout(() => {
-        isLoadingParams.current = false;
-      }, 100);
+      const urlObj = new URL(urlToProcess);
+      const urlParams = new URLSearchParams(urlObj.search);
+      const params: QueryParam[] = [];
+      urlParams.forEach((value, key) => {
+        params.push({ key, value, enabled: true });
+      });
+
+      if (params.length === 0) {
+        params.push({ key: "", value: "", enabled: true });
+      }
+
+      const paramsChanged =
+        JSON.stringify(params) !== JSON.stringify(queryParams);
+      if (paramsChanged) {
+        isLoadingParams.current = true;
+        setQueryParams(params);
+        setTimeout(() => {
+          isLoadingParams.current = false;
+        }, 100);
+      }
+    } catch (error) {
+      // if URL parsing fails, log the error but do not update params
+      console.log("Could not parse URL for params extraction:", error);
     }
   }, [url]);
 
@@ -107,7 +123,6 @@ export const RequestForm = () => {
     );
 
     isInternalUpdate.current = true;
-
     if (enabledParams.length === 0) {
       setUrl(baseUrl);
       return;
@@ -116,7 +131,6 @@ export const RequestForm = () => {
     const queryString = enabledParams
       .map((p) => `${encodeURIComponent(p.key)}=${encodeURIComponent(p.value)}`)
       .join("&");
-
     setUrl(`${baseUrl}?${queryString}`);
   };
 
@@ -124,6 +138,7 @@ export const RequestForm = () => {
     <>
       <div className="p-4 space-y-4 col-span-5 h-full w-full">
         <TabComponent activeTab={activeTab} onTabChange={setActiveTab} />
+
         {activeTab === "body" && (
           <div className="mt-4">
             <label
@@ -136,7 +151,7 @@ export const RequestForm = () => {
             </label>
             <div
               className={clsx(
-                "border rounded-xl min-h-[492px]  max-h-[492px] overflow-hidden",
+                "border rounded-xl min-h-[492px] max-h-[492px] overflow-hidden",
                 theme === "dark"
                   ? "bg-[#10121b] border-gray-600"
                   : "bg-white border-gray-300"
@@ -183,6 +198,7 @@ export const RequestForm = () => {
             </button>
           </div>
         )}
+
         {activeTab === "auth" && (
           <div
             className={clsx(
@@ -219,6 +235,7 @@ export const RequestForm = () => {
             )}
           </div>
         )}
+
         {activeTab === "params" && (
           <div>
             <label
@@ -229,7 +246,6 @@ export const RequestForm = () => {
             >
               Query Parameters
             </label>
-
             <div
               className={clsx(
                 "mt-4 p-4 border rounded-xl space-y-2",
@@ -293,7 +309,6 @@ export const RequestForm = () => {
                   </div>
                 </div>
               ))}
-
               <button
                 onClick={addQueryParam}
                 className={clsx(
@@ -306,7 +321,6 @@ export const RequestForm = () => {
                 + Add Parameter
               </button>
             </div>
-
             <label
               className={clsx(
                 "block text-sm mb-2 mt-6",
@@ -347,6 +361,8 @@ export const RequestForm = () => {
             </div>
           </div>
         )}
+
+        {activeTab === "variables" && <VariablesTab />}
       </div>
     </>
   );

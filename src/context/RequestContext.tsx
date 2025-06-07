@@ -2,7 +2,7 @@ import { createContext, useContext, useState, ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-type Tab = "body" | "auth" | "params";
+type Tab = "body" | "auth" | "params" | "variables";
 
 export type QueryParam = {
   key: string;
@@ -33,7 +33,7 @@ type RequestContextType = {
   setActiveTab: (tab: Tab) => void;
   setBearerToken: (token: string) => void;
   setQueryParams: (params: QueryParam[]) => void;
-  handleRequest: () => Promise<void>;
+  handleRequest: (customUrl?: string) => Promise<void>;
   resetFields: () => void;
   formatJson: () => void;
   handleCopyResponse: () => void;
@@ -41,7 +41,11 @@ type RequestContextType = {
 
 const RequestContext = createContext<RequestContextType | undefined>(undefined);
 
-export const RequestProvider = ({ children }: { children: ReactNode }) => {
+interface RequestProviderProps {
+  children: ReactNode;
+}
+
+function RequestProvider({ children }: RequestProviderProps) {
   const [method, setMethod] = useState<HttpMethod>("GET");
   const [url, setUrl] = useState("");
   const [payload, setPayload] = useState("");
@@ -84,38 +88,57 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const handleRequest = async () => {
+  const handleRequest = async (customUrl?: string) => {
+    const finalUrl = customUrl || url;
+
     setLoading(true);
     setError(null);
     setIsCopied(false);
+    setResponse(null);
 
     try {
+      const urlToUse = finalUrl.trim();
+
+      if (!urlToUse) {
+        throw new Error("URL is required");
+      }
+      if (!urlToUse.startsWith("http://") && !urlToUse.startsWith("https://")) {
+        throw new Error("URL must start with http:// or https://");
+      }
+
       const body = payload.trim() ? JSON.parse(payload) : null;
 
       let result;
+      let invokeCommand;
+      let invokeParams;
+
       if (useBasicAuth) {
-        result = await invoke("basic_auth_request", {
+        invokeCommand = "basic_auth_request";
+        invokeParams = {
           method,
-          url,
+          url: urlToUse,
           body,
           username,
           password,
-        });
+        };
       } else if (bearerToken.trim()) {
-        result = await invoke("bearer_auth_request", {
+        invokeCommand = "bearer_auth_request";
+        invokeParams = {
           method,
-          url,
+          url: urlToUse,
           body,
           bearerToken,
-        });
+        };
       } else {
-        result = await invoke("plain_request", {
+        invokeCommand = "plain_request";
+        invokeParams = {
           method,
-          url,
+          url: urlToUse,
           body,
-        });
+        };
       }
 
+      result = await invoke(invokeCommand, invokeParams);
       setResponse(result);
     } catch (error) {
       setResponse(null);
@@ -132,46 +155,48 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     setIsCopied(true);
   };
 
+  const contextValue: RequestContextType = {
+    method,
+    url,
+    payload,
+    username,
+    password,
+    useBasicAuth,
+    activeTab,
+    bearerToken,
+    queryParams,
+    loading,
+    response,
+    error,
+    isCopied,
+    setMethod,
+    setUrl,
+    setPayload,
+    setUsername,
+    setPassword,
+    setUseBasicAuth,
+    setActiveTab,
+    setBearerToken,
+    setQueryParams,
+    handleRequest,
+    resetFields,
+    formatJson,
+    handleCopyResponse,
+  };
+
   return (
-    <RequestContext.Provider
-      value={{
-        method,
-        url,
-        payload,
-        username,
-        password,
-        useBasicAuth,
-        activeTab,
-        bearerToken,
-        queryParams,
-        loading,
-        response,
-        error,
-        isCopied,
-        setMethod,
-        setUrl,
-        setPayload,
-        setUsername,
-        setPassword,
-        setUseBasicAuth,
-        setActiveTab,
-        setBearerToken,
-        setQueryParams,
-        handleRequest,
-        resetFields,
-        formatJson,
-        handleCopyResponse,
-      }}
-    >
+    <RequestContext.Provider value={contextValue}>
       {children}
     </RequestContext.Provider>
   );
-};
+}
 
-export const useRequest = () => {
+function useRequest(): RequestContextType {
   const context = useContext(RequestContext);
   if (context === undefined) {
     throw new Error("useRequest must be used within a RequestProvider");
   }
   return context;
-};
+}
+
+export { RequestProvider, useRequest };
