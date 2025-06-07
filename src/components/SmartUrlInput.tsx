@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useVariables } from "../context/VariablesContext";
 import { useTheme } from "../context/ThemeContext";
-import { useBracketAutocompletion } from "../hooks/useBracketAutocompletion";
 import clsx from "clsx";
 
 interface SmartUrlInputProps {
@@ -33,7 +32,6 @@ export const SmartUrlInput = ({
   const [showPreview, setShowPreview] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);
-  const editableRef = useRef<HTMLDivElement>(null);
   const hiddenInputRef = useRef<HTMLInputElement>(null);
 
   const isLightTheme = theme === "light";
@@ -128,10 +126,10 @@ export const SmartUrlInput = ({
           <span
             key={`var-${index}`}
             className={clsx(
-              "text-white font-mono font-medium",
+              "text-white font-mono font-medium text-xs",
               isLightTheme
-                ? "px-2 py-1 rounded-md text-sm shadow-sm"
-                : "px-1 py-0.5 rounded text-xs",
+                ? "px-2 py-1 rounded-md shadow-sm"
+                : "px-1 py-0.5 rounded",
               match.exists
                 ? index === 0
                   ? isLightTheme
@@ -323,8 +321,8 @@ export const SmartUrlInput = ({
           className,
           "cursor-text relative z-5 flex items-center px-3 py-2.5",
           isLightTheme
-            ? "min-h-[42px] bg-white border border-gray-300 rounded-lg shadow-sm hover:border-gray-400 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-colors"
-            : "min-h-[40px] px-2 py-2"
+            ? "min-h-[40px] bg-white border border-gray-300 hover:border-gray-400 transition-colors"
+            : "min-h-[40px]"
         )}
       >
         {renderContent()}
@@ -379,22 +377,14 @@ export const SmartUrlInput = ({
           )}
         >
           <div className={isLightTheme ? "mb-4" : "mb-3"}>
-            <div
-              className={clsx(
-                "font-semibold mb-2 opacity-70",
-                isLightTheme ? "text-sm mb-3 text-gray-700" : "text-xs"
-              )}
-            >
+            <div className={clsx("font-semibold mb-2 opacity-70 text-xs")}>
               Variables found:
             </div>
             <div className={isLightTheme ? "space-y-2" : "space-y-1"}>
               {variableMatches.map((match, index) => (
                 <div
                   key={index}
-                  className={clsx(
-                    "flex items-center gap-2",
-                    isLightTheme ? "gap-3 text-sm" : "text-xs"
-                  )}
+                  className={clsx("flex items-center gap-2 text-xs")}
                 >
                   <div
                     className={clsx(
@@ -417,9 +407,9 @@ export const SmartUrlInput = ({
                   />
                   <span
                     className={clsx(
-                      "font-mono text-white font-medium",
+                      "font-mono text-white font-medium text-xs",
                       isLightTheme
-                        ? "px-2 py-1 rounded-md text-sm"
+                        ? "px-2 py-1 rounded-md"
                         : "px-1 py-0.5 rounded",
                       match.exists
                         ? index === 0
@@ -475,25 +465,20 @@ export const SmartUrlInput = ({
           </div>
 
           <div>
-            <div
-              className={clsx(
-                "font-semibold mb-1 opacity-70",
-                isLightTheme ? "text-sm mb-2 text-gray-700" : "text-xs"
-              )}
-            >
+            <div className={clsx("font-semibold mb-1 opacity-70 text-xs")}>
               Final URL:
             </div>
             <div
               className={clsx(
-                "font-mono p-2 rounded border",
+                "font-mono p-2 rounded border text-xs",
                 isLightTheme
                   ? clsx(
-                      "text-sm p-3 rounded-lg bg-gray-50 border-gray-200",
+                      "p-3 rounded-lg bg-gray-50 border-gray-200",
                       hasUnresolvedVariables &&
                         "text-rose-600 bg-rose-50 border-rose-200"
                     )
                   : clsx(
-                      "text-xs bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700",
+                      "bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700",
                       hasUnresolvedVariables && "text-red-500"
                     )
               )}
