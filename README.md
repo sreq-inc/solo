@@ -12,7 +12,11 @@
 ### macOS
 
 ```bash
-curl -L -o solo.zip https://github.com/sreq-inc/Solo/releases/download/0.0.2/solo_0.0.2_aarch64.dmg.zip && unzip solo.zip && open *.dmg
+curl -s https://api.github.com/repos/sreq-inc/solo/releases/latest \
+| grep "browser_download_url" \
+| grep ".dmg" \
+| cut -d '"' -f 4 \
+| xargs -n 1 curl -L --output solo.dmg && open solo.dmg
 ```
 
 ## Features
