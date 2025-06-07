@@ -3,9 +3,11 @@
   <h1>Solo is an HTTP request client</h1>
 </div>
 
-> I really don't care about your data
 
 [![CI](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml)
+
+![screely-1749340088717](https://github.com/user-attachments/assets/8189cedd-4466-468f-bb8b-a8c38240450e)
+
 
 ## Installation
 
