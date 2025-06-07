@@ -54,12 +54,14 @@ export const RequestForm = () => {
     }
 
     try {
-      // Tentar criar URL válida
+      // Try to parse the URL and extract query parameters
+      // If the URL is relative, prepend a base URL for parsing
       let urlToProcess = url;
       if (!url.startsWith("http://") && !url.startsWith("https://")) {
-        urlToProcess = "https://example.com" + (url.startsWith("/") ? url : "/" + url);
+        urlToProcess =
+          "https://example.com" + (url.startsWith("/") ? url : "/" + url);
       }
-      
+
       const urlObj = new URL(urlToProcess);
       const urlParams = new URLSearchParams(urlObj.search);
       const params: QueryParam[] = [];
@@ -81,7 +83,7 @@ export const RequestForm = () => {
         }, 100);
       }
     } catch (error) {
-      // Se não conseguir fazer parse da URL, não fazer nada
+      // if URL parsing fails, log the error but do not update params
       console.log("Could not parse URL for params extraction:", error);
     }
   }, [url]);
