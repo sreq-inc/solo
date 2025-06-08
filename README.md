@@ -23,15 +23,16 @@ curl -s https://api.github.com/repos/sreq-inc/solo/releases/latest \
 
 ## Features
 
-- User-friendly interface for creating and managing HTTP requests
-- Cross-platform (Windows, macOS, Linux)
+- 📁 Create and manage collections
+- 🌐 HTTP requests – PUT, POST, GET, DELETE, and PATCH
+- 🔐 Authentication – Bearer Token and Basic Auth
+- 🧩 Query parameters
+- 🧪 Variables
+- 📤 Export as cURL
+- 📝 JSON body formatting
+- 🧑‍💻 User-friendly interface for creating and managing HTTP requests
 
-## Technologies
-
-- Tauri 2
-- Tailwind CSS
-
-## Running the project
+## Running the project locally
 
 ```bash
 # Install dependencies
