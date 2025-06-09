@@ -1,4 +1,4 @@
-import { Variable } from "../context/RequestContext";
+import { Variable } from "../context/VariablesContext";
 
 export const useVariableSubstitution = () => {
   const replaceVariablesInUrl = (
