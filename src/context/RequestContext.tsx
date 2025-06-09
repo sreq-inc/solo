@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { useVariables, Variable } from "../context/VariablesContext";
+
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 type Tab = "body" | "auth" | "params" | "variables";
@@ -24,6 +26,7 @@ type RequestContextType = {
   response: any;
   error: string | null;
   isCopied: boolean;
+  variables: Variable[];
   setMethod: (method: HttpMethod) => void;
   setUrl: (url: string) => void;
   setPayload: (payload: string) => void;
@@ -37,6 +40,7 @@ type RequestContextType = {
   resetFields: () => void;
   formatJson: () => void;
   handleCopyResponse: () => void;
+  setVariables: (variables: Variable[]) => void;
 };
 
 const RequestContext = createContext<RequestContextType | undefined>(undefined);
@@ -61,6 +65,9 @@ function RequestProvider({ children }: RequestProviderProps) {
   const [response, setResponse] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
+
+  const { variables, setVariables } = useVariables();
+
 
   const resetFields = () => {
     setMethod("GET");
@@ -169,6 +176,8 @@ function RequestProvider({ children }: RequestProviderProps) {
     response,
     error,
     isCopied,
+    variables,
+    setVariables,
     setMethod,
     setUrl,
     setPayload,

@@ -6,6 +6,7 @@ import {
   ReactNode,
 } from "react";
 import { useRequest, QueryParam } from "./RequestContext";
+import type { Variable } from "../context/VariablesContext";
 
 type RequestData = {
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -18,6 +19,7 @@ type RequestData = {
   bearerToken?: string;
   activeTab?: "body" | "auth" | "params" | "variables";
   queryParams?: QueryParam[];
+  variables?: Variable[];
 };
 
 type StoredFile = {
@@ -63,6 +65,8 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     response,
     bearerToken,
     queryParams,
+    variables,
+    setVariables,
     resetFields,
     setMethod,
     setUrl,
@@ -279,6 +283,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
           activeTab,
           bearerToken,
           queryParams,
+          variables
         },
         currentRequestId,
         currentDisplayName
@@ -408,6 +413,9 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       setBearerToken(data.bearerToken || "");
       setQueryParams(
         data.queryParams || [{ key: "", value: "", enabled: true }]
+      );
+      setVariables(
+        data.variables || [{ key: "", value: "", enabled: true }]
       );
       setCurrentRequestId(fileName);
     } else {
