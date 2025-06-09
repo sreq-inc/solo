@@ -1,8 +1,19 @@
-import { useState, useRef, useEffect } from "react";
-import { useVariables } from "../context/VariablesContext";
+import React, { useState, useRef } from "react";
+import { clsx } from "clsx";
 import { useTheme } from "../context/ThemeContext";
-import clsx from "clsx";
+import { useVariables } from "../context/VariablesContext";
 
+// Interface for variable match results when parsing URL
+interface VariableMatch {
+  variable: string;      // The variable name found
+  exists: boolean;       // Whether the variable exists in our collection
+  value: string;         // The resolved value
+  fullMatch: string;     // The complete match string (e.g., "{{baseUrl}}")
+  start: number;         // Start position in the string
+  end: number;           // End position in the string
+}
+
+// Props interface for the SmartUrlInput component
 interface SmartUrlInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -10,43 +21,29 @@ interface SmartUrlInputProps {
   className?: string;
 }
 
-/**
- * SmartUrlInput Component
- *
- * An enhanced input field that provides:
- * - Auto-completion for curly brackets ({{ }})
- * - Visual highlighting of variables with colored backgrounds
- * - Real-time variable validation and preview
- * - Color-coded variable indicators (green for first, purple for others, red for undefined)
- *
- * Uses a contentEditable div to show colored variables instead of overlay approach
- */
-export const SmartUrlInput = ({
+export const SmartUrlInput: React.FC<SmartUrlInputProps> = ({
   value,
   onChange,
   placeholder = "",
-  className = "",
-}: SmartUrlInputProps) => {
-  const { variables, replaceVariablesInUrl } = useVariables();
+  className = ""
+}) => {
   const { theme } = useTheme();
-  const [showPreview, setShowPreview] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
-  const [cursorPosition, setCursorPosition] = useState(0);
-  const hiddenInputRef = useRef<HTMLInputElement>(null);
+  const { variables, replaceVariablesInUrl } = useVariables();
+  const [showPreview, setShowPreview] = useState<boolean>(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const isLightTheme = theme === "light";
-
-  /**
-   * Finds all variables in the format {{variableName}} within the text
-   * Returns array with variable info including position, existence, and value
-   */
-  const findVariables = (text: string) => {
-    const matches = [];
+  // Parse the input text to find all variable references
+  const findVariables = (text: string): VariableMatch[] => {
+    const matches: VariableMatch[] = [];
+    // Regex to match {{variableName}} patterns
     const regex = /\{\{\s*([^}]+)\s*\}\}/g;
-    let match;
+    let match: RegExpExecArray | null;
 
+    // Find all matches in the text
     while ((match = regex.exec(text)) !== null) {
       const variableName = match[1].trim();
+
+      // Check if this variable exists in our collection
       const existingVariable = variables.find(
         (v) => v.key.trim() === variableName && v.enabled && v.value.trim()
       );
@@ -63,189 +60,18 @@ export const SmartUrlInput = ({
     return matches;
   };
 
-  // Core state calculations
+  // Analyze current input value
   const variableMatches = findVariables(value);
   const hasVariables = variableMatches.length > 0;
   const processedUrl = hasVariables ? replaceVariablesInUrl(value) : value;
   const hasUnresolvedVariables = processedUrl.includes("{{");
-  const hasValidProtocol =
-    processedUrl.startsWith("http://") || processedUrl.startsWith("https://");
-  const needsProtocol =
-    processedUrl.trim() && !hasValidProtocol && !hasUnresolvedVariables;
 
-  // Track cursor position
-  useEffect(() => {
-    const updateCursor = () => {
-      if (hiddenInputRef.current) {
-        setCursorPosition(hiddenInputRef.current.selectionStart || 0);
-      }
-    };
-
-    const input = hiddenInputRef.current;
-    if (input) {
-      input.addEventListener("selectionchange", updateCursor);
-      input.addEventListener("keyup", updateCursor);
-      input.addEventListener("click", updateCursor);
-
-      return () => {
-        input.removeEventListener("selectionchange", updateCursor);
-        input.removeEventListener("keyup", updateCursor);
-        input.removeEventListener("click", updateCursor);
-      };
-    }
-  }, []);
-
-  /**
-   * Renders the content with highlighted variables and cursor
-   */
-  const renderContent = () => {
-    if (!isFocused && hasVariables) {
-      // When not focused and has variables, show colored segments
-      const segments = [];
-      let lastIndex = 0;
-
-      variableMatches.forEach((match, index) => {
-        // Add text before variable
-        if (match.start > lastIndex) {
-          segments.push(
-            <span
-              key={`text-${lastIndex}`}
-              className={
-                isLightTheme
-                  ? "text-gray-900"
-                  : "text-gray-900 dark:text-gray-100"
-              }
-            >
-              {value.substring(lastIndex, match.start)}
-            </span>
-          );
-        }
-
-        // Add colored variable
-        segments.push(
-          <span
-            key={`var-${index}`}
-            className={clsx(
-              "text-white font-mono font-medium text-xs px-1 py-0.5 rounded",
-              match.exists
-                ? index === 0
-                  ? isLightTheme
-                    ? "bg-emerald-500"
-                    : "bg-green-600"
-                  : isLightTheme
-                  ? "bg-violet-500"
-                  : "bg-purple-600"
-                : isLightTheme
-                ? "bg-rose-500"
-                : "bg-red-600"
-            )}
-          >
-            {match.fullMatch}
-          </span>
-        );
-
-        lastIndex = match.end;
-      });
-
-      // Add remaining text
-      if (lastIndex < value.length) {
-        segments.push(
-          <span
-            key={`text-${lastIndex}`}
-            className={
-              isLightTheme
-                ? "text-gray-900"
-                : "text-gray-900 dark:text-gray-100"
-            }
-          >
-            {value.substring(lastIndex)}
-          </span>
-        );
-      }
-
-      return segments.length > 0 ? (
-        segments
-      ) : (
-        <span className={isLightTheme ? "text-gray-500" : "text-gray-400"}>
-          {placeholder}
-        </span>
-      );
-    }
-
-    // When focused or no variables, show text with cursor
-    const beforeCursor = value.substring(0, cursorPosition);
-    const afterCursor = value.substring(cursorPosition);
-
-    if (!value) {
-      return (
-        <span
-          className={clsx(
-            "relative",
-            isLightTheme ? "text-gray-500" : "text-gray-400"
-          )}
-        >
-          {placeholder}
-          {isFocused && (
-            <span
-              className={clsx(
-                "absolute left-0 top-0 w-0.5 h-5 animate-pulse",
-                isLightTheme ? "bg-blue-500" : "bg-gray-900 dark:bg-gray-100"
-              )}
-            />
-          )}
-        </span>
-      );
-    }
-
-    return (
-      <span
-        className={clsx(
-          "relative inline-block",
-          isLightTheme ? "text-gray-900" : "text-gray-900 dark:text-gray-100"
-        )}
-      >
-        <span
-          className={
-            isLightTheme ? "text-gray-900" : "text-gray-900 dark:text-gray-100"
-          }
-        >
-          {beforeCursor}
-        </span>
-        {isFocused && (
-          <span
-            className={clsx(
-              "w-0.5 h-5 animate-pulse inline-block relative top-1",
-              isLightTheme ? "bg-blue-500" : "bg-gray-900 dark:bg-gray-100"
-            )}
-          />
-        )}
-        <span
-          className={
-            isLightTheme ? "text-gray-900" : "text-gray-900 dark:text-gray-100"
-          }
-        >
-          {afterCursor}
-        </span>
-      </span>
-    );
-  };
-
-  /**
-   * Handle input changes from the hidden input
-   */
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(e.target.value);
-    setCursorPosition(e.target.selectionStart || 0);
-  };
-
-  /**
-   * Handle key events for bracket autocompletion
-   */
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Handle bracket autocompletion
+  // Handle keyboard shortcuts for easier variable input
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    // Auto-complete braces when user types '{'
     if (e.key === "{") {
       e.preventDefault();
-      const input = hiddenInputRef.current;
+      const input = inputRef.current;
       if (!input) return;
 
       const selectionStart = input.selectionStart || 0;
@@ -255,103 +81,83 @@ export const SmartUrlInput = ({
       let newValue: string;
       let newCursorPosition: number;
 
+      // If previous character is also '{', complete the variable syntax
       if (beforeCursor.endsWith("{")) {
-        // Second {, complete with {{}}
         newValue = beforeCursor + "{}" + afterCursor;
-        newCursorPosition = selectionStart + 1;
+        newCursorPosition = selectionStart + 1; // Position cursor between braces
       } else {
-        // First {, complete with {}
         newValue = beforeCursor + "{}" + afterCursor;
         newCursorPosition = selectionStart + 1;
       }
 
       onChange(newValue);
 
+      // Set cursor position after state update
       setTimeout(() => {
         if (input) {
           input.setSelectionRange(newCursorPosition, newCursorPosition);
-          setCursorPosition(newCursorPosition);
         }
       }, 0);
     }
   };
 
-  /**
-   * Focus the hidden input when the visible div is clicked
-   */
-  const handleDivClick = () => {
-    if (hiddenInputRef.current) {
-      hiddenInputRef.current.focus();
-    }
+  // Show preview when input gains focus
+  const handleFocus = (): void => {
+    setShowPreview(true);
+  };
+
+  // Hide preview when input loses focus (with small delay to allow clicking on preview)
+  const handleBlur = (): void => {
+    setTimeout(() => setShowPreview(false), 200);
+  };
+
+  // Handle input value changes
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    onChange(e.target.value);
+  };
+
+  // Get color for variable indicator dots based on variable state
+  const getVariableIndicatorColor = (match: VariableMatch, index: number): string => {
+    return clsx({
+      "bg-red-500": !match.exists, // Red for undefined variables
+      "bg-green-500": match.exists && index === 0, // Green for first existing variable
+      "bg-purple-500": match.exists && index > 0 // Purple for all existing variables after the first
+    });
+  };
+
+  // Get color for variable preview boxes
+  const getVariablePreviewColor = (match: VariableMatch, index: number): string => {
+    return clsx({
+      "bg-red-500 text-white": !match.exists,
+      "bg-green-600 text-white": match.exists && index === 0,
+      "bg-purple-600 text-white": match.exists && index > 0 // Purple for all existing variables after the first
+    });
   };
 
   return (
     <div className="relative w-full">
-      {/* Hidden input for actual text editing */}
+      {/* Main input field */}
       <input
-        ref={hiddenInputRef}
+        ref={inputRef}
         type="text"
         value={value}
-        onChange={handleInputChange}
+        onChange={handleChange}
         onKeyDown={handleKeyDown}
-        onFocus={() => {
-          setIsFocused(true);
-          setShowPreview(true);
-        }}
-        onBlur={() => {
-          setIsFocused(false);
-          setTimeout(() => setShowPreview(false), 200);
-        }}
-        onSelect={(e) => setCursorPosition(e.currentTarget.selectionStart || 0)}
-        className={clsx(
-          "absolute inset-0 pointer-events-auto z-10 caret-transparent ring-0 focus:ring-0 focus:outline-none",
-          isLightTheme
-            ? "opacity-0 text-transparent"
-            : "opacity-0 text-white dark:text-white"
-        )}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        placeholder={placeholder}
+        className={className}
       />
 
-      {/* Visible content with colored variables */}
-      <div
-        onClick={handleDivClick}
-        className={clsx(
-          className,
-          "cursor-text relative z-5 flex items-center px-3 py-2.5",
-          isLightTheme
-            ? "min-h-[40px] bg-white border border-gray-300 hover:border-gray-400 transition-colors"
-            : "min-h-[40px]"
-        )}
-      >
-        {renderContent()}
-      </div>
-
-      {/* Variable status indicators */}
+      {/* Variable indicator dots - shown when variables are detected */}
       {hasVariables && (
-        <div
-          className={clsx(
-            "absolute top-1/2 transform -translate-y-1/2 flex z-20",
-            isLightTheme ? "right-3 gap-1.5" : "right-2 gap-1"
-          )}
-        >
+        <div className="absolute top-1/2 transform -translate-y-1/2 right-3 flex gap-1">
           {variableMatches.map((match, index) => (
             <div
-              key={index}
+              key={`${match.variable}-${index}`}
               className={clsx(
-                "rounded-full",
-                isLightTheme
-                  ? "w-2.5 h-2.5 border border-white shadow-sm"
-                  : "w-2 h-2",
-                match.exists
-                  ? index === 0
-                    ? isLightTheme
-                      ? "bg-emerald-500"
-                      : "bg-green-500"
-                    : isLightTheme
-                    ? "bg-violet-500"
-                    : "bg-purple-500"
-                  : isLightTheme
-                  ? "bg-rose-500"
-                  : "bg-red-500"
+                "w-2 h-2 rounded-full",
+                getVariableIndicatorColor(match, index)
               )}
               title={
                 match.exists
@@ -363,96 +169,69 @@ export const SmartUrlInput = ({
         </div>
       )}
 
-      {/* Variable preview tooltip */}
+      {/* Variable preview panel - shown on focus when variables exist */}
       {showPreview && hasVariables && (
-        <div
-          className={clsx(
-            "absolute top-full left-0 right-0 mt-1 rounded-md border shadow-lg z-50",
-            isLightTheme
-              ? "mt-2 p-4 rounded-lg shadow-xl bg-white border-gray-200 text-gray-900"
-              : "p-3 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
-          )}
-        >
-          <div className={isLightTheme ? "mb-4" : "mb-3"}>
-            <div className={clsx("font-semibold mb-2 opacity-70 text-xs")}>
+        <div className={clsx(
+          "absolute top-full left-0 right-0 mt-1 p-3 rounded-md shadow-lg z-50 border",
+          {
+            "bg-gray-800 border-gray-600 text-white": theme === "dark",
+            "bg-white border-gray-300 text-gray-900": theme === "light"
+          }
+        )}>
+
+          {/* Variables found section */}
+          <div className="mb-3">
+            <div className={clsx(
+              "font-semibold mb-2 text-xs",
+              {
+                "text-gray-300": theme === "dark",
+                "text-gray-600": theme === "light"
+              }
+            )}>
               Variables found:
             </div>
-            <div className={isLightTheme ? "space-y-2" : "space-y-1"}>
+            <div className="space-y-1">
               {variableMatches.map((match, index) => (
-                <div
-                  key={index}
-                  className={clsx("flex items-center gap-2 text-xs")}
-                >
-                  <div
-                    className={clsx(
-                      "rounded-full flex-shrink-0",
-                      isLightTheme
-                        ? "w-2.5 h-2.5 border border-white shadow-sm"
-                        : "w-2 h-2",
-                      match.exists
-                        ? index === 0
-                          ? isLightTheme
-                            ? "bg-emerald-500"
-                            : "bg-green-500"
-                          : isLightTheme
-                          ? "bg-violet-500"
-                          : "bg-purple-500"
-                        : isLightTheme
-                        ? "bg-rose-500"
-                        : "bg-red-500"
-                    )}
-                  />
-                  <span
-                    className={clsx(
-                      "font-mono text-white font-medium text-xs",
-                      isLightTheme
-                        ? "px-2 py-1 rounded-md"
-                        : "px-1 py-0.5 rounded",
-                      match.exists
-                        ? index === 0
-                          ? isLightTheme
-                            ? "bg-emerald-600"
-                            : "bg-green-700"
-                          : isLightTheme
-                          ? "bg-violet-600"
-                          : "bg-purple-600"
-                        : isLightTheme
-                        ? "bg-rose-600"
-                        : "bg-red-600"
-                    )}
-                  >
-                    {"{{"}
-                    {match.variable}
-                    {"}}"}
+                <div key={`${match.variable}-preview-${index}`} className="flex items-center gap-2 text-xs">
+                  {/* Color indicator dot */}
+                  <div className={clsx(
+                    "w-2 h-2 rounded-full",
+                    getVariableIndicatorColor(match, index)
+                  )} />
+
+                  {/* Variable name in original syntax */}
+                  <span className={clsx(
+                    "font-mono px-2 py-1 rounded",
+                    getVariablePreviewColor(match, index)
+                  )}>
+                    {match.fullMatch}
                   </span>
+
+                  {/* Arrow and resolved value (if variable exists) */}
                   {match.exists ? (
                     <>
-                      <span
-                        className={
-                          isLightTheme ? "text-gray-400" : "opacity-50"
+                      <span className={clsx({
+                        "text-gray-400": theme === "dark",
+                        "text-gray-500": theme === "light"
+                      })}>→</span>
+                      <span className={clsx(
+                        "font-mono px-2 py-1 rounded",
+                        {
+                          "text-blue-300 bg-blue-900": theme === "dark",
+                          "text-blue-600 bg-blue-50": theme === "light"
                         }
-                      >
-                        →
-                      </span>
-                      <span
-                        className={clsx(
-                          "font-mono",
-                          isLightTheme
-                            ? "text-blue-600 bg-blue-50 px-2 py-1 rounded"
-                            : "text-blue-600 dark:text-blue-400"
-                        )}
-                      >
+                      )}>
                         {match.value}
                       </span>
                     </>
                   ) : (
-                    <span
-                      className={clsx(
-                        isLightTheme
-                          ? "text-rose-600 font-medium"
-                          : "text-red-600 dark:text-red-400 text-xs"
-                      )}
-                    >
+                    <span className={clsx(
+                      "font-medium",
+                      {
+                        "text-red-400": theme === "dark",
+                        "text-red-600": theme === "light"
+                      }
+                    )}>
                       (not defined)
                     </span>
                   )}
@@ -461,69 +240,42 @@ export const SmartUrlInput = ({
             </div>
           </div>
 
+          {/* Final URL preview section */}
           <div>
-            <div className={clsx("font-semibold mb-1 opacity-70 text-xs")}>
+            <div className={clsx(
+              "font-semibold mb-1 text-xs",
+              {
+                "text-gray-300": theme === "dark",
+                "text-gray-600": theme === "light"
+              }
+            )}>
               Final URL:
             </div>
-            <div
-              className={clsx(
-                "font-mono p-2 rounded border text-xs",
-                isLightTheme
-                  ? clsx(
-                      "p-3 rounded-lg bg-gray-50 border-gray-200",
-                      hasUnresolvedVariables &&
-                        "text-rose-600 bg-rose-50 border-rose-200"
-                    )
-                  : clsx(
-                      "bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700",
-                      hasUnresolvedVariables && "text-red-500"
-                    )
-              )}
-            >
+            <div className={clsx(
+              "font-mono p-2 rounded border text-xs",
+              {
+                // Unresolved variables styling
+                "text-red-400 bg-red-900 border-red-600": hasUnresolvedVariables && theme === "dark",
+                "text-red-600 bg-red-50 border-red-200": hasUnresolvedVariables && theme === "light",
+                // Normal styling
+                "bg-gray-700 border-gray-600 text-gray-200": !hasUnresolvedVariables && theme === "dark",
+                "bg-gray-50 border-gray-200 text-gray-800": !hasUnresolvedVariables && theme === "light"
+              }
+            )}>
               {processedUrl}
             </div>
           </div>
 
+          {/* Warning for unresolved variables */}
           {hasUnresolvedVariables && (
-            <div
-              className={clsx(
-                "mt-2 p-2 rounded text-xs",
-                isLightTheme
-                  ? "mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800"
-                  : "bg-yellow-100 dark:bg-yellow-900 border border-yellow-300 dark:border-yellow-600 text-yellow-800 dark:text-yellow-200"
-              )}
-            >
-              {isLightTheme ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-amber-500">⚠️</span>
-                  <span className="font-medium">
-                    Some variables are not defined
-                  </span>
-                </div>
-              ) : (
-                "⚠️ Some variables are not defined"
-              )}
-            </div>
-          )}
-          {needsProtocol && (
-            <div
-              className={clsx(
-                "mt-2 p-2 rounded text-xs",
-                isLightTheme
-                  ? "mt-3 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800"
-                  : "bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-600 text-red-800 dark:text-red-200"
-              )}
-            >
-              {isLightTheme ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-rose-500">❌</span>
-                  <span className="font-medium">
-                    URL must start with http:// or https://
-                  </span>
-                </div>
-              ) : (
-                "❌ URL must start with http:// or https://"
-              )}
+            <div className={clsx(
+              "mt-2 p-2 rounded text-xs border",
+              {
+                "bg-yellow-900 border-yellow-600 text-yellow-300": theme === "dark",
+                "bg-yellow-50 border-yellow-200 text-yellow-800": theme === "light"
+              }
+            )}>
+              ⚠️ Some variables are not defined
             </div>
           )}
         </div>
