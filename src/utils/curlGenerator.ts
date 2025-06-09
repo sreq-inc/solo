@@ -11,10 +11,36 @@ interface RequestData {
   queryParams?: QueryParam[];
 }
 
+// Function to replace variables in the format {{variableName}}
+const replaceVariables = (text: string): string => {
+  try {
+    // Get variables from localStorage
+    const savedVariables = localStorage.getItem("solo-variables");
+    if (!savedVariables) return text;
+
+    const variables = JSON.parse(savedVariables);
+    let processedText = text;
+
+    // Replace each enabled variable
+    variables.forEach((variable: any) => {
+      if (variable.enabled && variable.key.trim() && variable.value.trim()) {
+        const pattern = new RegExp(`\\{\\{\\s*${variable.key.trim()}\\s*\\}\\}`, 'g');
+        processedText = processedText.replace(pattern, variable.value.trim());
+      }
+    });
+
+    return processedText;
+  } catch (error) {
+    console.error('Error processing variables:', error);
+    return text;
+  }
+};
+
 export const generateCurl = (requestData: RequestData): string => {
   let curl = `curl -X ${requestData.method}`;
 
-  let finalUrl = requestData.url || "";
+  // Process the URL by replacing variables
+  let finalUrl = replaceVariables(requestData.url || "");
 
   if (requestData.queryParams && requestData.queryParams.length > 0) {
     const enabledParams = requestData.queryParams.filter(
