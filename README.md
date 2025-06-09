@@ -6,7 +6,8 @@
 
 [![CI](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml)
 
-![screely-1749340088717](https://github.com/user-attachments/assets/8189cedd-4466-468f-bb8b-a8c38240450e)
+<img width="1109" alt="image" src="https://github.com/user-attachments/assets/df293f7e-29f3-4c3b-a5fd-c2232bc2b45a" />
+
 
 
 ## Installation
