@@ -6,7 +6,8 @@
 
 [![CI](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml)
 
-<img width="1109" alt="image" src="https://github.com/user-attachments/assets/df293f7e-29f3-4c3b-a5fd-c2232bc2b45a" />
+<img width="1106" alt="image" src="https://github.com/user-attachments/assets/1edebfa9-ff8a-466a-a5ae-4b8eed207a39" />
+
 
 
 
