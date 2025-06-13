@@ -155,5 +155,18 @@ pub async fn graphql_basic_auth_request(
     send_and_parse(request).await
 }
 
+#[command]
+pub async fn graphql_bearer_auth_request(
+    url: String,
+    query: String,
+    variables: Option<serde_json::Value>,
+    bearer_token: String,
+) -> Result<ApiResponse, String> {
+    let client = Client::new();
+    let request = build_graphql_request(&client, &url, &query, variables)
+        .header("Authorization", format!("Bearer {}", bearer_token));
+    send_and_parse(request).await
+}
+
 #[cfg(test)]
 mod tests;

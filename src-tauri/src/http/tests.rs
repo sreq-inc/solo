@@ -190,7 +190,6 @@ async fn test_graphql_request_success() {
             .json_body(json!({
                 "query": "query { users { id name } }",
                 "variables": null
-
             }));
         then.status(200)
             .header("Content-Type", "application/json")
@@ -208,6 +207,210 @@ async fn test_graphql_request_success() {
         server.url("/graphql").into(),
         "query { users { id name } }".into(),
         None,
+    )
+    .await;
+
+    assert!(result.is_ok());
+    let response = result.unwrap();
+    assert!(response.success);
+    mock.assert();
+}
+
+#[tokio::test]
+async fn test_graphql_request_with_variables() {
+    let server = MockServer::start();
+    let variables = json!({
+        "userId": 1,
+        "limit": 10
+    });
+
+    let mock = server.mock(|when, then| {
+        when.method(POST)
+            .header("Content-Type", "application/json")
+            .json_body(json!({
+                "query": "query GetUser($userId: ID!, $limit: Int) { user(id: $userId) { posts(limit: $limit) { title } } }",
+                "variables": {
+                    "userId": 1,
+                    "limit": 10
+                }
+            }));
+        then.status(200)
+            .header("Content-Type", "application/json")
+            .json_body(json!({
+                "data": {
+                    "user": {
+                        "posts": [
+                            {"title": "First Post"},
+                            {"title": "Second Post"}
+                        ]
+                    }
+                }
+            }));
+    });
+
+    let result = graphql_request(
+        server.url("/graphql").into(),
+        "query GetUser($userId: ID!, $limit: Int) { user(id: $userId) { posts(limit: $limit) { title } } }".into(),
+        Some(variables),
+    ).await;
+
+    assert!(result.is_ok());
+    let response = result.unwrap();
+    assert!(response.success);
+    mock.assert();
+}
+
+#[tokio::test]
+async fn test_graphql_basic_auth_request() {
+    let server = MockServer::start();
+    let mock = server.mock(|when, then| {
+        when.method(POST)
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Basic dXNlcjpwYXNz")
+            .json_body(json!({
+                "query": "query { me { id name } }",
+                "variables": null
+            }));
+        then.status(200)
+            .header("Content-Type", "application/json")
+            .json_body(json!({
+                "data": {
+                    "me": {
+                        "id": "1",
+                        "name": "Authenticated User"
+                    }
+                }
+            }));
+    });
+
+    let result = graphql_basic_auth_request(
+        server.url("/graphql").into(),
+        "query { me { id name } }".into(),
+        None,
+        "user".into(),
+        "pass".into(),
+    )
+    .await;
+
+    assert!(result.is_ok());
+    let response = result.unwrap();
+    assert!(response.success);
+    mock.assert();
+}
+
+#[tokio::test]
+async fn test_graphql_bearer_auth_request() {
+    let server = MockServer::start();
+    let mock = server.mock(|when, then| {
+        when.method(POST)
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer token123")
+            .json_body(json!({
+                "query": "query { me { id name } }",
+                "variables": null
+            }));
+        then.status(200)
+            .header("Content-Type", "application/json")
+            .json_body(json!({
+                "data": {
+                    "me": {
+                        "id": "1",
+                        "name": "Bearer Authenticated User"
+                    }
+                }
+            }));
+    });
+
+    let result = graphql_bearer_auth_request(
+        server.url("/graphql").into(),
+        "query { me { id name } }".into(),
+        None,
+        "token123".into(),
+    )
+    .await;
+
+    assert!(result.is_ok());
+    let response = result.unwrap();
+    assert!(response.success);
+    mock.assert();
+}
+
+#[tokio::test]
+async fn test_graphql_error_response() {
+    let server = MockServer::start();
+    let mock = server.mock(|when, then| {
+        when.method(POST)
+            .header("Content-Type", "application/json")
+            .json_body(json!({
+                "query": "query { invalidField }",
+                "variables": null
+            }));
+        then.status(200)
+            .header("Content-Type", "application/json")
+            .json_body(json!({
+                "errors": [
+                    {
+                        "message": "Cannot query field 'invalidField' on type 'Query'",
+                        "locations": [{"line": 1, "column": 9}]
+                    }
+                ]
+            }));
+    });
+
+    let result = graphql_request(
+        server.url("/graphql").into(),
+        "query { invalidField }".into(),
+        None,
+    )
+    .await;
+
+    assert!(result.is_ok());
+    let response = result.unwrap();
+    assert!(response.success); // HTTP 200 is still success, GraphQL errors are in the response body
+    assert!(response.data.is_some());
+    mock.assert();
+}
+
+#[tokio::test]
+async fn test_graphql_mutation() {
+    let server = MockServer::start();
+    let variables = json!({
+        "input": {
+            "name": "New User",
+            "email": "user@example.com"
+        }
+    });
+
+    let mock = server.mock(|when, then| {
+        when.method(POST)
+            .header("Content-Type", "application/json")
+            .json_body(json!({
+                "query": "mutation CreateUser($input: UserInput!) { createUser(input: $input) { id name email } }",
+                "variables": {
+                    "input": {
+                        "name": "New User",
+                        "email": "user@example.com"
+                    }
+                }
+            }));
+        then.status(200)
+            .header("Content-Type", "application/json")
+            .json_body(json!({
+                "data": {
+                    "createUser": {
+                        "id": "3",
+                        "name": "New User",
+                        "email": "user@example.com"
+                    }
+                }
+            }));
+    });
+
+    let result = graphql_request(
+        server.url("/graphql").into(),
+        "mutation CreateUser($input: UserInput!) { createUser(input: $input) { id name email } }"
+            .into(),
+        Some(variables),
     )
     .await;
 
