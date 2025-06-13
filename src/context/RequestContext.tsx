@@ -2,7 +2,8 @@ import { createContext, useContext, useState, ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-type Tab = "body" | "auth" | "params";
+type Tab = "body" | "auth" | "params" | "graphql";
+type RequestType = "http" | "graphql";
 
 export type QueryParam = {
   key: string;
@@ -24,6 +25,9 @@ type RequestContextType = {
   response: any;
   error: string | null;
   isCopied: boolean;
+  requestType: RequestType;
+  graphqlQuery: string;
+  graphqlVariables: string;
   setMethod: (method: HttpMethod) => void;
   setUrl: (url: string) => void;
   setPayload: (payload: string) => void;
@@ -33,16 +37,20 @@ type RequestContextType = {
   setActiveTab: (tab: Tab) => void;
   setBearerToken: (token: string) => void;
   setQueryParams: (params: QueryParam[]) => void;
+  setRequestType: (type: RequestType) => void;
+  setGraphqlQuery: (query: string) => void;
+  setGraphqlVariables: (variables: string) => void;
   handleRequest: () => Promise<void>;
   resetFields: () => void;
   formatJson: () => void;
+  formatGraphqlVariables: () => void;
   handleCopyResponse: () => void;
 };
 
 const RequestContext = createContext<RequestContextType | undefined>(undefined);
 
 export const RequestProvider = ({ children }: { children: ReactNode }) => {
-  const [method, setMethod] = useState<HttpMethod>("GET");
+  const [method, setMethod] = useState<HttpMethod>("POST");
   const [url, setUrl] = useState("");
   const [payload, setPayload] = useState("");
   const [username, setUsername] = useState("");
@@ -57,20 +65,25 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
   const [response, setResponse] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
+  const [requestType, setRequestType] = useState<RequestType>("http");
+  const [graphqlQuery, setGraphqlQuery] = useState("");
+  const [graphqlVariables, setGraphqlVariables] = useState("{}");
 
   const resetFields = () => {
-    setMethod("GET");
+    setMethod(requestType === "graphql" ? "POST" : "GET");
     setUrl("");
     setPayload("");
     setUsername("");
     setPassword("");
     setUseBasicAuth(false);
-    setActiveTab("body");
+    setActiveTab(requestType === "graphql" ? "graphql" : "body");
     setResponse(null);
     setError(null);
     setBearerToken("");
     setIsCopied(false);
     setQueryParams([{ key: "", value: "", enabled: true }]);
+    setGraphqlQuery("");
+    setGraphqlVariables("{}");
   };
 
   const formatJson = () => {
@@ -84,36 +97,77 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const formatGraphqlVariables = () => {
+    try {
+      const sanitized = graphqlVariables.replace(/[""]/g, '"').replace(/['']/g, "'");
+      const parsed = JSON.parse(sanitized);
+      setGraphqlVariables(JSON.stringify(parsed, null, 2));
+    } catch (error) {
+      console.error("Invalid JSON");
+      alert("Invalid JSON format. Please correct it before formatting.");
+    }
+  };
+
   const handleRequest = async () => {
     setLoading(true);
     setError(null);
     setIsCopied(false);
 
     try {
-      const body = payload.trim() ? JSON.parse(payload) : null;
-
       let result;
-      if (useBasicAuth) {
-        result = await invoke("basic_auth_request", {
-          method,
-          url,
-          body,
-          username,
-          password,
-        });
-      } else if (bearerToken.trim()) {
-        result = await invoke("bearer_auth_request", {
-          method,
-          url,
-          body,
-          bearerToken,
-        });
+
+      if (requestType === "graphql") {
+        // For GraphQL requests, we always use POST method
+        const variables = graphqlVariables.trim() ? JSON.parse(graphqlVariables) : {};
+
+        if (useBasicAuth) {
+          result = await invoke("graphql_basic_auth_request", {
+            url,
+            query: graphqlQuery,
+            variables,
+            username,
+            password,
+          });
+        } else if (bearerToken.trim()) {
+          result = await invoke("graphql_bearer_auth_request", {
+            url,
+            query: graphqlQuery,
+            variables,
+            bearerToken,
+          });
+        } else {
+          result = await invoke("graphql_request", {
+            url,
+            query: graphqlQuery,
+            variables,
+          });
+        }
       } else {
-        result = await invoke("plain_request", {
-          method,
-          url,
-          body,
-        });
+        // Regular HTTP requests
+        const body = payload.trim() ? JSON.parse(payload) : null;
+
+        if (useBasicAuth) {
+          result = await invoke("basic_auth_request", {
+            method,
+            url,
+            body,
+            username,
+            password,
+          });
+        } else if (bearerToken.trim()) {
+          result = await invoke("bearer_auth_request", {
+            method,
+            url,
+            body,
+            bearerToken,
+          });
+        } else {
+          result = await invoke("plain_request", {
+            method,
+            url,
+            body,
+          });
+        }
       }
 
       setResponse(result);
@@ -148,6 +202,9 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
         response,
         error,
         isCopied,
+        requestType,
+        graphqlQuery,
+        graphqlVariables,
         setMethod,
         setUrl,
         setPayload,
@@ -157,9 +214,13 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
         setActiveTab,
         setBearerToken,
         setQueryParams,
+        setRequestType,
+        setGraphqlQuery,
+        setGraphqlVariables,
         handleRequest,
         resetFields,
         formatJson,
+        formatGraphqlVariables,
         handleCopyResponse,
       }}
     >

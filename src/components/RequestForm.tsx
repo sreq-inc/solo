@@ -1,4 +1,5 @@
 import { TabComponent } from "./TabComponent";
+import { GraphQLEditor } from "./GraphQLEditor";
 import { useEffect, useState, useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useRequest, QueryParam } from "../context/RequestContext";
@@ -20,6 +21,7 @@ export const RequestForm = () => {
     bearerToken,
     url,
     queryParams,
+    requestType,
     setPayload,
     setUsername,
     setPassword,
@@ -48,10 +50,13 @@ export const RequestForm = () => {
       return;
     }
 
+    if (requestType === "graphql") {
+      return; // Skip URL parsing for GraphQL requests
+    }
+
     const urlObj = new URL(url || "https://example.com");
     const urlParams = new URLSearchParams(urlObj.search);
     const params: QueryParam[] = [];
-
     urlParams.forEach((value, key) => {
       params.push({ key, value, enabled: true });
     });
@@ -62,7 +67,6 @@ export const RequestForm = () => {
 
     const paramsChanged =
       JSON.stringify(params) !== JSON.stringify(queryParams);
-
     if (paramsChanged && url.includes("?")) {
       isLoadingParams.current = true;
       setQueryParams(params);
@@ -70,7 +74,7 @@ export const RequestForm = () => {
         isLoadingParams.current = false;
       }, 100);
     }
-  }, [url]);
+  }, [url, requestType]);
 
   const lines = payload.split("\n");
 
@@ -107,7 +111,6 @@ export const RequestForm = () => {
     );
 
     isInternalUpdate.current = true;
-
     if (enabledParams.length === 0) {
       setUrl(baseUrl);
       return;
@@ -116,15 +119,36 @@ export const RequestForm = () => {
     const queryString = enabledParams
       .map((p) => `${encodeURIComponent(p.key)}=${encodeURIComponent(p.value)}`)
       .join("&");
-
     setUrl(`${baseUrl}?${queryString}`);
   };
+
+  // Get available tabs based on request type
+  const getAvailableTabs = () => {
+    if (requestType === "graphql") {
+      return ["graphql", "auth"] as const;
+    }
+    return ["body", "auth", "params"] as const;
+  };
+
+  const availableTabs = getAvailableTabs();
 
   return (
     <>
       <div className="p-4 space-y-4 col-span-5 h-full w-full">
-        <TabComponent activeTab={activeTab} onTabChange={setActiveTab} />
-        {activeTab === "body" && (
+        <TabComponent
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          availableTabs={availableTabs}
+          requestType={requestType}
+        />
+
+        {/* GraphQL Editor */}
+        {activeTab === "graphql" && requestType === "graphql" && (
+          <GraphQLEditor />
+        )}
+
+        {/* HTTP Body Editor */}
+        {activeTab === "body" && requestType === "http" && (
           <div className="mt-4">
             <label
               className={clsx(
@@ -136,7 +160,7 @@ export const RequestForm = () => {
             </label>
             <div
               className={clsx(
-                "border rounded-xl min-h-[492px]  max-h-[492px] overflow-hidden",
+                "border rounded-xl min-h-[492px] max-h-[492px] overflow-hidden",
                 theme === "dark"
                   ? "bg-[#10121b] border-gray-600"
                   : "bg-white border-gray-300"
@@ -183,6 +207,8 @@ export const RequestForm = () => {
             </button>
           </div>
         )}
+
+        {/* Auth Tab */}
         {activeTab === "auth" && (
           <div
             className={clsx(
@@ -219,7 +245,9 @@ export const RequestForm = () => {
             )}
           </div>
         )}
-        {activeTab === "params" && (
+
+        {/* Params Tab - Only for HTTP requests */}
+        {activeTab === "params" && requestType === "http" && (
           <div>
             <label
               className={clsx(
@@ -229,7 +257,6 @@ export const RequestForm = () => {
             >
               Query Parameters
             </label>
-
             <div
               className={clsx(
                 "mt-4 p-4 border rounded-xl space-y-2",
@@ -293,7 +320,6 @@ export const RequestForm = () => {
                   </div>
                 </div>
               ))}
-
               <button
                 onClick={addQueryParam}
                 className={clsx(

@@ -1,6 +1,6 @@
+use base64::{engine::general_purpose, Engine};
 use reqwest::{Client, RequestBuilder};
 use serde::{Deserialize, Serialize};
-use base64::{engine::general_purpose, Engine};
 use tauri::command;
 
 #[derive(Serialize, Deserialize)]
@@ -8,6 +8,12 @@ pub struct ApiResponse {
     pub success: bool,
     pub data: Option<serde_json::Value>,
     pub error: Option<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct GraphQLRequest {
+    pub query: String,
+    pub variables: Option<serde_json::Value>,
 }
 
 fn build_request(
@@ -30,6 +36,23 @@ fn build_request(
     } else {
         request
     })
+}
+
+fn build_graphql_request(
+    client: &Client,
+    url: &str,
+    query: &str,
+    variables: Option<serde_json::Value>,
+) -> RequestBuilder {
+    let graphql_body = GraphQLRequest {
+        query: query.to_string(),
+        variables,
+    };
+
+    client
+        .post(url)
+        .header("Content-Type", "application/json")
+        .json(&graphql_body)
 }
 
 fn handle_basic_auth(
@@ -67,6 +90,7 @@ async fn send_and_parse(request: RequestBuilder) -> Result<ApiResponse, String> 
     }
 }
 
+// Regular HTTP request commands
 #[command]
 pub async fn plain_request(
     method: String,
@@ -105,6 +129,31 @@ pub async fn bearer_auth_request(
     send_and_parse(request).await
 }
 
+// GraphQL request commands
+#[command]
+pub async fn graphql_request(
+    url: String,
+    query: String,
+    variables: Option<serde_json::Value>,
+) -> Result<ApiResponse, String> {
+    let client = Client::new();
+    let request = build_graphql_request(&client, &url, &query, variables);
+    send_and_parse(request).await
+}
+
+#[command]
+pub async fn graphql_basic_auth_request(
+    url: String,
+    query: String,
+    variables: Option<serde_json::Value>,
+    username: String,
+    password: String,
+) -> Result<ApiResponse, String> {
+    let client = Client::new();
+    let request = build_graphql_request(&client, &url, &query, variables);
+    let request = handle_basic_auth(request, Some(username), Some(password));
+    send_and_parse(request).await
+}
+
 #[cfg(test)]
 mod tests;
-
