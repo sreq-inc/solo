@@ -10,7 +10,6 @@ fn main() {
             http::plain_request,
             http::basic_auth_request,
             http::bearer_auth_request,
-            http::graphql_request,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,5 +1,5 @@
 import { TabComponent } from "./TabComponent";
-import { GraphQLEditor } from "./GraphQLEditor";
+import { VariablesTab } from "./VariablesTab";
 import { useEffect, useState, useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useRequest, QueryParam } from "../context/RequestContext";
@@ -21,7 +21,6 @@ export const RequestForm = () => {
     bearerToken,
     url,
     queryParams,
-    requestType,
     setPayload,
     setUsername,
     setPassword,
@@ -50,31 +49,44 @@ export const RequestForm = () => {
       return;
     }
 
-    if (requestType === "graphql") {
-      return; // Skip URL parsing for GraphQL requests
+    if (!url || !url.includes("?")) {
+      return;
     }
 
-    const urlObj = new URL(url || "https://example.com");
-    const urlParams = new URLSearchParams(urlObj.search);
-    const params: QueryParam[] = [];
-    urlParams.forEach((value, key) => {
-      params.push({ key, value, enabled: true });
-    });
+    try {
+      // Try to parse the URL and extract query parameters
+      // If the URL is relative, prepend a base URL for parsing
+      let urlToProcess = url;
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        urlToProcess =
+          "https://example.com" + (url.startsWith("/") ? url : "/" + url);
+      }
 
-    if (params.length === 0) {
-      params.push({ key: "", value: "", enabled: true });
-    }
+      const urlObj = new URL(urlToProcess);
+      const urlParams = new URLSearchParams(urlObj.search);
+      const params: QueryParam[] = [];
+      urlParams.forEach((value, key) => {
+        params.push({ key, value, enabled: true });
+      });
 
-    const paramsChanged =
-      JSON.stringify(params) !== JSON.stringify(queryParams);
-    if (paramsChanged && url.includes("?")) {
-      isLoadingParams.current = true;
-      setQueryParams(params);
-      setTimeout(() => {
-        isLoadingParams.current = false;
-      }, 100);
+      if (params.length === 0) {
+        params.push({ key: "", value: "", enabled: true });
+      }
+
+      const paramsChanged =
+        JSON.stringify(params) !== JSON.stringify(queryParams);
+      if (paramsChanged) {
+        isLoadingParams.current = true;
+        setQueryParams(params);
+        setTimeout(() => {
+          isLoadingParams.current = false;
+        }, 100);
+      }
+    } catch (error) {
+      // if URL parsing fails, log the error but do not update params
+      console.log("Could not parse URL for params extraction:", error);
     }
-  }, [url, requestType]);
+  }, [url]);
 
   const lines = payload.split("\n");
 
@@ -122,33 +134,12 @@ export const RequestForm = () => {
     setUrl(`${baseUrl}?${queryString}`);
   };
 
-  // Get available tabs based on request type
-  const getAvailableTabs = () => {
-    if (requestType === "graphql") {
-      return ["graphql", "auth"] as const;
-    }
-    return ["body", "auth", "params"] as const;
-  };
-
-  const availableTabs = getAvailableTabs();
-
   return (
     <>
       <div className="p-4 space-y-4 col-span-5 h-full w-full">
-        <TabComponent
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          availableTabs={availableTabs}
-          requestType={requestType}
-        />
+        <TabComponent activeTab={activeTab} onTabChange={setActiveTab} />
 
-        {/* GraphQL Editor */}
-        {activeTab === "graphql" && requestType === "graphql" && (
-          <GraphQLEditor />
-        )}
-
-        {/* HTTP Body Editor */}
-        {activeTab === "body" && requestType === "http" && (
+        {activeTab === "body" && (
           <div className="mt-4">
             <label
               className={clsx(
@@ -208,7 +199,6 @@ export const RequestForm = () => {
           </div>
         )}
 
-        {/* Auth Tab */}
         {activeTab === "auth" && (
           <div
             className={clsx(
@@ -246,8 +236,7 @@ export const RequestForm = () => {
           </div>
         )}
 
-        {/* Params Tab - Only for HTTP requests */}
-        {activeTab === "params" && requestType === "http" && (
+        {activeTab === "params" && (
           <div>
             <label
               className={clsx(
@@ -332,7 +321,6 @@ export const RequestForm = () => {
                 + Add Parameter
               </button>
             </div>
-
             <label
               className={clsx(
                 "block text-sm mb-2 mt-6",
@@ -373,6 +361,8 @@ export const RequestForm = () => {
             </div>
           </div>
         )}
+
+        {activeTab === "variables" && <VariablesTab />}
       </div>
     </>
   );

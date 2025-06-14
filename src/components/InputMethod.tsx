@@ -1,62 +1,67 @@
 import clsx from "clsx";
 import { useRequest } from "../context/RequestContext";
+import { useVariables } from "../context/VariablesContext";
 import { SelectMethod } from "./SelectMethod";
+import { SmartUrlInput } from "./SmartUrlInput";
 import { useTheme } from "../context/ThemeContext";
 
 export const InputMethod = () => {
-  const { method, url, loading, requestType, setMethod, setUrl, handleRequest } =
+  const { method, url, loading, setMethod, setUrl, handleRequest } =
     useRequest();
+  const { replaceVariablesInUrl } = useVariables();
   const { theme } = useTheme();
 
-  const getPlaceholderUrl = () => {
-    if (requestType === "graphql") {
-      return "https://api.example.com/graphql";
-    }
-    return "https://api.example.com/endpoint";
-  };
+  const handleRequestWithVariables = async () => {
+    const processedUrl = replaceVariablesInUrl(url);
 
-  const getAvailableMethods = () => {
-    if (requestType === "graphql") {
-      return ["POST"]; // GraphQL typically uses POST
+    if (processedUrl.includes("{{")) {
+      const unresolvedVars = processedUrl.match(/\{\{[^}]+\}\}/g);
+      alert(
+        `Some variables are not defined: ${unresolvedVars?.join(
+          ", "
+        )}\nCheck the Variables tab.`
+      );
+      return;
     }
-    return ["GET", "POST", "PUT", "DELETE", "PATCH"];
+
+    if (!processedUrl.trim()) {
+      alert("URL is required");
+      return;
+    }
+
+    if (
+      !processedUrl.startsWith("http://") &&
+      !processedUrl.startsWith("https://")
+    ) {
+      alert(
+        `URL must start with http:// or https://\nCurrent URL: "${processedUrl}"`
+      );
+      return;
+    }
+
+    try {
+      await handleRequest(processedUrl);
+    } catch (error) {
+      console.error("Request error:", error);
+    }
   };
 
   return (
     <div className="flex items-center gap-4">
-      {requestType === "http" && (
-        <div className="flex-shrink-0 w-24 mr-2">
-          <SelectMethod
-            value={method}
-            options={getAvailableMethods()}
-            onChange={(value) =>
-              setMethod(value as "GET" | "POST" | "PUT" | "DELETE" | "PATCH")
-            }
-          />
-        </div>
-      )}
-
-      {requestType === "graphql" && (
-        <div className="flex-shrink-0 w-24 mr-2">
-          <div
-            className={clsx(
-              "block appearance-none w-full border rounded-lg py-2 px-4 pr-8 leading-tight text-center font-medium",
-              theme === "dark"
-                ? "text-white bg-[#10121b] border-purple-500 border-2"
-                : "text-gray-700 bg-white border-purple-500 border-2"
-            )}
-          >
-            GQL
-          </div>
-        </div>
-      )}
-
+      <div className="flex-shrink-0 w-24 mr-2">
+        <SelectMethod
+          value={method}
+          options={["GET", "POST", "PUT", "DELETE", "PATCH"]}
+          onChange={(value) =>
+            setMethod(value as "GET" | "POST" | "PUT" | "DELETE" | "PATCH")
+          }
+        />
+      </div>
       <div className="flex-grow">
-        <input
-          type="text"
+        <SmartUrlInput
           value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder={getPlaceholderUrl()}
+          onChange={setUrl}
+          placeholder="https://api.example.com/users or {{baseUrl}}/users"
           className={clsx(
             "w-full h-10 p-2 border rounded outline-none focus:ring-0",
             theme === "dark"
@@ -67,7 +72,7 @@ export const InputMethod = () => {
       </div>
       <div className="flex-shrink-0">
         <button
-          onClick={handleRequest}
+          onClick={handleRequestWithVariables}
           disabled={loading}
           className={clsx(
             "p-2 h-10 text-white rounded cursor-pointer w-28",
