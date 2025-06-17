@@ -1,10 +1,9 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { useVariables, Variable } from "../context/VariablesContext";
 
-
-type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-type Tab = "body" | "auth" | "params" | "variables";
+export type Tab = "body" | "auth" | "params" | "graphql" | "variables";
+export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+export type RequestType = "http" | "graphql";
 
 export type QueryParam = {
   key: string;
@@ -26,7 +25,9 @@ type RequestContextType = {
   response: any;
   error: string | null;
   isCopied: boolean;
-  variables: Variable[];
+  requestType: RequestType;
+  graphqlQuery: string;
+  graphqlVariables: string;
   setMethod: (method: HttpMethod) => void;
   setUrl: (url: string) => void;
   setPayload: (payload: string) => void;
@@ -36,21 +37,20 @@ type RequestContextType = {
   setActiveTab: (tab: Tab) => void;
   setBearerToken: (token: string) => void;
   setQueryParams: (params: QueryParam[]) => void;
-  handleRequest: (customUrl?: string) => Promise<void>;
+  setRequestType: (type: RequestType) => void;
+  setGraphqlQuery: (query: string) => void;
+  setGraphqlVariables: (variables: string) => void;
+  handleRequest: () => Promise<void>;
   resetFields: () => void;
   formatJson: () => void;
+  formatGraphqlVariables: () => void;
   handleCopyResponse: () => void;
-  setVariables: (variables: Variable[]) => void;
 };
 
 const RequestContext = createContext<RequestContextType | undefined>(undefined);
 
-interface RequestProviderProps {
-  children: ReactNode;
-}
-
-function RequestProvider({ children }: RequestProviderProps) {
-  const [method, setMethod] = useState<HttpMethod>("GET");
+export const RequestProvider = ({ children }: { children: ReactNode }) => {
+  const [method, setMethod] = useState<HttpMethod>("POST");
   const [url, setUrl] = useState("");
   const [payload, setPayload] = useState("");
   const [username, setUsername] = useState("");
@@ -65,23 +65,25 @@ function RequestProvider({ children }: RequestProviderProps) {
   const [response, setResponse] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
-
-  const { variables, setVariables } = useVariables();
-
+  const [requestType, setRequestType] = useState<RequestType>("http");
+  const [graphqlQuery, setGraphqlQuery] = useState("");
+  const [graphqlVariables, setGraphqlVariables] = useState("{}");
 
   const resetFields = () => {
-    setMethod("GET");
+    setMethod(requestType === "graphql" ? "POST" : "GET");
     setUrl("");
     setPayload("");
     setUsername("");
     setPassword("");
     setUseBasicAuth(false);
-    setActiveTab("body");
+    setActiveTab(requestType === "graphql" ? "graphql" : "body");
     setResponse(null);
     setError(null);
     setBearerToken("");
     setIsCopied(false);
     setQueryParams([{ key: "", value: "", enabled: true }]);
+    setGraphqlQuery("");
+    setGraphqlVariables("{}");
   };
 
   const formatJson = () => {
@@ -95,57 +97,82 @@ function RequestProvider({ children }: RequestProviderProps) {
     }
   };
 
-  const handleRequest = async (customUrl?: string) => {
-    const finalUrl = customUrl || url;
+  const formatGraphqlVariables = () => {
+    try {
+      const sanitized = graphqlVariables
+        .replace(/[""]/g, '"')
+        .replace(/['']/g, "'");
+      const parsed = JSON.parse(sanitized);
+      setGraphqlVariables(JSON.stringify(parsed, null, 2));
+    } catch (error) {
+      console.error("Invalid JSON");
+      alert("Invalid JSON format. Please correct it before formatting.");
+    }
+  };
 
+  const handleRequest = async () => {
     setLoading(true);
     setError(null);
     setIsCopied(false);
-    setResponse(null);
 
     try {
-      const urlToUse = finalUrl.trim();
-
-      if (!urlToUse) {
-        throw new Error("URL is required");
-      }
-      if (!urlToUse.startsWith("http://") && !urlToUse.startsWith("https://")) {
-        throw new Error("URL must start with http:// or https://");
-      }
-
-      const body = payload.trim() ? JSON.parse(payload) : null;
-
       let result;
-      let invokeCommand;
-      let invokeParams;
 
-      if (useBasicAuth) {
-        invokeCommand = "basic_auth_request";
-        invokeParams = {
-          method,
-          url: urlToUse,
-          body,
-          username,
-          password,
-        };
-      } else if (bearerToken.trim()) {
-        invokeCommand = "bearer_auth_request";
-        invokeParams = {
-          method,
-          url: urlToUse,
-          body,
-          bearerToken,
-        };
+      if (requestType === "graphql") {
+        const variables = graphqlVariables.trim()
+          ? JSON.parse(graphqlVariables)
+          : {};
+
+        if (useBasicAuth) {
+          result = await invoke("graphql_basic_auth_request", {
+            url,
+            query: graphqlQuery,
+            variables,
+            username,
+            password,
+          });
+        } else if (bearerToken.trim()) {
+          result = await invoke("graphql_bearer_auth_request", {
+            url,
+            query: graphqlQuery,
+            variables,
+            bearerToken,
+          });
+        } else {
+          result = await invoke("graphql_request", {
+            url,
+            query: graphqlQuery,
+            variables,
+          });
+        }
       } else {
-        invokeCommand = "plain_request";
-        invokeParams = {
-          method,
-          url: urlToUse,
-          body,
-        };
+        // Regular HTTP requests
+        const body = payload.trim() ? JSON.parse(payload) : null;
+
+        if (useBasicAuth) {
+          result = await invoke("basic_auth_request", {
+            method,
+            url,
+            body,
+            username,
+            password,
+          });
+        } else if (bearerToken.trim()) {
+          result = await invoke("bearer_auth_request", {
+            method,
+            url,
+            body,
+            bearerToken,
+          });
+        } else {
+          result = await invoke("plain_request", {
+            method,
+            url,
+            body,
+          });
+        }
       }
 
-      result = await invoke(invokeCommand, invokeParams);
       setResponse(result);
     } catch (error) {
       setResponse(null);
@@ -162,50 +189,53 @@ function RequestProvider({ children }: RequestProviderProps) {
     setIsCopied(true);
   };
 
-  const contextValue: RequestContextType = {
-    method,
-    url,
-    payload,
-    username,
-    password,
-    useBasicAuth,
-    activeTab,
-    bearerToken,
-    queryParams,
-    loading,
-    response,
-    error,
-    isCopied,
-    variables,
-    setVariables,
-    setMethod,
-    setUrl,
-    setPayload,
-    setUsername,
-    setPassword,
-    setUseBasicAuth,
-    setActiveTab,
-    setBearerToken,
-    setQueryParams,
-    handleRequest,
-    resetFields,
-    formatJson,
-    handleCopyResponse,
-  };
-
   return (
-    <RequestContext.Provider value={contextValue}>
+    <RequestContext.Provider
+      value={{
+        method,
+        url,
+        payload,
+        username,
+        password,
+        useBasicAuth,
+        activeTab,
+        bearerToken,
+        queryParams,
+        loading,
+        response,
+        error,
+        isCopied,
+        requestType,
+        graphqlQuery,
+        graphqlVariables,
+        setMethod,
+        setUrl,
+        setPayload,
+        setUsername,
+        setPassword,
+        setUseBasicAuth,
+        setActiveTab,
+        setBearerToken,
+        setQueryParams,
+        setRequestType,
+        setGraphqlQuery,
+        setGraphqlVariables,
+        handleRequest,
+        resetFields,
+        formatJson,
+        formatGraphqlVariables,
+        handleCopyResponse,
+      }}
+    >
       {children}
     </RequestContext.Provider>
   );
-}
+};
 
-function useRequest(): RequestContextType {
+export const useRequest = () => {
   const context = useContext(RequestContext);
   if (context === undefined) {
     throw new Error("useRequest must be used within a RequestProvider");
   }
   return context;
-}
-
-export { RequestProvider, useRequest };
+};

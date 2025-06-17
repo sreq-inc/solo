@@ -7,6 +7,8 @@ import {
   Trash,
   MoreHorizontal,
   Copy,
+  Code,
+  Zap,
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import clsx from "clsx";
@@ -19,7 +21,7 @@ type FolderProps = {
   isDropdownOpen: boolean;
   onToggleFolder: (folder: string) => void;
   onToggleDropdown: (folder: string, e: React.MouseEvent) => void;
-  onCreateNewRequest: (folder: string) => void;
+  onCreateNewRequest: (folder: string, type?: "http" | "graphql") => void;
   onRemoveFolder: (folder: string) => void;
   onFileClick: (fileName: string) => void;
   onRemoveFile: (fileName: string) => void;
@@ -95,6 +97,34 @@ export const FolderComponent = ({
     };
   }, []);
 
+  const getMethodColor = (method: string, requestType?: string) => {
+    if (requestType === "graphql") {
+      return "bg-purple-300";
+    }
+
+    switch (method) {
+      case "GET":
+        return "bg-green-300";
+      case "POST":
+        return "bg-blue-300";
+      case "PUT":
+        return "bg-yellow-300";
+      case "DELETE":
+        return "bg-red-300";
+      case "PATCH":
+        return "bg-purple-300";
+      default:
+        return "bg-gray-300";
+    }
+  };
+
+  const getMethodLabel = (method: string, requestType?: string) => {
+    if (requestType === "graphql") {
+      return "GQL";
+    }
+    return method;
+  };
+
   return (
     <div className="relative">
       <div className="flex items-center justify-between">
@@ -122,10 +152,11 @@ export const FolderComponent = ({
           <ChevronDown className="w-4 h-4" />
         </button>
       </div>
+
       {isDropdownOpen && (
         <div
           className={clsx(
-            "absolute right-0 mt-2 py-2 w-40 rounded-md shadow-xl border z-50",
+            "absolute right-0 mt-2 py-2 w-48 rounded-md shadow-xl border z-50",
             theme === "dark"
               ? "bg-gray-800 border-gray-700"
               : "bg-white border-gray-200"
@@ -135,7 +166,7 @@ export const FolderComponent = ({
             CREATE
           </div>
           <button
-            onClick={() => onCreateNewRequest(folder)}
+            onClick={() => onCreateNewRequest(folder, "http")}
             className={clsx(
               "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
               theme === "dark"
@@ -143,8 +174,20 @@ export const FolderComponent = ({
                 : "text-gray-700 hover:bg-gray-100"
             )}
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Code className="w-4 h-4 mr-2" />
             HTTP Request
+          </button>
+          <button
+            onClick={() => onCreateNewRequest(folder, "graphql")}
+            className={clsx(
+              "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
+              theme === "dark"
+                ? "text-gray-300 hover:bg-gray-700"
+                : "text-gray-700 hover:bg-gray-100"
+            )}
+          >
+            <Zap className="w-4 h-4 mr-2" />
+            GraphQL Request
           </button>
           <div
             className={clsx(
@@ -164,6 +207,7 @@ export const FolderComponent = ({
           </button>
         </div>
       )}
+
       {isOpen && (
         <div className="mt-2 space-y-2 ml-4">
           {files.map((file: any) => (
@@ -209,14 +253,16 @@ export const FolderComponent = ({
                     <span
                       className={clsx(
                         "w-14 text-center text-xs px-1.5 text-black transition-all",
-                        file.fileData.method === "GET" && "bg-green-300",
-                        file.fileData.method === "POST" && "bg-blue-300",
-                        file.fileData.method === "PUT" && "bg-yellow-300",
-                        file.fileData.method === "DELETE" && "bg-red-300",
-                        file.fileData.method === "PATCH" && "bg-purple-300"
+                        getMethodColor(
+                          file.fileData.method,
+                          file.fileData.requestType
+                        )
                       )}
                     >
-                      {file.fileData.method}
+                      {getMethodLabel(
+                        file.fileData.method,
+                        file.fileData.requestType
+                      )}
                     </span>
                     <span
                       className={clsx(
@@ -269,23 +315,25 @@ export const FolderComponent = ({
                         <Edit className="w-4 h-4 mr-2" />
                         Rename
                       </button>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            generateCurl(file.fileData)
-                          );
-                          setFileDropdownOpen(null);
-                        }}
-                        className={clsx(
-                          "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
-                          theme === "dark"
-                            ? "text-gray-300 hover:bg-gray-700"
-                            : "text-gray-700 hover:bg-gray-100"
-                        )}
-                      >
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copy as cURL
-                      </button>
+                      {file.fileData.requestType !== "graphql" && (
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              generateCurl(file.fileData)
+                            );
+                            setFileDropdownOpen(null);
+                          }}
+                          className={clsx(
+                            "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
+                            theme === "dark"
+                              ? "text-gray-300 hover:bg-gray-700"
+                              : "text-gray-700 hover:bg-gray-100"
+                          )}
+                        >
+                          <Copy className="w-4 h-4 mr-2" />
+                          Copy as cURL
+                        </button>
+                      )}
                       <button
                         onClick={() => {
                           onRemoveFile(file.fileName);

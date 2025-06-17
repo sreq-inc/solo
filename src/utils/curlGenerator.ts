@@ -9,42 +9,24 @@ interface RequestData {
   password?: string;
   bearerToken?: string;
   queryParams?: QueryParam[];
+  requestType?: "http" | "graphql";
+  graphqlQuery?: string;
+  graphqlVariables?: string;
 }
 
-// Function to replace variables in the format {{variableName}}
-const replaceVariables = (text: string): string => {
-  try {
-    // Get variables from localStorage
-    const savedVariables = localStorage.getItem("solo-variables");
-    if (!savedVariables) return text;
-
-    const variables = JSON.parse(savedVariables);
-    let processedText = text;
-
-    // Replace each enabled variable
-    variables.forEach((variable: any) => {
-      if (variable.enabled && variable.key.trim() && variable.value.trim()) {
-        const pattern = new RegExp(`\\{\\{\\s*${variable.key.trim()}\\s*\\}\\}`, 'g');
-        processedText = processedText.replace(pattern, variable.value.trim());
-      }
-    });
-
-    return processedText;
-  } catch (error) {
-    console.error('Error processing variables:', error);
-    return text;
-  }
-};
-
 export const generateCurl = (requestData: RequestData): string => {
-  let curl = `curl -X ${requestData.method}`;
+  // GraphQL requests don't translate well to cURL in the traditional sense
+  // since they're typically POST requests with JSON bodies
+  if (requestData.requestType === "graphql") {
+    return generateGraphQLCurl(requestData);
+  }
 
-  // Process the URL by replacing variables
-  let finalUrl = replaceVariables(requestData.url || "");
+  let curl = `curl -X ${requestData.method}`;
+  let finalUrl = requestData.url || "";
 
   if (requestData.queryParams && requestData.queryParams.length > 0) {
     const enabledParams = requestData.queryParams.filter(
-      (param) => param.enabled && param.key.trim() && param.value.trim(),
+      (param) => param.enabled && param.key.trim() && param.value.trim()
     );
 
     if (enabledParams.length > 0) {
@@ -53,8 +35,8 @@ export const generateCurl = (requestData: RequestData): string => {
         .map(
           (param) =>
             `${encodeURIComponent(param.key)}=${encodeURIComponent(
-              param.value,
-            )}`,
+              param.value
+            )}`
         )
         .join("&");
       finalUrl = `${baseUrl}?${queryString}`;
@@ -80,6 +62,42 @@ export const generateCurl = (requestData: RequestData): string => {
     const escapedPayload = requestData.payload.replace(/"/g, '\\"');
     curl += ` -d "${escapedPayload}"`;
   }
+
+  return curl;
+};
+
+const generateGraphQLCurl = (requestData: RequestData): string => {
+  let curl = `curl -X POST`;
+  let finalUrl = requestData.url || "";
+
+  curl += ` "${finalUrl}"`;
+  curl += ` -H "Content-Type: application/json"`;
+
+  // Add authentication headers
+  if (requestData.useBasicAuth && requestData.username) {
+    curl += ` -u "${requestData.username}:${requestData.password || ""}"`;
+  }
+
+  if (requestData.bearerToken && requestData.bearerToken.trim()) {
+    curl += ` -H "Authorization: Bearer ${requestData.bearerToken}"`;
+  }
+
+  // Build GraphQL request body
+  const graphqlBody = {
+    query: requestData.graphqlQuery || "",
+    variables: requestData.graphqlVariables
+      ? (() => {
+          try {
+            return JSON.parse(requestData.graphqlVariables);
+          } catch {
+            return {};
+          }
+        })()
+      : {},
+  };
+
+  const escapedBody = JSON.stringify(graphqlBody).replace(/"/g, '\\"');
+  curl += ` -d "${escapedBody}"`;
 
   return curl;
 };
