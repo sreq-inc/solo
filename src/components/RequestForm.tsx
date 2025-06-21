@@ -58,6 +58,7 @@ export const RequestForm = () => {
     const urlObj = new URL(url || "https://example.com");
     const urlParams = new URLSearchParams(urlObj.search);
     const params: QueryParam[] = [];
+
     urlParams.forEach((value, key) => {
       params.push({ key, value, enabled: true });
     });
@@ -68,6 +69,7 @@ export const RequestForm = () => {
 
     const paramsChanged =
       JSON.stringify(params) !== JSON.stringify(queryParams);
+
     if (paramsChanged && url.includes("?")) {
       isLoadingParams.current = true;
       setQueryParams(params);
@@ -112,6 +114,7 @@ export const RequestForm = () => {
     );
 
     isInternalUpdate.current = true;
+
     if (enabledParams.length === 0) {
       setUrl(baseUrl);
       return;
@@ -120,17 +123,21 @@ export const RequestForm = () => {
     const queryString = enabledParams
       .map((p) => `${encodeURIComponent(p.key)}=${encodeURIComponent(p.value)}`)
       .join("&");
+
     setUrl(`${baseUrl}?${queryString}`);
   };
 
   return (
     <>
       <div className="p-4 space-y-4 col-span-5 h-full w-full">
-        <TabComponent activeTab={activeTab} onTabChange={setActiveTab} />
+        <TabComponent
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          request={requestType}
+        />
 
         {activeTab === "body" && requestType === "graphql" && <GraphQLEditor />}
 
-        {/* HTTP Body Editor */}
         {activeTab === "body" && requestType === "http" && (
           <div className="mt-4">
             <label
@@ -208,6 +215,7 @@ export const RequestForm = () => {
                 onChange={(value) => setSelectAuth(value)}
               />
             </div>
+
             {selectAuth === "basic" && (
               <UsernameAndPassword
                 username={username}
@@ -220,6 +228,7 @@ export const RequestForm = () => {
                 setShowPassword={setShowPassword}
               />
             )}
+
             {selectAuth === "bearer" && (
               <BearerToken
                 bearerToken={bearerToken}
@@ -229,7 +238,6 @@ export const RequestForm = () => {
           </div>
         )}
 
-        {/* Params Tab - Only for HTTP requests */}
         {activeTab === "params" && requestType === "http" && (
           <div>
             <label
@@ -303,6 +311,7 @@ export const RequestForm = () => {
                   </div>
                 </div>
               ))}
+
               <button
                 onClick={addQueryParam}
                 className={clsx(
