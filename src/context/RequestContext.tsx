@@ -40,7 +40,7 @@ type RequestContextType = {
   setRequestType: (type: RequestType) => void;
   setGraphqlQuery: (query: string) => void;
   setGraphqlVariables: (variables: string) => void;
-  handleRequest: () => Promise<void>;
+  handleRequest: (processedUrl?: string) => Promise<void>;
   resetFields: () => void;
   formatJson: () => void;
   formatGraphqlVariables: () => void;
@@ -110,22 +110,22 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const handleRequest = async () => {
+  const handleRequest = async (processedUrl?: string) => {
     setLoading(true);
     setError(null);
     setIsCopied(false);
 
+    const finalUrl = processedUrl || url;
+
     try {
       let result;
-
       if (requestType === "graphql") {
         const variables = graphqlVariables.trim()
           ? JSON.parse(graphqlVariables)
           : {};
-
         if (useBasicAuth) {
           result = await invoke("graphql_basic_auth_request", {
-            url,
+            url: finalUrl,
             query: graphqlQuery,
             variables,
             username,
@@ -133,26 +133,24 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
           });
         } else if (bearerToken.trim()) {
           result = await invoke("graphql_bearer_auth_request", {
-            url,
+            url: finalUrl,
             query: graphqlQuery,
             variables,
             bearerToken,
           });
         } else {
           result = await invoke("graphql_request", {
-            url,
+            url: finalUrl,
             query: graphqlQuery,
             variables,
           });
         }
       } else {
-        // Regular HTTP requests
         const body = payload.trim() ? JSON.parse(payload) : null;
-
         if (useBasicAuth) {
           result = await invoke("basic_auth_request", {
             method,
-            url,
+            url: finalUrl,
             body,
             username,
             password,
@@ -160,19 +158,18 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
         } else if (bearerToken.trim()) {
           result = await invoke("bearer_auth_request", {
             method,
-            url,
+            url: finalUrl,
             body,
             bearerToken,
           });
         } else {
           result = await invoke("plain_request", {
             method,
-            url,
+            url: finalUrl,
             body,
           });
         }
       }
-
       setResponse(result);
     } catch (error) {
       setResponse(null);

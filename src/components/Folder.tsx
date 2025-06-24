@@ -198,8 +198,8 @@ export const FolderComponent = ({
           <button
             onClick={() => onRemoveFolder(folder)}
             className={clsx(
-              "px-4 py-2 text-sm w-full text-left flex items-center text-red-600 cursor-pointer",
-              theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"
+              "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
+              theme === "dark" ? "hover:bg-gray-700 text-gray-300" : "text-gray-700 hover:bg-gray-100"
             )}
           >
             <Trash className="w-4 h-4 mr-2" />
@@ -219,9 +219,9 @@ export const FolderComponent = ({
                   ? "bg-gray-700 hover:bg-gray-600"
                   : "bg-gray-200 hover:bg-gray-300",
                 file.fileName === currentRequestId &&
-                  (theme === "dark"
-                    ? "border-l-purple-800 border-l-8 transition-all"
-                    : "border-l-purple-900 border-l-8 transition-all")
+                (theme === "dark"
+                  ? "border-l-purple-800 border-l-8 transition-all"
+                  : "border-l-purple-900 border-l-8 transition-all")
               )}
             >
               {editingFileName === file.fileName ? (

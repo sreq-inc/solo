@@ -45,35 +45,46 @@ export const RequestForm = () => {
   const isInternalUpdate = useRef(false);
   const isLoadingParams = useRef(false);
 
+
+  //To-do: This effect updates queryParams based on the URL when the requestType is not GraphQL - I want to review this logic
   useEffect(() => {
     if (isInternalUpdate.current || isLoadingParams.current) {
       isInternalUpdate.current = false;
       return;
     }
-
     if (requestType === "graphql") {
-      return; // Skip URL parsing for GraphQL requests
+      return;
     }
 
-    const urlObj = new URL(url || "https://example.com");
-    const urlParams = new URLSearchParams(urlObj.search);
-    const params: QueryParam[] = [];
-    urlParams.forEach((value, key) => {
-      params.push({ key, value, enabled: true });
-    });
-
-    if (params.length === 0) {
-      params.push({ key: "", value: "", enabled: true });
+    if (!url || url.trim() === "" || url === "{}" || !url.includes("://")) {
+      return;
     }
 
-    const paramsChanged =
-      JSON.stringify(params) !== JSON.stringify(queryParams);
-    if (paramsChanged && url.includes("?")) {
-      isLoadingParams.current = true;
-      setQueryParams(params);
-      setTimeout(() => {
-        isLoadingParams.current = false;
-      }, 100);
+    try {
+      const urlObj = new URL(url);
+      const urlParams = new URLSearchParams(urlObj.search);
+      const params: QueryParam[] = [];
+
+      urlParams.forEach((value, key) => {
+        params.push({ key, value, enabled: true });
+      });
+
+      if (params.length === 0) {
+        params.push({ key: "", value: "", enabled: true });
+      }
+
+      const paramsChanged =
+        JSON.stringify(params) !== JSON.stringify(queryParams);
+
+      if (paramsChanged && url.includes("?")) {
+        isLoadingParams.current = true;
+        setQueryParams(params);
+        setTimeout(() => {
+          isLoadingParams.current = false;
+        }, 100);
+      }
+    } catch (error) {
+      console.warn("Invalid URL format:", url);
     }
   }, [url, requestType]);
 
@@ -106,12 +117,17 @@ export const RequestForm = () => {
   };
 
   const updateUrlWithParams = (params: QueryParam[]) => {
+    if (!url || url.trim() === "" || url === "{}") {
+      return;
+    }
+
     const baseUrl = url.split("?")[0] || "";
     const enabledParams = params.filter(
       (p) => p.enabled && p.key.trim() && p.value.trim()
     );
 
     isInternalUpdate.current = true;
+
     if (enabledParams.length === 0) {
       setUrl(baseUrl);
       return;
@@ -126,11 +142,14 @@ export const RequestForm = () => {
   return (
     <>
       <div className="p-4 space-y-4 col-span-5 h-full w-full">
-        <TabComponent activeTab={activeTab} onTabChange={setActiveTab} />
+        <TabComponent
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          request={requestType}
+        />
 
-        {activeTab === "body" && requestType === "graphql" && <GraphQLEditor />}
+        {activeTab === "graphql" && requestType === "graphql" && <GraphQLEditor />}
 
-        {/* HTTP Body Editor */}
         {activeTab === "body" && requestType === "http" && (
           <div className="mt-4">
             <label
@@ -229,7 +248,6 @@ export const RequestForm = () => {
           </div>
         )}
 
-        {/* Params Tab - Only for HTTP requests */}
         {activeTab === "params" && requestType === "http" && (
           <div>
             <label
