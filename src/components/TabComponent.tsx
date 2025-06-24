@@ -23,21 +23,43 @@ export const TabComponent = ({
       )}
     >
       <nav className="flex -mb-px">
-        <button
-          onClick={() => onTabChange("body")}
-          className={clsx(
-            "py-2 px-4 text-sm font-medium cursor-pointer",
-            activeTab === "body"
-              ? theme === "dark"
-                ? "border-b-2 border-purple-500 text-purple-400"
-                : "border-b-2 border-purple-600 text-purple-600"
-              : theme === "dark"
-              ? "text-gray-400 hover:text-gray-300 hover:border-gray-700"
-              : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
-          )}
-        >
-          Body
-        </button>
+        {activeTab === "body" && (
+          <button
+            onClick={() => onTabChange("body")}
+            className={clsx(
+              "py-2 px-4 text-sm font-medium cursor-pointer",
+              activeTab === "body"
+                ? theme === "dark"
+                  ? "border-b-2 border-purple-500 text-purple-400"
+                  : "border-b-2 border-purple-600 text-purple-600"
+                : theme === "dark"
+                  ? "text-gray-400 hover:text-gray-300 hover:border-gray-700"
+                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            )}
+          >
+            Body
+          </button>
+        )}
+
+        {request === "graphql" && (
+          <button
+            onClick={() => onTabChange("graphql")}
+            className={clsx(
+              "py-2 px-4 text-sm font-medium cursor-pointer",
+              activeTab === "graphql"
+                ? theme === "dark"
+                  ? "border-b-2 border-purple-500 text-purple-400"
+                  : "border-b-2 border-purple-600 text-purple-600"
+                : theme === "dark"
+                  ? "text-gray-400 hover:text-gray-300 hover:border-gray-700"
+                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            )}
+          >
+            GraphQL
+          </button>
+        )}
+
+
         <button
           onClick={() => onTabChange("auth")}
           className={clsx(
@@ -47,8 +69,8 @@ export const TabComponent = ({
                 ? "border-b-2 border-purple-500 text-purple-400"
                 : "border-b-2 border-purple-600 text-purple-600"
               : theme === "dark"
-              ? "text-gray-400 hover:text-gray-300 hover:border-gray-700"
-              : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                ? "text-gray-400 hover:text-gray-300 hover:border-gray-700"
+                : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
           )}
         >
           Auth
@@ -63,8 +85,8 @@ export const TabComponent = ({
                   ? "border-b-2 border-purple-500 text-purple-400"
                   : "border-b-2 border-purple-600 text-purple-600"
                 : theme === "dark"
-                ? "text-gray-400 hover:text-gray-300 hover:border-gray-700"
-                : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  ? "text-gray-400 hover:text-gray-300 hover:border-gray-700"
+                  : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
             )}
           >
             Params
@@ -79,8 +101,8 @@ export const TabComponent = ({
                 ? "border-b-2 border-purple-500 text-purple-400"
                 : "border-b-2 border-purple-600 text-purple-600"
               : theme === "dark"
-              ? "text-gray-400 hover:text-gray-300 hover:border-gray-700"
-              : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                ? "text-gray-400 hover:text-gray-300 hover:border-gray-700"
+                : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
           )}
         >
           Variables

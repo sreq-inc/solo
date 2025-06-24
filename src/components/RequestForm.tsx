@@ -136,7 +136,7 @@ export const RequestForm = () => {
           request={requestType}
         />
 
-        {activeTab === "body" && requestType === "graphql" && <GraphQLEditor />}
+        {activeTab === "graphql" && requestType === "graphql" && <GraphQLEditor />}
 
         {activeTab === "body" && requestType === "http" && (
           <div className="mt-4">
