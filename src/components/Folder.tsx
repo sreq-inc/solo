@@ -199,7 +199,7 @@ export const FolderComponent = ({
             onClick={() => onRemoveFolder(folder)}
             className={clsx(
               "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
-              theme === "dark" ? "hover:bg-gray-700 text-gray-300" : "text-gray-100 hover:bg-gray-100"
+              theme === "dark" ? "hover:bg-gray-700 text-gray-300" : "text-gray-700 hover:bg-gray-100"
             )}
           >
             <Trash className="w-4 h-4 mr-2" />
