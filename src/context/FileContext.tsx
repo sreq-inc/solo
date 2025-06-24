@@ -46,6 +46,7 @@ type FileContextType = {
   toggleDropdown: (folder: string, e: React.MouseEvent) => void;
   createNewRequest: (folder: string, type?: "http" | "graphql") => void;
   removeFolder: (folder: string) => void;
+  renameFolder: (oldName: string, newName: string) => void;
   handleFileClick: (fileName: string) => void;
   handleRemoveFile: (fileName: string) => void;
   saveCurrentRequest: () => void;
@@ -141,12 +142,29 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const createFolder = (folderName: string) => {
-    if (!folderName || folders[folderName]) {
-      alert("Folder name is invalid or already exists.");
+
+
+    if (!folderName) {
+      alert("Folder name cannot be empty.");
       return;
     }
-    setFolders((prev) => ({ ...prev, [folderName]: [] }));
-    localStorage.setItem(folderName, JSON.stringify([]));
+
+    if (folders[folderName]) {
+      alert("A folder with this name already exists.");
+      return;
+    }
+
+    try {
+      localStorage.setItem(folderName, JSON.stringify([]));
+
+      setFolders((prev) => {
+        const newFolders = { ...prev, [folderName]: [] };
+        return newFolders;
+      });
+
+    } catch (error) {
+      alert("Error creating folder. Please try again.");
+    }
   };
 
   const removeFolder = (folder: string) => {
@@ -161,6 +179,52 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       setCurrentRequestId(null);
     }
     setDropdownOpen(null);
+  };
+
+  const renameFolder = (oldName: string, newName: string) => {
+    if (!newName || newName === oldName || folders[newName]) {
+      if (folders[newName]) {
+        alert("A folder with this name already exists.");
+      } else if (!newName) {
+        alert("Folder name cannot be empty.");
+      }
+      return;
+    }
+
+    try {
+      const oldFolderData = localStorage.getItem(oldName);
+      if (!oldFolderData) {
+        console.error(`Folder '${oldName}' not found in localStorage`);
+        return;
+      }
+
+      localStorage.setItem(newName, oldFolderData);
+      localStorage.removeItem(oldName);
+
+      setFolders((prev) => {
+        const newFolders = { ...prev };
+        newFolders[newName] = newFolders[oldName];
+        delete newFolders[oldName];
+        return newFolders;
+      });
+
+      if (currentFolder === oldName) {
+        setCurrentFolder(newName);
+      }
+
+      setOpenFolders((prev) => {
+        const newOpenFolders = { ...prev };
+        if (newOpenFolders[oldName]) {
+          newOpenFolders[newName] = newOpenFolders[oldName];
+          delete newOpenFolders[oldName];
+        }
+        return newOpenFolders;
+      });
+
+    } catch (error) {
+      console.error("Error renaming folder:", error);
+      alert("Error renaming folder. Please try again.");
+    }
   };
 
   const toggleFolder = (folder: string) => {
@@ -220,7 +284,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         [folder]: [...(prev[folder] || []), newRequestId],
       }));
 
-      // Set the request state
       setRequestType(type);
       setMethod(defaultRequest.method);
       setUrl(defaultRequest.url);
@@ -344,7 +407,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
           resetFields();
           setCurrentRequestId(null);
         }
-
         console.log(
           `File '${fileName}' successfully removed from folder '${folderContainingFile}'`
         );
@@ -370,7 +432,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         }
         return file;
       });
-
       localStorage.setItem(folder, JSON.stringify(updatedFiles));
       setFolders((prev) => ({
         ...prev,
@@ -453,6 +514,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         toggleDropdown,
         createNewRequest,
         removeFolder,
+        renameFolder,
         handleFileClick,
         handleRemoveFile,
         saveCurrentRequest,
