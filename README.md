@@ -4,7 +4,7 @@
 </div>
 
 
-[![CI](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml)
+[![CI](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml) [![publish](https://github.com/sreq-inc/solo/actions/workflows/publish.yml/badge.svg)](https://github.com/sreq-inc/solo/actions/workflows/publish.yml)
 
 <img width="1106" alt="image" src="https://github.com/user-attachments/assets/1edebfa9-ff8a-466a-a5ae-4b8eed207a39" />
 
