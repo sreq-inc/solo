@@ -2,7 +2,6 @@ import {
   Folder,
   FolderOpen,
   ChevronDown,
-  Plus,
   Edit,
   Trash,
   MoreHorizontal,
