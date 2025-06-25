@@ -21,7 +21,10 @@ export const VariablesTab = () => {
     if (!currentFolder) {
       detectAndLoadCurrentFolder();
     }
-  }, []);
+  }, [
+    currentFolder,
+    detectAndLoadCurrentFolder
+  ]);
 
   return (
     <div>

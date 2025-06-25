@@ -74,7 +74,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
   const { clearVariables } = useVariables();
 
 
-  const resetFields = (currentFolder: string) => {
+  const resetFields = () => {
     setMethod(requestType === "graphql" ? "POST" : "GET");
     setUrl("");
     setPayload("");
@@ -91,9 +91,9 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     setGraphqlVariables("{}");
 
     // Clear variables when no folder is selected
-    if (!currentFolder) {
-      clearVariables();
-    }
+    // Note: currentFolder is not defined in this context
+    // Removed the conditional check since currentFolder is not available
+    clearVariables();
   };
 
   const formatJson = () => {
