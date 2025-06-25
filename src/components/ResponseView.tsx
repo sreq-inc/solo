@@ -3,7 +3,7 @@ import { useTheme } from "../context/ThemeContext";
 import { useRequest } from "../context/RequestContext";
 import clsx from "clsx";
 import { ShortcutsDisplay } from "./ShortcutsDisplay";
-import { generateCurl } from "../utils/curlGenerator";
+import { useCurlGenerator } from "../hooks/useCurlGenerator";
 import { CopyIcon } from "./CopyIcon";
 
 type TabType = "response" | "headers" | "timeline";
@@ -49,28 +49,11 @@ export const ResponseView = () => {
     loading,
     isCopied,
     handleCopyResponse,
-    method,
     url,
-    payload,
-    useBasicAuth,
-    username,
-    password,
-    bearerToken,
-    queryParams,
   } = useRequest();
 
+  const { generateCurl } = useCurlGenerator();
   const [activeTab, setActiveTab] = useState<TabType>("response");
-
-  const currentRequestData = {
-    method,
-    url,
-    payload,
-    useBasicAuth,
-    username,
-    password,
-    bearerToken,
-    queryParams,
-  };
 
   const lines = response ? JSON.stringify(response, null, 2).split("\n") : [];
 
@@ -302,7 +285,7 @@ export const ResponseView = () => {
         {url && (
           <div className="ml-auto">
             <CopyIcon
-              content={generateCurl(currentRequestData)}
+              content={generateCurl()}
               size={16}
               className="mr-2"
             />
