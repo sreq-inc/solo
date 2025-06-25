@@ -8,10 +8,12 @@ import {
   Copy,
   Code,
   Zap,
+  Check,
+  X,
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import clsx from "clsx";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { generateCurl } from "../utils/curlGenerator";
 
 type FolderProps = {
@@ -22,6 +24,7 @@ type FolderProps = {
   onToggleDropdown: (folder: string, e: React.MouseEvent) => void;
   onCreateNewRequest: (folder: string, type?: "http" | "graphql") => void;
   onRemoveFolder: (folder: string) => void;
+  onRenameFolder: (oldName: string, newName: string) => void;
   onFileClick: (fileName: string) => void;
   onRemoveFile: (fileName: string) => void;
   onRenameFile: (folder: string, fileName: string, newName: string) => void;
@@ -36,6 +39,7 @@ export const FolderComponent = ({
   onToggleDropdown,
   onCreateNewRequest,
   onRemoveFolder,
+  onRenameFolder,
   onFileClick,
   onRemoveFile,
   onRenameFile,
@@ -46,6 +50,10 @@ export const FolderComponent = ({
   const [fileDropdownOpen, setFileDropdownOpen] = useState<string | null>(null);
   const [editingFileName, setEditingFileName] = useState<string | null>(null);
   const [newFileName, setNewFileName] = useState("");
+
+  const [editingFolderName, setEditingFolderName] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+  const folderInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileDropdownToggle = (fileName: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -78,9 +86,44 @@ export const FolderComponent = ({
     }
   };
 
+  const handleFolderRenameClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingFolderName(true);
+    setNewFolderName(folder);
+    setFileDropdownOpen(null);
+
+    setTimeout(() => {
+      folderInputRef.current?.focus();
+      folderInputRef.current?.select();
+    }, 50);
+  };
+
+  const handleFolderRenameSubmit = () => {
+    if (newFolderName.trim() && newFolderName.trim() !== folder) {
+      onRenameFolder(folder, newFolderName.trim());
+    }
+    setEditingFolderName(false);
+  };
+
+  const handleFolderRenameCancel = () => {
+    setEditingFolderName(false);
+    setNewFolderName("");
+  };
+
+  const handleFolderInputKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleFolderRenameSubmit();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      handleFolderRenameCancel();
+    }
+  };
+
   const closeView = () => {
     setFileDropdownOpen(null);
     setEditingFileName(null);
+    setEditingFolderName(false);
   };
 
   const handleEscKey = (e: KeyboardEvent) => {
@@ -100,7 +143,6 @@ export const FolderComponent = ({
     if (requestType === "graphql") {
       return "bg-purple-300";
     }
-
     switch (method) {
       case "GET":
         return "bg-green-300";
@@ -127,32 +169,77 @@ export const FolderComponent = ({
   return (
     <div className="relative">
       <div className="flex items-center justify-between">
-        <button
-          onClick={() => onToggleFolder(folder)}
-          className={clsx(
-            "w-full flex items-center p-2 text-left h-8 text-xs cursor-pointer",
-            theme === "dark" ? "text-white" : "text-gray-800"
-          )}
-        >
-          {isOpen ? (
-            <FolderOpen className="mr-2" />
-          ) : (
-            <Folder className="mr-2" />
-          )}
-          <span>{folder}</span>
-        </button>
-        <button
-          onClick={(e) => onToggleDropdown(folder, e)}
-          className={clsx(
-            "px-2 h-8 cursor-pointer",
-            theme === "dark" ? "text-white" : "text-black"
-          )}
-        >
-          <ChevronDown className="w-4 h-4" />
-        </button>
+        {editingFolderName ? (
+          <div className="flex items-center w-full gap-2 p-2 h-8">
+            <input
+              ref={folderInputRef}
+              type="text"
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              onKeyDown={handleFolderInputKeyDown}
+              className={clsx(
+                "flex-1 text-xs p-1 rounded outline-none border",
+                theme === "dark"
+                  ? "bg-gray-800 text-white border-purple-500"
+                  : "bg-white text-gray-800 border-purple-500"
+              )}
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              onClick={handleFolderRenameSubmit}
+              className={clsx(
+                "p-1 rounded cursor-pointer",
+                theme === "dark"
+                  ? "text-green-400 hover:bg-gray-700"
+                  : "text-green-600 hover:bg-gray-200"
+              )}
+              title="Confirmar"
+            >
+              <Check className="w-3 h-3" />
+            </button>
+            <button
+              onClick={handleFolderRenameCancel}
+              className={clsx(
+                "p-1 rounded cursor-pointer",
+                theme === "dark"
+                  ? "text-red-400 hover:bg-gray-700"
+                  : "text-red-600 hover:bg-gray-200"
+              )}
+              title="Cancelar"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        ) : (
+          <>
+            <button
+              onClick={() => onToggleFolder(folder)}
+              className={clsx(
+                "w-full flex items-center p-2 text-left h-8 text-xs cursor-pointer",
+                theme === "dark" ? "text-white" : "text-gray-800"
+              )}
+            >
+              {isOpen ? (
+                <FolderOpen className="mr-2" />
+              ) : (
+                <Folder className="mr-2" />
+              )}
+              <span>{folder}</span>
+            </button>
+            <button
+              onClick={(e) => onToggleDropdown(folder, e)}
+              className={clsx(
+                "px-2 h-8 cursor-pointer",
+                theme === "dark" ? "text-white" : "text-black"
+              )}
+            >
+              <ChevronDown className="w-4 h-4" />
+            </button>
+          </>
+        )}
       </div>
 
-      {isDropdownOpen && (
+      {isDropdownOpen && !editingFolderName && (
         <div
           className={clsx(
             "absolute right-0 mt-2 py-2 w-48 rounded-md shadow-xl border z-50",
@@ -194,6 +281,18 @@ export const FolderComponent = ({
               theme === "dark" ? "border-gray-700" : "border-gray-200"
             )}
           ></div>
+          <button
+            onClick={handleFolderRenameClick}
+            className={clsx(
+              "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
+              theme === "dark"
+                ? "text-gray-300 hover:bg-gray-700"
+                : "text-gray-700 hover:bg-gray-100"
+            )}
+          >
+            <Edit className="w-4 h-4 mr-2" />
+            Rename Folder
+          </button>
           <button
             onClick={() => onRemoveFolder(folder)}
             className={clsx(
