@@ -6,6 +6,7 @@ import {
   ReactNode,
 } from "react";
 import { useRequest, QueryParam } from "./RequestContext";
+import { useVariables } from "./VariablesContext";
 
 type RequestData = {
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -84,6 +85,9 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     setGraphqlVariables,
   } = useRequest();
 
+  // Get variables context functions
+  const { loadVariablesForFolder, clearVariables } = useVariables();
+
   const [folders, setFolders] = useState<FolderStructure>({});
   const [openFolders, setOpenFolders] = useState<{ [key: string]: boolean }>(
     {}
@@ -126,7 +130,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     const loadedFolders: FolderStructure = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key) {
+      if (key && !key.startsWith('solo-variables-')) { // Ignore variables storage
         try {
           const files = JSON.parse(
             localStorage.getItem(key) || "[]"
@@ -154,11 +158,17 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       const newFolders = { ...prev };
       delete newFolders[folder];
       localStorage.removeItem(folder);
+
+      // Also remove variables for this folder
+      localStorage.removeItem(`solo-variables-${folder}`);
+
       return newFolders;
     });
+
     if (folder === currentFolder) {
       resetFields();
       setCurrentRequestId(null);
+      clearVariables();
     }
     setDropdownOpen(null);
   };
@@ -168,9 +178,18 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       ...prev,
       [folder]: !prev[folder],
     }));
-    setCurrentFolder(folder);
-    resetFields();
-    setCurrentRequestId(null);
+
+    // Only change folder and reset if it's a different folder or no request is active
+    if (folder !== currentFolder || !currentRequestId) {
+      setCurrentFolder(folder);
+      loadVariablesForFolder(folder);
+
+      // Only reset fields if no request is currently active
+      if (!currentRequestId) {
+        resetFields();
+      }
+      setCurrentRequestId(null);
+    }
   };
 
   const toggleDropdown = (folder: string, e: React.MouseEvent) => {
@@ -185,6 +204,9 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     const newRequestId = `request_${Date.now()}`;
     setCurrentFolder(folder);
     setOpenFolders((prev) => ({ ...prev, [folder]: true }));
+
+    // Load variables for this folder
+    loadVariablesForFolder(folder);
 
     const defaultRequest: RequestData = {
       method: type === "graphql" ? "POST" : "GET",
@@ -219,8 +241,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         ...prev,
         [folder]: [...(prev[folder] || []), newRequestId],
       }));
-
-      // Set the request state
       setRequestType(type);
       setMethod(defaultRequest.method);
       setUrl(defaultRequest.url);
@@ -255,7 +275,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     const existingIndex = files.findIndex(
       (file) => file.fileName === requestId
     );
-
     if (existingIndex !== -1) {
       const existingDisplayName = files[existingIndex].displayName;
       files[existingIndex] = {
@@ -270,7 +289,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         displayName: displayName || `${request.method} Request`,
       });
     }
-
     localStorage.setItem(folder, JSON.stringify(files));
     setFolders((prev) => ({
       ...prev,
@@ -287,7 +305,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         (file) => file.fileName === currentRequestId
       );
       const currentDisplayName = currentFile?.displayName;
-
       saveRequest(
         currentFolder,
         {
@@ -370,7 +387,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         }
         return file;
       });
-
       localStorage.setItem(folder, JSON.stringify(updatedFiles));
       setFolders((prev) => ({
         ...prev,
@@ -384,7 +400,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
   ): { folder: string; data: RequestData; displayName?: string } | null => {
     for (let i = 0; i < localStorage.length; i++) {
       const folderName = localStorage.key(i);
-      if (folderName) {
+      if (folderName && !folderName.startsWith('solo-variables-')) {
         try {
           const files = JSON.parse(
             localStorage.getItem(folderName) || "[]"
@@ -414,6 +430,9 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         ...prev,
         [folder]: true,
       }));
+
+      // Load variables for this folder
+      loadVariablesForFolder(folder);
 
       setRequestType(data.requestType || "http");
       setMethod(data.method);

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 export type Variable = {
   key: string;
@@ -17,6 +17,10 @@ type VariablesContextType = {
     value: string | boolean
   ) => void;
   replaceVariablesInUrl: (url: string) => string;
+  currentFolder: string | null;
+  loadVariablesForFolder: (folderName: string) => void;
+  clearVariables: () => void;
+  detectAndLoadCurrentFolder: () => string | null;
 };
 
 const VariablesContext = createContext<VariablesContextType | undefined>(
@@ -28,21 +32,85 @@ interface VariablesProviderProps {
 }
 
 function VariablesProvider({ children }: VariablesProviderProps) {
-  const [variables, setVariables] = useState<Variable[]>(() => {
-    const saved = localStorage.getItem("solo-variables");
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return [{ key: "", value: "", enabled: true }];
+  const [variables, setVariables] = useState<Variable[]>([
+    { key: "", value: "", enabled: true }
+  ]);
+  const [currentFolder, setCurrentFolder] = useState<string | null>(null);
+
+  const getVariablesStorageKey = (folderName: string) => {
+    return `solo-variables-${folderName}`;
+  };
+
+  // Auto-detect current folder from localStorage
+  const detectAndLoadCurrentFolder = (): string | null => {
+    // Get current request ID from sessionStorage if available
+    const currentRequestKey = sessionStorage.getItem('current-request-folder');
+    if (currentRequestKey) {
+      loadVariablesForFolder(currentRequestKey);
+      return currentRequestKey;
+    }
+
+    // Fallback: scan all folders to find any with files
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && !key.startsWith('solo-variables-') && !key.startsWith('update-')) {
+        try {
+          const files = JSON.parse(localStorage.getItem(key) || "[]");
+          if (files.length > 0) {
+            loadVariablesForFolder(key);
+            return key;
+          }
+        } catch {
+          continue;
+        }
       }
     }
-    return [{ key: "", value: "", enabled: true }];
-  });
+
+    return null;
+  };
+
+  // Load variables on component mount
+  useEffect(() => {
+    detectAndLoadCurrentFolder();
+  }, []);
+
+  const loadVariablesForFolder = (folderName: string) => {
+    setCurrentFolder(folderName);
+    // Store current folder in sessionStorage for persistence
+    sessionStorage.setItem('current-request-folder', folderName);
+
+    const storageKey = getVariablesStorageKey(folderName);
+    const saved = localStorage.getItem(storageKey);
+
+    if (saved) {
+      try {
+        const parsedVariables = JSON.parse(saved);
+        setVariables(parsedVariables);
+      } catch {
+        setVariables([{ key: "", value: "", enabled: true }]);
+      }
+    } else {
+      setVariables([{ key: "", value: "", enabled: true }]);
+    }
+  };
+
+  const clearVariables = () => {
+    setCurrentFolder(null);
+    sessionStorage.removeItem('current-request-folder');
+    setVariables([{ key: "", value: "", enabled: true }]);
+  };
+
+  const saveVariablesForFolder = (folderName: string, newVariables: Variable[]) => {
+    const storageKey = getVariablesStorageKey(folderName);
+    localStorage.setItem(storageKey, JSON.stringify(newVariables));
+  };
 
   const updateVariables = (newVariables: Variable[]) => {
     setVariables(newVariables);
-    localStorage.setItem("solo-variables", JSON.stringify(newVariables));
+
+    if (currentFolder) {
+      saveVariablesForFolder(currentFolder, newVariables);
+    }
   };
 
   const addVariable = () => {
@@ -71,7 +139,6 @@ function VariablesProvider({ children }: VariablesProviderProps) {
 
   const replaceVariablesInUrl = (url: string): string => {
     let processedUrl = url;
-
     const enabledVariables = variables.filter(
       (variable) =>
         variable.enabled &&
@@ -97,6 +164,10 @@ function VariablesProvider({ children }: VariablesProviderProps) {
     removeVariable,
     updateVariable,
     replaceVariablesInUrl,
+    currentFolder,
+    loadVariablesForFolder,
+    clearVariables,
+    detectAndLoadCurrentFolder,
   };
 
   return (

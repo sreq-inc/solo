@@ -23,7 +23,7 @@ export const TabComponent = ({
       )}
     >
       <nav className="flex -mb-px">
-        {activeTab === "body" && (
+        {request === "http" && (
           <button
             onClick={() => onTabChange("body")}
             className={clsx(
