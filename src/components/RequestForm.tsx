@@ -1,5 +1,6 @@
 import { TabComponent } from "./TabComponent";
 import { GraphQLEditor } from "./GraphQLEditor";
+import { DescriptionTab } from "./DescriptionTab";
 import { useEffect, useState, useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useRequest, QueryParam } from "../context/RequestContext";
@@ -45,13 +46,12 @@ export const RequestForm = () => {
   const isInternalUpdate = useRef(false);
   const isLoadingParams = useRef(false);
 
-
-  //To-do: This effect updates queryParams based on the URL when the requestType is not GraphQL - I want to review this logic
   useEffect(() => {
     if (isInternalUpdate.current || isLoadingParams.current) {
       isInternalUpdate.current = false;
       return;
     }
+
     if (requestType === "graphql") {
       return;
     }
@@ -136,6 +136,7 @@ export const RequestForm = () => {
     const queryString = enabledParams
       .map((p) => `${encodeURIComponent(p.key)}=${encodeURIComponent(p.value)}`)
       .join("&");
+
     setUrl(`${baseUrl}?${queryString}`);
   };
 
@@ -227,6 +228,7 @@ export const RequestForm = () => {
                 onChange={(value) => setSelectAuth(value)}
               />
             </div>
+
             {selectAuth === "basic" && (
               <UsernameAndPassword
                 username={username}
@@ -239,6 +241,7 @@ export const RequestForm = () => {
                 setShowPassword={setShowPassword}
               />
             )}
+
             {selectAuth === "bearer" && (
               <BearerToken
                 bearerToken={bearerToken}
@@ -376,6 +379,8 @@ export const RequestForm = () => {
         )}
 
         {activeTab === "variables" && <VariablesTab />}
+
+        {activeTab === "description" && <DescriptionTab />}
       </div>
     </>
   );

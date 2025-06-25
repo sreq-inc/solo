@@ -79,6 +79,13 @@ export const useKeyboardShortcuts = () => {
       action: () => setActiveTab("variables"),
     },
     {
+      key: "d",
+      cmd: true,
+      shift: true,
+      description: "Go to Description tab",
+      action: () => setActiveTab("description"),
+    },
+    {
       key: "Enter",
       cmd: true,
       description: "Send request",
