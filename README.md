@@ -25,13 +25,15 @@ curl -s https://api.github.com/repos/sreq-inc/solo/releases/latest \
 
 ## Features
 
-- 📁 Create and manage collections
+📁 Create and manage collections
+
 - 🌐 HTTP requests – PUT, POST, GET, DELETE, and PATCH
 - 🔐 Authentication – Bearer Token and Basic Auth
 - 🧩 Query parameters
 - 🧪 Variables
-- 📤 Export as cURL
 - 📝 JSON body formatting
+- 🔎 GraphQL request support
+- 📤 Export as cURL
 - 🧑‍💻 User-friendly interface for creating and managing HTTP requests
 
 ## Running the project locally
