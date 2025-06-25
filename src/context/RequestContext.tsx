@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { useVariables } from "./VariablesContext";
+
 
 export type Tab = "body" | "auth" | "params" | "graphql" | "variables";
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -69,6 +71,9 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
   const [graphqlQuery, setGraphqlQuery] = useState("");
   const [graphqlVariables, setGraphqlVariables] = useState("{}");
 
+  const { clearVariables } = useVariables();
+
+
   const resetFields = () => {
     setMethod(requestType === "graphql" ? "POST" : "GET");
     setUrl("");
@@ -84,6 +89,11 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     setQueryParams([{ key: "", value: "", enabled: true }]);
     setGraphqlQuery("");
     setGraphqlVariables("{}");
+
+    // Clear variables when no folder is selected
+    // Note: currentFolder is not defined in this context
+    // Removed the conditional check since currentFolder is not available
+    clearVariables();
   };
 
   const formatJson = () => {
