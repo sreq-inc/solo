@@ -14,6 +14,7 @@ export const Sidebar = () => {
   const [newFolderName, setNewFolderName] = useState("");
   const [sidebarWidth, setSidebarWidth] = useState(320);
   const [isResizing, setIsResizing] = useState(false);
+
   const { theme } = useTheme();
   const {
     folders,

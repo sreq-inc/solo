@@ -52,6 +52,7 @@ type FileContextType = {
   handleRemoveFile: (fileName: string) => void;
   saveCurrentRequest: () => void;
   renameFile: (folder: string, fileName: string, newName: string) => void;
+  renameFolder: (oldName: string, newName: string) => void;
 };
 
 const FileContext = createContext<FileContextType | undefined>(undefined);
@@ -164,7 +165,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem(`solo-variables-${folder}`);
       return newFolders;
     });
-
     if (folder === currentFolder) {
       resetFields();
       setCurrentRequestId(null);
@@ -173,12 +173,78 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     setDropdownOpen(null);
   };
 
+  // Fixed renameFolder function
+  const renameFolder = (oldName: string, newName: string) => {
+    if (!newName.trim() || newName.trim() === oldName) {
+      return;
+    }
+
+    const trimmedNewName = newName.trim();
+
+    try {
+      // Check if new folder name already exists
+      if (folders[trimmedNewName]) {
+        alert("A folder with this name already exists.");
+        return;
+      }
+
+      // Get old folder data
+      const oldFolderData = localStorage.getItem(oldName);
+      const oldVariablesData = localStorage.getItem(`solo-variables-${oldName}`);
+
+      if (!oldFolderData) {
+        console.error(`Folder '${oldName}' not found`);
+        return;
+      }
+
+      // Create new folder with old data
+      localStorage.setItem(trimmedNewName, oldFolderData);
+
+      // Migrate variables if they exist
+      if (oldVariablesData) {
+        localStorage.setItem(`solo-variables-${trimmedNewName}`, oldVariablesData);
+      }
+
+      // Update folders state
+      setFolders((prev) => {
+        const newFolders = { ...prev };
+        newFolders[trimmedNewName] = newFolders[oldName];
+        delete newFolders[oldName];
+        return newFolders;
+      });
+
+      // Update currentFolder if it matches the renamed folder
+      if (currentFolder === oldName) {
+        setCurrentFolder(trimmedNewName);
+        loadVariablesForFolder(trimmedNewName);
+      }
+
+      // Update openFolders state
+      setOpenFolders((prev) => {
+        const newOpenFolders = { ...prev };
+        if (newOpenFolders[oldName]) {
+          newOpenFolders[trimmedNewName] = true;
+          delete newOpenFolders[oldName];
+        }
+        return newOpenFolders;
+      });
+
+      // Clean up old data
+      localStorage.removeItem(oldName);
+      localStorage.removeItem(`solo-variables-${oldName}`);
+
+      console.log(`Folder renamed from '${oldName}' to '${trimmedNewName}' successfully`);
+    } catch (error) {
+      console.error("Error renaming folder:", error);
+      alert("Error renaming folder. Please try again.");
+    }
+  };
+
   const toggleFolder = (folder: string) => {
     setOpenFolders((prev) => ({
       ...prev,
       [folder]: !prev[folder],
     }));
-
     if (folder !== currentFolder || !currentRequestId) {
       setCurrentFolder(folder);
       loadVariablesForFolder(folder);
@@ -227,13 +293,11 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       const files = JSON.parse(
         localStorage.getItem(folder) || "[]"
       ) as StoredFile[];
-
       files.push({
         fileName: newRequestId,
         fileData: defaultRequest,
         displayName: type === "graphql" ? "New GraphQL request" : "New request",
       });
-
       localStorage.setItem(folder, JSON.stringify(files));
 
       setFolders((prev) => ({
@@ -262,6 +326,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error("Error creating new request:", error);
     }
+
     setDropdownOpen(null);
   };
 
@@ -295,7 +360,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     }
 
     localStorage.setItem(folder, JSON.stringify(files));
-
     setFolders((prev) => ({
       ...prev,
       [folder]: files.map((file) => file.fileName),
@@ -307,7 +371,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       const files = JSON.parse(
         localStorage.getItem(currentFolder) || "[]"
       ) as StoredFile[];
-
       const currentFile = files.find(
         (file) => file.fileName === currentRequestId
       );
@@ -340,7 +403,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
   const handleRemoveFile = (fileName: string) => {
     try {
       let folderContainingFile = currentFolder;
-
       if (!folderContainingFile) {
         for (const folderName in folders) {
           const files = JSON.parse(
@@ -357,9 +419,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         const files = JSON.parse(
           localStorage.getItem(folderContainingFile) || "[]"
         ) as StoredFile[];
-
         const updatedFiles = files.filter((file) => file.fileName !== fileName);
-
         localStorage.setItem(
           folderContainingFile,
           JSON.stringify(updatedFiles)
@@ -391,7 +451,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       const files = JSON.parse(
         localStorage.getItem(folder) || "[]"
       ) as StoredFile[];
-
       const updatedFiles = files.map((file) => {
         if (file.fileName === fileName) {
           return {
@@ -403,7 +462,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       });
 
       localStorage.setItem(folder, JSON.stringify(updatedFiles));
-
       setFolders((prev) => ({
         ...prev,
         [folder]: updatedFiles.map((file) => file.fileName),
@@ -441,7 +499,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     const foundRequest = findRequestInAllFolders(fileName);
     if (foundRequest) {
       const { folder, data } = foundRequest;
-
       setCurrentFolder(folder);
       setOpenFolders((prev) => ({
         ...prev,
@@ -490,6 +547,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         toggleDropdown,
         createNewRequest,
         removeFolder,
+        renameFolder,
         handleFileClick,
         handleRemoveFile,
         saveCurrentRequest,

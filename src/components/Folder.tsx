@@ -50,7 +50,6 @@ export const FolderComponent = ({
   const [fileDropdownOpen, setFileDropdownOpen] = useState<string | null>(null);
   const [editingFileName, setEditingFileName] = useState<string | null>(null);
   const [newFileName, setNewFileName] = useState("");
-
   const [editingFolderName, setEditingFolderName] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const folderInputRef = useRef<HTMLInputElement>(null);
@@ -91,7 +90,6 @@ export const FolderComponent = ({
     setEditingFolderName(true);
     setNewFolderName(folder);
     setFileDropdownOpen(null);
-
     setTimeout(() => {
       folderInputRef.current?.focus();
       folderInputRef.current?.select();
@@ -103,6 +101,7 @@ export const FolderComponent = ({
       onRenameFolder(folder, newFolderName.trim());
     }
     setEditingFolderName(false);
+    setNewFolderName("");
   };
 
   const handleFolderRenameCancel = () => {
@@ -193,7 +192,7 @@ export const FolderComponent = ({
                   ? "text-green-400 hover:bg-gray-700"
                   : "text-green-600 hover:bg-gray-200"
               )}
-              title="Confirmar"
+              title="Confirm"
             >
               <Check className="w-3 h-3" />
             </button>
@@ -205,7 +204,7 @@ export const FolderComponent = ({
                   ? "text-red-400 hover:bg-gray-700"
                   : "text-red-600 hover:bg-gray-200"
               )}
-              title="Cancelar"
+              title="Cancel"
             >
               <X className="w-3 h-3" />
             </button>
