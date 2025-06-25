@@ -17,7 +17,7 @@ export const TabComponent = ({
 
   const getTabClasses = (isActive: boolean) => {
     return clsx(
-      "py-2 px-4 text-sm font-medium cursor-pointer rounded-lg transition-all duration-200 whitespace-nowrap",
+      "py-2 px-4 text-sm font-medium cursor-pointer transition-all duration-200 whitespace-nowrap",
       isActive
         ? theme === "dark"
           ? "bg-purple-700 text-white shadow-md"
@@ -75,7 +75,7 @@ export const TabComponent = ({
         onClick={() => onTabChange("description")}
         className={getTabClasses(activeTab === "description")}
       >
-        Doc
+        Docs
       </button>
     </div>
   );
