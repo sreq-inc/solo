@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 
 export type Variable = {
   key: string;
@@ -32,17 +32,35 @@ interface VariablesProviderProps {
 }
 
 function VariablesProvider({ children }: VariablesProviderProps) {
-  const [variables, setVariables] = useState<Variable[]>([
-    { key: "", value: "", enabled: true }
-  ]);
+  const [variables, setVariables] = useState<Variable[]>([]);
   const [currentFolder, setCurrentFolder] = useState<string | null>(null);
 
   const getVariablesStorageKey = (folderName: string) => {
     return `solo-variables-${folderName}`;
   };
 
+  const loadVariablesForFolder = useCallback((folderName: string) => {
+    setCurrentFolder(folderName);
+    // Store current folder in sessionStorage for persistence
+    sessionStorage.setItem('current-request-folder', folderName);
+
+    const storageKey = getVariablesStorageKey(folderName);
+    const saved = localStorage.getItem(storageKey);
+
+    if (saved) {
+      try {
+        const parsedVariables = JSON.parse(saved);
+        setVariables(parsedVariables);
+      } catch {
+        setVariables([{ key: "", value: "", enabled: true }]);
+      }
+    } else {
+      setVariables([{ key: "", value: "", enabled: true }]);
+    }
+  }, []);
+
   // Auto-detect current folder from localStorage
-  const detectAndLoadCurrentFolder = (): string | null => {
+  const detectAndLoadCurrentFolder = useCallback((): string | null => {
     // Get current request ID from sessionStorage if available
     const currentRequestKey = sessionStorage.getItem('current-request-folder');
     if (currentRequestKey) {
@@ -67,32 +85,12 @@ function VariablesProvider({ children }: VariablesProviderProps) {
     }
 
     return null;
-  };
+  }, [loadVariablesForFolder]);
 
   // Load variables on component mount
   useEffect(() => {
     detectAndLoadCurrentFolder();
-  }, []);
-
-  const loadVariablesForFolder = (folderName: string) => {
-    setCurrentFolder(folderName);
-    // Store current folder in sessionStorage for persistence
-    sessionStorage.setItem('current-request-folder', folderName);
-
-    const storageKey = getVariablesStorageKey(folderName);
-    const saved = localStorage.getItem(storageKey);
-
-    if (saved) {
-      try {
-        const parsedVariables = JSON.parse(saved);
-        setVariables(parsedVariables);
-      } catch {
-        setVariables([{ key: "", value: "", enabled: true }]);
-      }
-    } else {
-      setVariables([{ key: "", value: "", enabled: true }]);
-    }
-  };
+  }, [detectAndLoadCurrentFolder]);
 
   const clearVariables = () => {
     setCurrentFolder(null);
