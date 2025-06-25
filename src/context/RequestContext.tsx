@@ -2,8 +2,7 @@ import { createContext, useContext, useState, ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useVariables } from "./VariablesContext";
 
-
-export type Tab = "body" | "auth" | "params" | "graphql" | "variables";
+export type Tab = "body" | "auth" | "params" | "graphql" | "variables" | "description";
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 export type RequestType = "http" | "graphql";
 
@@ -30,6 +29,7 @@ type RequestContextType = {
   requestType: RequestType;
   graphqlQuery: string;
   graphqlVariables: string;
+  description: string;
   setMethod: (method: HttpMethod) => void;
   setUrl: (url: string) => void;
   setPayload: (payload: string) => void;
@@ -42,6 +42,7 @@ type RequestContextType = {
   setRequestType: (type: RequestType) => void;
   setGraphqlQuery: (query: string) => void;
   setGraphqlVariables: (variables: string) => void;
+  setDescription: (description: string) => void;
   handleRequest: (processedUrl?: string) => Promise<void>;
   resetFields: () => void;
   formatJson: () => void;
@@ -70,9 +71,9 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
   const [requestType, setRequestType] = useState<RequestType>("http");
   const [graphqlQuery, setGraphqlQuery] = useState("");
   const [graphqlVariables, setGraphqlVariables] = useState("{}");
+  const [description, setDescription] = useState("");
 
   const { clearVariables } = useVariables();
-
 
   const resetFields = () => {
     setMethod(requestType === "graphql" ? "POST" : "GET");
@@ -89,10 +90,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     setQueryParams([{ key: "", value: "", enabled: true }]);
     setGraphqlQuery("");
     setGraphqlVariables("{}");
-
-    // Clear variables when no folder is selected
-    // Note: currentFolder is not defined in this context
-    // Removed the conditional check since currentFolder is not available
+    setDescription("");
     clearVariables();
   };
 
@@ -129,10 +127,12 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       let result;
+
       if (requestType === "graphql") {
         const variables = graphqlVariables.trim()
           ? JSON.parse(graphqlVariables)
           : {};
+
         if (useBasicAuth) {
           result = await invoke("graphql_basic_auth_request", {
             url: finalUrl,
@@ -157,6 +157,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
         }
       } else {
         const body = payload.trim() ? JSON.parse(payload) : null;
+
         if (useBasicAuth) {
           result = await invoke("basic_auth_request", {
             method,
@@ -180,6 +181,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
           });
         }
       }
+
       setResponse(result);
     } catch (error) {
       setResponse(null);
@@ -215,6 +217,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
         requestType,
         graphqlQuery,
         graphqlVariables,
+        description,
         setMethod,
         setUrl,
         setPayload,
@@ -227,6 +230,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
         setRequestType,
         setGraphqlQuery,
         setGraphqlVariables,
+        setDescription,
         handleRequest,
         resetFields,
         formatJson,

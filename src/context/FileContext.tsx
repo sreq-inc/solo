@@ -17,11 +17,12 @@ type RequestData = {
   username?: string;
   password?: string;
   bearerToken?: string;
-  activeTab?: "body" | "auth" | "params" | "graphql" | "variables";
+  activeTab?: "body" | "auth" | "params" | "graphql" | "variables" | "description";
   queryParams?: QueryParam[];
   requestType?: "http" | "graphql";
   graphqlQuery?: string;
   graphqlVariables?: string;
+  description?: string;
 };
 
 type StoredFile = {
@@ -70,6 +71,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     requestType,
     graphqlQuery,
     graphqlVariables,
+    description,
     resetFields,
     setMethod,
     setUrl,
@@ -83,9 +85,9 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     setRequestType,
     setGraphqlQuery,
     setGraphqlVariables,
+    setDescription,
   } = useRequest();
 
-  // Get variables context functions
   const { loadVariablesForFolder, clearVariables } = useVariables();
 
   const [folders, setFolders] = useState<FolderStructure>({});
@@ -120,6 +122,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     requestType,
     graphqlQuery,
     graphqlVariables,
+    description,
   ]);
 
   const handleClickOutside = () => {
@@ -130,7 +133,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     const loadedFolders: FolderStructure = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && !key.startsWith('solo-variables-')) { // Ignore variables storage
+      if (key && !key.startsWith('solo-variables-')) {
         try {
           const files = JSON.parse(
             localStorage.getItem(key) || "[]"
@@ -158,10 +161,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       const newFolders = { ...prev };
       delete newFolders[folder];
       localStorage.removeItem(folder);
-
-      // Also remove variables for this folder
       localStorage.removeItem(`solo-variables-${folder}`);
-
       return newFolders;
     });
 
@@ -179,12 +179,9 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       [folder]: !prev[folder],
     }));
 
-    // Only change folder and reset if it's a different folder or no request is active
     if (folder !== currentFolder || !currentRequestId) {
       setCurrentFolder(folder);
       loadVariablesForFolder(folder);
-
-      // Only reset fields if no request is currently active
       if (!currentRequestId) {
         resetFields();
       }
@@ -204,8 +201,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     const newRequestId = `request_${Date.now()}`;
     setCurrentFolder(folder);
     setOpenFolders((prev) => ({ ...prev, [folder]: true }));
-
-    // Load variables for this folder
     loadVariablesForFolder(folder);
 
     const defaultRequest: RequestData = {
@@ -222,6 +217,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       requestType: type,
       graphqlQuery: type === "graphql" ? "query {\n  \n}" : "",
       graphqlVariables: type === "graphql" ? "{}" : "",
+      description: "",
     };
 
     resetFields();
@@ -231,16 +227,20 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       const files = JSON.parse(
         localStorage.getItem(folder) || "[]"
       ) as StoredFile[];
+
       files.push({
         fileName: newRequestId,
         fileData: defaultRequest,
         displayName: type === "graphql" ? "New GraphQL request" : "New request",
       });
+
       localStorage.setItem(folder, JSON.stringify(files));
+
       setFolders((prev) => ({
         ...prev,
         [folder]: [...(prev[folder] || []), newRequestId],
       }));
+
       setRequestType(type);
       setMethod(defaultRequest.method);
       setUrl(defaultRequest.url);
@@ -253,6 +253,8 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       setQueryParams(
         defaultRequest.queryParams || [{ key: "", value: "", enabled: true }]
       );
+      setDescription(defaultRequest.description || "");
+
       if (type === "graphql") {
         setGraphqlQuery(defaultRequest.graphqlQuery || "");
         setGraphqlVariables(defaultRequest.graphqlVariables || "{}");
@@ -272,9 +274,11 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     const files = JSON.parse(
       localStorage.getItem(folder) || "[]"
     ) as StoredFile[];
+
     const existingIndex = files.findIndex(
       (file) => file.fileName === requestId
     );
+
     if (existingIndex !== -1) {
       const existingDisplayName = files[existingIndex].displayName;
       files[existingIndex] = {
@@ -289,7 +293,9 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         displayName: displayName || `${request.method} Request`,
       });
     }
+
     localStorage.setItem(folder, JSON.stringify(files));
+
     setFolders((prev) => ({
       ...prev,
       [folder]: files.map((file) => file.fileName),
@@ -301,10 +307,12 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       const files = JSON.parse(
         localStorage.getItem(currentFolder) || "[]"
       ) as StoredFile[];
+
       const currentFile = files.find(
         (file) => file.fileName === currentRequestId
       );
       const currentDisplayName = currentFile?.displayName;
+
       saveRequest(
         currentFolder,
         {
@@ -321,6 +329,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
           requestType,
           graphqlQuery,
           graphqlVariables,
+          description,
         },
         currentRequestId,
         currentDisplayName
@@ -331,6 +340,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
   const handleRemoveFile = (fileName: string) => {
     try {
       let folderContainingFile = currentFolder;
+
       if (!folderContainingFile) {
         for (const folderName in folders) {
           const files = JSON.parse(
@@ -347,11 +357,14 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         const files = JSON.parse(
           localStorage.getItem(folderContainingFile) || "[]"
         ) as StoredFile[];
+
         const updatedFiles = files.filter((file) => file.fileName !== fileName);
+
         localStorage.setItem(
           folderContainingFile,
           JSON.stringify(updatedFiles)
         );
+
         setFolders((prev) => ({
           ...prev,
           [folderContainingFile]: updatedFiles.map((file) => file.fileName),
@@ -378,6 +391,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       const files = JSON.parse(
         localStorage.getItem(folder) || "[]"
       ) as StoredFile[];
+
       const updatedFiles = files.map((file) => {
         if (file.fileName === fileName) {
           return {
@@ -387,7 +401,9 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         }
         return file;
       });
+
       localStorage.setItem(folder, JSON.stringify(updatedFiles));
+
       setFolders((prev) => ({
         ...prev,
         [folder]: updatedFiles.map((file) => file.fileName),
@@ -425,13 +441,12 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     const foundRequest = findRequestInAllFolders(fileName);
     if (foundRequest) {
       const { folder, data } = foundRequest;
+
       setCurrentFolder(folder);
       setOpenFolders((prev) => ({
         ...prev,
         [folder]: true,
       }));
-
-      // Load variables for this folder
       loadVariablesForFolder(folder);
 
       setRequestType(data.requestType || "http");
@@ -448,10 +463,13 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       setQueryParams(
         data.queryParams || [{ key: "", value: "", enabled: true }]
       );
+      setDescription(data.description || "");
+
       if (data.requestType === "graphql") {
         setGraphqlQuery(data.graphqlQuery || "");
         setGraphqlVariables(data.graphqlVariables || "{}");
       }
+
       setCurrentRequestId(fileName);
     } else {
       alert("File not found.");
