@@ -47,12 +47,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           # Configure targets based on platform
-          targets: ${{ 
-            matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || 
-            matrix.platform == 'windows-latest' && 'x86_64-pc-windows-msvc' ||
-            matrix.platform == 'ubuntu-22.04' && 'x86_64-unknown-linux-gnu' || 
-            '' 
-          }}
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
       
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -76,7 +71,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: v__VERSION__
-          releaseName: "Solo v__VERSION__"
+          releaseName: "v__VERSION__"
           releaseBody: "See the assets to download this version and install."
           includeUpdaterJson: true
           releaseDraft: false
