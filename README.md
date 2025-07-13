@@ -1,31 +1,42 @@
 <div align="center">
   <img src="https://res.cloudinary.com/dje6m1lab/image/upload/v1745970240/solo_vdht4s.webp" height="200" width="200"/>
-  <h1>Solo is an HTTP request client</h1>
+  <h1>Solo - Your next HTTP Client ⚡</h1>
 </div>
 
-> I really don't care about your data
 
-[![CI](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml)
+[![CI](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml) [![publish](https://github.com/sreq-inc/solo/actions/workflows/publish.yml/badge.svg)](https://github.com/sreq-inc/solo/actions/workflows/publish.yml)
+
+<img width="1106" alt="image" src="https://github.com/user-attachments/assets/1edebfa9-ff8a-466a-a5ae-4b8eed207a39" />
+
+
+
 
 ## Installation
 
 ### macOS
 
 ```bash
-curl -L -o solo.zip https://github.com/sreq-inc/Solo/releases/download/0.0.2/solo_0.0.2_aarch64.dmg.zip && unzip solo.zip && open *.dmg
+curl -s https://api.github.com/repos/sreq-inc/solo/releases/latest \
+| grep "browser_download_url" \
+| grep ".dmg" \
+| cut -d '"' -f 4 \
+| xargs -n 1 curl -L --output solo.dmg && open solo.dmg
 ```
 
 ## Features
 
-- User-friendly interface for creating and managing HTTP requests
-- Cross-platform (Windows, macOS, Linux)
+📁 Create and manage collections
 
-## Technologies
+- 🌐 HTTP requests – PUT, POST, GET, DELETE, and PATCH
+- 🔐 Authentication – Bearer Token and Basic Auth
+- 🧩 Query parameters
+- 🧪 Variables
+- 📝 JSON body formatting
+- 🔎 GraphQL request support
+- 📤 Export as cURL
+- 🧑‍💻 User-friendly interface for creating and managing HTTP requests
 
-- Tauri 2
-- Tailwind CSS
-
-## Running the project
+## Running the project locally
 
 ```bash
 # Install dependencies

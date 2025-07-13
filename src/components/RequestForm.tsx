@@ -1,4 +1,6 @@
 import { TabComponent } from "./TabComponent";
+import { GraphQLEditor } from "./GraphQLEditor";
+import { DescriptionTab } from "./DescriptionTab";
 import { useEffect, useState, useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useRequest, QueryParam } from "../context/RequestContext";
@@ -8,6 +10,7 @@ import { UsernameAndPassword } from "./UsernameAndPassword";
 import { BearerToken } from "./BearerToken";
 import { Trash2Icon, Copy, Check } from "lucide-react";
 import { Checkbox } from "./Checkbox";
+import { VariablesTab } from "./VariablesTab";
 
 export const RequestForm = () => {
   const { theme } = useTheme();
@@ -20,6 +23,7 @@ export const RequestForm = () => {
     bearerToken,
     url,
     queryParams,
+    requestType,
     setPayload,
     setUsername,
     setPassword,
@@ -48,29 +52,41 @@ export const RequestForm = () => {
       return;
     }
 
-    const urlObj = new URL(url || "https://example.com");
-    const urlParams = new URLSearchParams(urlObj.search);
-    const params: QueryParam[] = [];
-
-    urlParams.forEach((value, key) => {
-      params.push({ key, value, enabled: true });
-    });
-
-    if (params.length === 0) {
-      params.push({ key: "", value: "", enabled: true });
+    if (requestType === "graphql") {
+      return;
     }
 
-    const paramsChanged =
-      JSON.stringify(params) !== JSON.stringify(queryParams);
-
-    if (paramsChanged && url.includes("?")) {
-      isLoadingParams.current = true;
-      setQueryParams(params);
-      setTimeout(() => {
-        isLoadingParams.current = false;
-      }, 100);
+    if (!url || url.trim() === "" || url === "{}" || !url.includes("://")) {
+      return;
     }
-  }, [url]);
+
+    try {
+      const urlObj = new URL(url);
+      const urlParams = new URLSearchParams(urlObj.search);
+      const params: QueryParam[] = [];
+
+      urlParams.forEach((value, key) => {
+        params.push({ key, value, enabled: true });
+      });
+
+      if (params.length === 0) {
+        params.push({ key: "", value: "", enabled: true });
+      }
+
+      const paramsChanged =
+        JSON.stringify(params) !== JSON.stringify(queryParams);
+
+      if (paramsChanged && url.includes("?")) {
+        isLoadingParams.current = true;
+        setQueryParams(params);
+        setTimeout(() => {
+          isLoadingParams.current = false;
+        }, 100);
+      }
+    } catch (error) {
+      console.warn("Invalid URL format:", url);
+    }
+  }, [url, requestType]);
 
   const lines = payload.split("\n");
 
@@ -101,6 +117,10 @@ export const RequestForm = () => {
   };
 
   const updateUrlWithParams = (params: QueryParam[]) => {
+    if (!url || url.trim() === "" || url === "{}") {
+      return;
+    }
+
     const baseUrl = url.split("?")[0] || "";
     const enabledParams = params.filter(
       (p) => p.enabled && p.key.trim() && p.value.trim()
@@ -123,8 +143,15 @@ export const RequestForm = () => {
   return (
     <>
       <div className="p-4 space-y-4 col-span-5 h-full w-full">
-        <TabComponent activeTab={activeTab} onTabChange={setActiveTab} />
-        {activeTab === "body" && (
+        <TabComponent
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          request={requestType}
+        />
+
+        {activeTab === "graphql" && requestType === "graphql" && <GraphQLEditor />}
+
+        {activeTab === "body" && requestType === "http" && (
           <div className="mt-4">
             <label
               className={clsx(
@@ -136,7 +163,7 @@ export const RequestForm = () => {
             </label>
             <div
               className={clsx(
-                "border rounded-xl min-h-[492px]  max-h-[492px] overflow-hidden",
+                "border rounded-xl min-h-[492px] max-h-[492px] overflow-hidden",
                 theme === "dark"
                   ? "bg-[#10121b] border-gray-600"
                   : "bg-white border-gray-300"
@@ -183,6 +210,8 @@ export const RequestForm = () => {
             </button>
           </div>
         )}
+
+        {/* Auth Tab */}
         {activeTab === "auth" && (
           <div
             className={clsx(
@@ -199,6 +228,7 @@ export const RequestForm = () => {
                 onChange={(value) => setSelectAuth(value)}
               />
             </div>
+
             {selectAuth === "basic" && (
               <UsernameAndPassword
                 username={username}
@@ -211,6 +241,7 @@ export const RequestForm = () => {
                 setShowPassword={setShowPassword}
               />
             )}
+
             {selectAuth === "bearer" && (
               <BearerToken
                 bearerToken={bearerToken}
@@ -219,7 +250,8 @@ export const RequestForm = () => {
             )}
           </div>
         )}
-        {activeTab === "params" && (
+
+        {activeTab === "params" && requestType === "http" && (
           <div>
             <label
               className={clsx(
@@ -229,7 +261,6 @@ export const RequestForm = () => {
             >
               Query Parameters
             </label>
-
             <div
               className={clsx(
                 "mt-4 p-4 border rounded-xl space-y-2",
@@ -293,7 +324,6 @@ export const RequestForm = () => {
                   </div>
                 </div>
               ))}
-
               <button
                 onClick={addQueryParam}
                 className={clsx(
@@ -347,6 +377,10 @@ export const RequestForm = () => {
             </div>
           </div>
         )}
+
+        {activeTab === "variables" && <VariablesTab />}
+
+        {activeTab === "description" && <DescriptionTab />}
       </div>
     </>
   );

@@ -6,6 +6,7 @@ import {
   ReactNode,
 } from "react";
 import { useRequest, QueryParam } from "./RequestContext";
+import { useVariables } from "./VariablesContext";
 
 type RequestData = {
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -16,8 +17,12 @@ type RequestData = {
   username?: string;
   password?: string;
   bearerToken?: string;
-  activeTab?: "body" | "auth" | "params";
+  activeTab?: "body" | "auth" | "params" | "graphql" | "variables" | "description";
   queryParams?: QueryParam[];
+  requestType?: "http" | "graphql";
+  graphqlQuery?: string;
+  graphqlVariables?: string;
+  description?: string;
 };
 
 type StoredFile = {
@@ -41,12 +46,13 @@ type FileContextType = {
   createFolder: (folderName: string) => void;
   toggleFolder: (folder: string) => void;
   toggleDropdown: (folder: string, e: React.MouseEvent) => void;
-  createNewRequest: (folder: string) => void;
+  createNewRequest: (folder: string, type?: "http" | "graphql") => void;
   removeFolder: (folder: string) => void;
   handleFileClick: (fileName: string) => void;
   handleRemoveFile: (fileName: string) => void;
   saveCurrentRequest: () => void;
   renameFile: (folder: string, fileName: string, newName: string) => void;
+  renameFolder: (oldName: string, newName: string) => void;
 };
 
 const FileContext = createContext<FileContextType | undefined>(undefined);
@@ -63,6 +69,10 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     response,
     bearerToken,
     queryParams,
+    requestType,
+    graphqlQuery,
+    graphqlVariables,
+    description,
     resetFields,
     setMethod,
     setUrl,
@@ -73,7 +83,13 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     setActiveTab,
     setBearerToken,
     setQueryParams,
+    setRequestType,
+    setGraphqlQuery,
+    setGraphqlVariables,
+    setDescription,
   } = useRequest();
+
+  const { loadVariablesForFolder, clearVariables } = useVariables();
 
   const [folders, setFolders] = useState<FolderStructure>({});
   const [openFolders, setOpenFolders] = useState<{ [key: string]: boolean }>(
@@ -104,6 +120,10 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     activeTab,
     bearerToken,
     queryParams,
+    requestType,
+    graphqlQuery,
+    graphqlVariables,
+    description,
   ]);
 
   const handleClickOutside = () => {
@@ -114,7 +134,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     const loadedFolders: FolderStructure = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key) {
+      if (key && !key.startsWith('solo-variables-')) {
         try {
           const files = JSON.parse(
             localStorage.getItem(key) || "[]"
@@ -142,13 +162,82 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       const newFolders = { ...prev };
       delete newFolders[folder];
       localStorage.removeItem(folder);
+      localStorage.removeItem(`solo-variables-${folder}`);
       return newFolders;
     });
     if (folder === currentFolder) {
       resetFields();
       setCurrentRequestId(null);
+      clearVariables();
     }
     setDropdownOpen(null);
+  };
+
+  // Fixed renameFolder function
+  const renameFolder = (oldName: string, newName: string) => {
+    if (!newName.trim() || newName.trim() === oldName) {
+      return;
+    }
+
+    const trimmedNewName = newName.trim();
+
+    try {
+      // Check if new folder name already exists
+      if (folders[trimmedNewName]) {
+        alert("A folder with this name already exists.");
+        return;
+      }
+
+      // Get old folder data
+      const oldFolderData = localStorage.getItem(oldName);
+      const oldVariablesData = localStorage.getItem(`solo-variables-${oldName}`);
+
+      if (!oldFolderData) {
+        console.error(`Folder '${oldName}' not found`);
+        return;
+      }
+
+      // Create new folder with old data
+      localStorage.setItem(trimmedNewName, oldFolderData);
+
+      // Migrate variables if they exist
+      if (oldVariablesData) {
+        localStorage.setItem(`solo-variables-${trimmedNewName}`, oldVariablesData);
+      }
+
+      // Update folders state
+      setFolders((prev) => {
+        const newFolders = { ...prev };
+        newFolders[trimmedNewName] = newFolders[oldName];
+        delete newFolders[oldName];
+        return newFolders;
+      });
+
+      // Update currentFolder if it matches the renamed folder
+      if (currentFolder === oldName) {
+        setCurrentFolder(trimmedNewName);
+        loadVariablesForFolder(trimmedNewName);
+      }
+
+      // Update openFolders state
+      setOpenFolders((prev) => {
+        const newOpenFolders = { ...prev };
+        if (newOpenFolders[oldName]) {
+          newOpenFolders[trimmedNewName] = true;
+          delete newOpenFolders[oldName];
+        }
+        return newOpenFolders;
+      });
+
+      // Clean up old data
+      localStorage.removeItem(oldName);
+      localStorage.removeItem(`solo-variables-${oldName}`);
+
+      console.log(`Folder renamed from '${oldName}' to '${trimmedNewName}' successfully`);
+    } catch (error) {
+      console.error("Error renaming folder:", error);
+      alert("Error renaming folder. Please try again.");
+    }
   };
 
   const toggleFolder = (folder: string) => {
@@ -156,9 +245,14 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       ...prev,
       [folder]: !prev[folder],
     }));
-    setCurrentFolder(folder);
-    resetFields();
-    setCurrentRequestId(null);
+    if (folder !== currentFolder || !currentRequestId) {
+      setCurrentFolder(folder);
+      loadVariablesForFolder(folder);
+      if (!currentRequestId) {
+        resetFields();
+      }
+      setCurrentRequestId(null);
+    }
   };
 
   const toggleDropdown = (folder: string, e: React.MouseEvent) => {
@@ -166,26 +260,33 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     setDropdownOpen((prev) => (prev === folder ? null : folder));
   };
 
-  const createNewRequest = (folder: string) => {
+  const createNewRequest = (
+    folder: string,
+    type: "http" | "graphql" = "http"
+  ) => {
     const newRequestId = `request_${Date.now()}`;
     setCurrentFolder(folder);
     setOpenFolders((prev) => ({ ...prev, [folder]: true }));
+    loadVariablesForFolder(folder);
 
-    const defaultRequest = {
-      method: "GET" as const,
+    const defaultRequest: RequestData = {
+      method: type === "graphql" ? "POST" : "GET",
       url: "",
       payload: "",
       response: null,
       useBasicAuth: false,
       username: "",
       password: "",
-      activeTab: "body" as const,
+      activeTab: type === "graphql" ? "graphql" : "body",
       bearerToken: "",
       queryParams: [{ key: "", value: "", enabled: true }],
+      requestType: type,
+      graphqlQuery: type === "graphql" ? "query {\n  \n}" : "",
+      graphqlVariables: type === "graphql" ? "{}" : "",
+      description: "",
     };
 
     resetFields();
-
     setCurrentRequestId(newRequestId);
 
     try {
@@ -195,7 +296,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       files.push({
         fileName: newRequestId,
         fileData: defaultRequest,
-        displayName: "New request",
+        displayName: type === "graphql" ? "New GraphQL request" : "New request",
       });
       localStorage.setItem(folder, JSON.stringify(files));
 
@@ -204,17 +305,26 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         [folder]: [...(prev[folder] || []), newRequestId],
       }));
 
+      setRequestType(type);
       setMethod(defaultRequest.method);
       setUrl(defaultRequest.url);
-      setPayload(defaultRequest.payload);
-      setUseBasicAuth(defaultRequest.useBasicAuth);
-      setUsername(defaultRequest.username);
-      setPassword(defaultRequest.password);
-      setActiveTab(defaultRequest.activeTab);
-      setBearerToken(defaultRequest.bearerToken);
-      setQueryParams(defaultRequest.queryParams);
+      setPayload(defaultRequest.payload || "");
+      setUseBasicAuth(defaultRequest.useBasicAuth || false);
+      setUsername(defaultRequest.username || "");
+      setPassword(defaultRequest.password || "");
+      setActiveTab(defaultRequest.activeTab || "body");
+      setBearerToken(defaultRequest.bearerToken || "");
+      setQueryParams(
+        defaultRequest.queryParams || [{ key: "", value: "", enabled: true }]
+      );
+      setDescription(defaultRequest.description || "");
+
+      if (type === "graphql") {
+        setGraphqlQuery(defaultRequest.graphqlQuery || "");
+        setGraphqlVariables(defaultRequest.graphqlVariables || "{}");
+      }
     } catch (error) {
-      console.error("Erro ao criar nova requisição:", error);
+      console.error("Error creating new request:", error);
     }
 
     setDropdownOpen(null);
@@ -229,6 +339,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     const files = JSON.parse(
       localStorage.getItem(folder) || "[]"
     ) as StoredFile[];
+
     const existingIndex = files.findIndex(
       (file) => file.fileName === requestId
     );
@@ -260,7 +371,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       const files = JSON.parse(
         localStorage.getItem(currentFolder) || "[]"
       ) as StoredFile[];
-
       const currentFile = files.find(
         (file) => file.fileName === currentRequestId
       );
@@ -279,6 +389,10 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
           activeTab,
           bearerToken,
           queryParams,
+          requestType,
+          graphqlQuery,
+          graphqlVariables,
+          description,
         },
         currentRequestId,
         currentDisplayName
@@ -289,7 +403,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
   const handleRemoveFile = (fileName: string) => {
     try {
       let folderContainingFile = currentFolder;
-
       if (!folderContainingFile) {
         for (const folderName in folders) {
           const files = JSON.parse(
@@ -306,9 +419,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         const files = JSON.parse(
           localStorage.getItem(folderContainingFile) || "[]"
         ) as StoredFile[];
-
         const updatedFiles = files.filter((file) => file.fileName !== fileName);
-
         localStorage.setItem(
           folderContainingFile,
           JSON.stringify(updatedFiles)
@@ -325,15 +436,13 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         }
 
         console.log(
-          `Arquivo '${fileName}' removido com sucesso da pasta '${folderContainingFile}'`
+          `File '${fileName}' successfully removed from folder '${folderContainingFile}'`
         );
       } else {
-        console.error(
-          `Não foi possível encontrar a pasta que contém o arquivo '${fileName}'`
-        );
+        console.error(`Could not find folder containing file '${fileName}'`);
       }
     } catch (error) {
-      console.error("Erro ao remover arquivo:", error);
+      console.error("Error removing file:", error);
     }
   };
 
@@ -342,7 +451,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       const files = JSON.parse(
         localStorage.getItem(folder) || "[]"
       ) as StoredFile[];
-
       const updatedFiles = files.map((file) => {
         if (file.fileName === fileName) {
           return {
@@ -366,7 +474,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
   ): { folder: string; data: RequestData; displayName?: string } | null => {
     for (let i = 0; i < localStorage.length; i++) {
       const folderName = localStorage.key(i);
-      if (folderName) {
+      if (folderName && !folderName.startsWith('solo-variables-')) {
         try {
           const files = JSON.parse(
             localStorage.getItem(folderName) || "[]"
@@ -391,24 +499,34 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     const foundRequest = findRequestInAllFolders(fileName);
     if (foundRequest) {
       const { folder, data } = foundRequest;
-
       setCurrentFolder(folder);
       setOpenFolders((prev) => ({
         ...prev,
         [folder]: true,
       }));
+      loadVariablesForFolder(folder);
 
+      setRequestType(data.requestType || "http");
       setMethod(data.method);
       setUrl(data.url || "");
       setPayload(data.payload || "");
       setUseBasicAuth(data.useBasicAuth || false);
       setUsername(data.username || "");
       setPassword(data.password || "");
-      setActiveTab(data.activeTab || "body");
+      setActiveTab(
+        data.activeTab || (data.requestType === "graphql" ? "graphql" : "body")
+      );
       setBearerToken(data.bearerToken || "");
       setQueryParams(
         data.queryParams || [{ key: "", value: "", enabled: true }]
       );
+      setDescription(data.description || "");
+
+      if (data.requestType === "graphql") {
+        setGraphqlQuery(data.graphqlQuery || "");
+        setGraphqlVariables(data.graphqlVariables || "{}");
+      }
+
       setCurrentRequestId(fileName);
     } else {
       alert("File not found.");
@@ -429,6 +547,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         toggleDropdown,
         createNewRequest,
         removeFolder,
+        renameFolder,
         handleFileClick,
         handleRemoveFile,
         saveCurrentRequest,

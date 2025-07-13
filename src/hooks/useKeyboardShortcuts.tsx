@@ -42,7 +42,7 @@ export const useKeyboardShortcuts = () => {
       description: "Focus URL input",
       action: () => {
         const urlInput = document.querySelector<HTMLInputElement>(
-          'input[placeholder="https://api.example.com/endpoint"]'
+          'input[placeholder*="https://"]'
         );
         if (urlInput) {
           urlInput.focus();
@@ -70,6 +70,20 @@ export const useKeyboardShortcuts = () => {
       shift: true,
       description: "Go to Params tab",
       action: () => setActiveTab("params"),
+    },
+    {
+      key: "v",
+      cmd: true,
+      shift: true,
+      description: "Go to Variables tab",
+      action: () => setActiveTab("variables"),
+    },
+    {
+      key: "d",
+      cmd: true,
+      shift: true,
+      description: "Go to Description tab",
+      action: () => setActiveTab("description"),
     },
     {
       key: "Enter",

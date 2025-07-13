@@ -14,6 +14,7 @@ export const Sidebar = () => {
   const [newFolderName, setNewFolderName] = useState("");
   const [sidebarWidth, setSidebarWidth] = useState(320);
   const [isResizing, setIsResizing] = useState(false);
+
   const { theme } = useTheme();
   const {
     folders,
@@ -26,6 +27,7 @@ export const Sidebar = () => {
     toggleDropdown,
     createNewRequest,
     removeFolder,
+    renameFolder,
     handleFileClick,
     handleRemoveFile,
     createFolder,
@@ -54,7 +56,9 @@ export const Sidebar = () => {
       }
     };
     if (showModal) {
-      window.addEventListener("click", handleClickOutside);
+      setTimeout(() => {
+        window.addEventListener("click", handleClickOutside);
+      }, 100);
     }
     return () => {
       window.removeEventListener("click", handleClickOutside);
@@ -64,7 +68,6 @@ export const Sidebar = () => {
   useLayoutEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing) return;
-
       const newWidth = e.clientX;
       if (newWidth >= 240 && newWidth <= 600) {
         setSidebarWidth(newWidth);
@@ -91,11 +94,28 @@ export const Sidebar = () => {
   );
 
   const handleCreateFolder = () => {
+    console.log("Attempting to create folder with name:", newFolderName.trim());
     if (newFolderName.trim()) {
-      createFolder(newFolderName);
-      setNewFolderName("");
-      setShowModal(false);
+      try {
+        createFolder(newFolderName.trim());
+        console.log("Folder created successfully");
+        setNewFolderName("");
+        setShowModal(false);
+      } catch (error) {
+        console.error("Error creating folder:", error);
+        alert("Error creating folder. Please try again.");
+      }
+    } else {
+      console.log("Folder name is empty");
+      alert("Please enter a folder name.");
     }
+  };
+
+  const handleModalOpen = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Opening modal");
+    setShowModal(true);
   };
 
   const handleResizeStart = () => {
@@ -122,6 +142,7 @@ export const Sidebar = () => {
           </h2>
           <ThemeToggle />
         </div>
+
         <div className="flex items-center gap-2 mb-4">
           <div className="relative flex-grow">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -146,7 +167,7 @@ export const Sidebar = () => {
             />
           </div>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={handleModalOpen}
             className={clsx(
               "h-7 w-7 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0",
               theme === "dark"
@@ -159,6 +180,7 @@ export const Sidebar = () => {
             <Plus className="w-3 h-3" />
           </button>
         </div>
+
         <div className="flex-grow overflow-y-auto relative z-10">
           <div className="space-y-2">
             {filteredFolders.map((folder) => (
@@ -171,6 +193,7 @@ export const Sidebar = () => {
                 onToggleDropdown={toggleDropdown}
                 onCreateNewRequest={createNewRequest}
                 onRemoveFolder={removeFolder}
+                onRenameFolder={renameFolder}
                 onFileClick={handleFileClick}
                 onRemoveFile={handleRemoveFile}
                 onRenameFile={renameFile}
@@ -179,6 +202,7 @@ export const Sidebar = () => {
             ))}
           </div>
         </div>
+
         <div className="flex flex-row items-center justify-between mt-4">
           <section className="flex flex-row items-center gap-2">
             <button
@@ -203,13 +227,15 @@ export const Sidebar = () => {
             )}
           />
         </div>
+
         {showModal && (
           <div className="fixed inset-0 bg-[rgb(0,0,0)]/50 bg-opacity-50 flex items-center justify-center z-50">
             <div
               className={clsx(
-                "p-6 rounded-lg shadow-lg max-w-md w-full",
+                "p-6 rounded-lg shadow-lg max-w-md w-full modal",
                 theme === "dark" ? "bg-gray-800" : "bg-white"
               )}
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-4">
                 <h3
@@ -242,6 +268,15 @@ export const Sidebar = () => {
                     : "bg-white border-gray-300 text-gray-800 placeholder-gray-500"
                 )}
                 autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleCreateFolder();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    setShowModal(false);
+                  }
+                }}
               />
               <div className="flex justify-end gap-2">
                 <button
@@ -273,7 +308,6 @@ export const Sidebar = () => {
           </div>
         )}
       </div>
-
       <div
         className="w-1 cursor-col-resize relative"
         onMouseDown={handleResizeStart}

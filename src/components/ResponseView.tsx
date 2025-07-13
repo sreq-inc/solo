@@ -3,7 +3,7 @@ import { useTheme } from "../context/ThemeContext";
 import { useRequest } from "../context/RequestContext";
 import clsx from "clsx";
 import { ShortcutsDisplay } from "./ShortcutsDisplay";
-import { generateCurl } from "../utils/curlGenerator";
+import { useCurlGenerator } from "../hooks/useCurlGenerator";
 import { CopyIcon } from "./CopyIcon";
 
 type TabType = "response" | "headers" | "timeline";
@@ -17,19 +17,24 @@ interface TabItemProps {
 
 const TabItem = ({ label, value, active, onClick }: TabItemProps) => {
   const { theme } = useTheme();
+
+  const getTabClasses = (isActive: boolean) => {
+    return clsx(
+      "py-2 px-4 text-sm font-medium cursor-pointer transition-all duration-200 whitespace-nowrap",
+      isActive
+        ? theme === "dark"
+          ? "bg-purple-700 text-white shadow-md"
+          : "bg-purple-600 text-white shadow-md"
+        : theme === "dark"
+          ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+          : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+    );
+  };
+
   return (
     <button
       onClick={() => onClick(value)}
-      className={clsx(
-        "py-2 px-4 text-sm font-medium cursor-pointer",
-        active
-          ? theme === "dark"
-            ? "border-b-2 border-purple-500 text-purple-400"
-            : "border-b-2 border-purple-600 text-purple-600"
-          : theme === "dark"
-          ? "text-gray-400 hover:text-gray-300 hover:border-gray-700"
-          : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
-      )}
+      className={getTabClasses(active)}
     >
       {label}
     </button>
@@ -44,59 +49,43 @@ export const ResponseView = () => {
     loading,
     isCopied,
     handleCopyResponse,
-    method,
     url,
-    payload,
-    useBasicAuth,
-    username,
-    password,
-    bearerToken,
-    queryParams,
   } = useRequest();
-  const [activeTab, setActiveTab] = useState<TabType>("response");
 
-  const currentRequestData = {
-    method,
-    url,
-    payload,
-    useBasicAuth,
-    username,
-    password,
-    bearerToken,
-    queryParams,
-  };
+  const { generateCurl } = useCurlGenerator();
+  const [activeTab, setActiveTab] = useState<TabType>("response");
 
   const lines = response ? JSON.stringify(response, null, 2).split("\n") : [];
 
   const headers = response
     ? [
-        { key: "Content-Type", value: "application/json" },
-        { key: "Server", value: "Tauri/1.0" },
-        { key: "Date", value: new Date().toUTCString() },
-        {
-          key: "Content-Length",
-          value: JSON.stringify(response).length.toString(),
-        },
-      ]
+      { key: "Content-Type", value: "application/json" },
+      { key: "Server", value: "Tauri/1.0" },
+      { key: "Date", value: new Date().toUTCString() },
+      {
+        key: "Content-Length",
+        value: JSON.stringify(response).length.toString(),
+      },
+    ]
     : [];
 
   const timeline = response
     ? [
-        {
-          name: "Request Started",
-          timestamp: new Date(Date.now() - 500).toISOString(),
-        },
-        {
-          name: "Request Sent",
-          timestamp: new Date(Date.now() - 400).toISOString(),
-        },
-        {
-          name: "Response Received",
-          timestamp: new Date(Date.now() - 100).toISOString(),
-          duration: 300,
-        },
-        { name: "Response Parsed", timestamp: new Date().toISOString() },
-      ]
+      {
+        name: "Request Started",
+        timestamp: new Date(Date.now() - 500).toISOString(),
+      },
+      {
+        name: "Request Sent",
+        timestamp: new Date(Date.now() - 400).toISOString(),
+      },
+      {
+        name: "Response Received",
+        timestamp: new Date(Date.now() - 100).toISOString(),
+        duration: 300,
+      },
+      { name: "Response Parsed", timestamp: new Date().toISOString() },
+    ]
     : [];
 
   const renderContent = () => {
@@ -162,6 +151,7 @@ export const ResponseView = () => {
             </tbody>
           </table>
         );
+
       case "headers":
         return (
           <div
@@ -195,6 +185,7 @@ export const ResponseView = () => {
             )}
           </div>
         );
+
       case "timeline":
         return (
           <div
@@ -268,13 +259,9 @@ export const ResponseView = () => {
           {error}
         </div>
       )}
-      <div
-        className={clsx(
-          "border-b flex items-center",
-          theme === "dark" ? "border-gray-700" : "border-gray-950"
-        )}
-      >
-        <div className="flex items-center gap-2 flex-1">
+
+      <div className="flex items-center justify-between">
+        <div className="flex flex-wrap gap-2">
           <TabItem
             label="Response"
             value="response"
@@ -294,16 +281,18 @@ export const ResponseView = () => {
             onClick={setActiveTab}
           />
         </div>
+
         {url && (
           <div className="ml-auto">
             <CopyIcon
-              content={generateCurl(currentRequestData)}
+              content={generateCurl()}
               size={16}
               className="mr-2"
             />
           </div>
         )}
       </div>
+
       <div
         className={clsx(
           "relative max-h-[600px] overflow-auto font-mono border rounded-xl pb-8",
@@ -312,12 +301,13 @@ export const ResponseView = () => {
               ? "bg-[#10121b] border-gray-600"
               : "bg-transparent border-transparent"
             : response
-            ? "bg-gray-100 border-gray-300"
-            : "bg-transparent border-transparent"
+              ? "bg-gray-100 border-gray-300"
+              : "bg-transparent border-transparent"
         )}
       >
         {renderContent()}
       </div>
+
       {response && activeTab === "response" && (
         <button
           onClick={handleCopyResponse}

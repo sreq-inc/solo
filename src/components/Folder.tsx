@@ -2,15 +2,18 @@ import {
   Folder,
   FolderOpen,
   ChevronDown,
-  Plus,
   Edit,
   Trash,
   MoreHorizontal,
   Copy,
+  Code,
+  Zap,
+  Check,
+  X,
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import clsx from "clsx";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { generateCurl } from "../utils/curlGenerator";
 
 type FolderProps = {
@@ -19,8 +22,9 @@ type FolderProps = {
   isDropdownOpen: boolean;
   onToggleFolder: (folder: string) => void;
   onToggleDropdown: (folder: string, e: React.MouseEvent) => void;
-  onCreateNewRequest: (folder: string) => void;
+  onCreateNewRequest: (folder: string, type?: "http" | "graphql") => void;
   onRemoveFolder: (folder: string) => void;
+  onRenameFolder: (oldName: string, newName: string) => void;
   onFileClick: (fileName: string) => void;
   onRemoveFile: (fileName: string) => void;
   onRenameFile: (folder: string, fileName: string, newName: string) => void;
@@ -35,6 +39,7 @@ export const FolderComponent = ({
   onToggleDropdown,
   onCreateNewRequest,
   onRemoveFolder,
+  onRenameFolder,
   onFileClick,
   onRemoveFile,
   onRenameFile,
@@ -45,6 +50,9 @@ export const FolderComponent = ({
   const [fileDropdownOpen, setFileDropdownOpen] = useState<string | null>(null);
   const [editingFileName, setEditingFileName] = useState<string | null>(null);
   const [newFileName, setNewFileName] = useState("");
+  const [editingFolderName, setEditingFolderName] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+  const folderInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileDropdownToggle = (fileName: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -77,9 +85,44 @@ export const FolderComponent = ({
     }
   };
 
+  const handleFolderRenameClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingFolderName(true);
+    setNewFolderName(folder);
+    setFileDropdownOpen(null);
+    setTimeout(() => {
+      folderInputRef.current?.focus();
+      folderInputRef.current?.select();
+    }, 50);
+  };
+
+  const handleFolderRenameSubmit = () => {
+    if (newFolderName.trim() && newFolderName.trim() !== folder) {
+      onRenameFolder(folder, newFolderName.trim());
+    }
+    setEditingFolderName(false);
+    setNewFolderName("");
+  };
+
+  const handleFolderRenameCancel = () => {
+    setEditingFolderName(false);
+    setNewFolderName("");
+  };
+
+  const handleFolderInputKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleFolderRenameSubmit();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      handleFolderRenameCancel();
+    }
+  };
+
   const closeView = () => {
     setFileDropdownOpen(null);
     setEditingFileName(null);
+    setEditingFolderName(false);
   };
 
   const handleEscKey = (e: KeyboardEvent) => {
@@ -95,37 +138,110 @@ export const FolderComponent = ({
     };
   }, []);
 
+  const getMethodColor = (method: string, requestType?: string) => {
+    if (requestType === "graphql") {
+      return "bg-purple-300";
+    }
+    switch (method) {
+      case "GET":
+        return "bg-green-300";
+      case "POST":
+        return "bg-blue-300";
+      case "PUT":
+        return "bg-yellow-300";
+      case "DELETE":
+        return "bg-red-300";
+      case "PATCH":
+        return "bg-purple-300";
+      default:
+        return "bg-gray-300";
+    }
+  };
+
+  const getMethodLabel = (method: string, requestType?: string) => {
+    if (requestType === "graphql") {
+      return "GQL";
+    }
+    return method;
+  };
+
   return (
     <div className="relative">
       <div className="flex items-center justify-between">
-        <button
-          onClick={() => onToggleFolder(folder)}
-          className={clsx(
-            "w-full flex items-center p-2 text-left h-8 text-xs cursor-pointer",
-            theme === "dark" ? "text-white" : "text-gray-800"
-          )}
-        >
-          {isOpen ? (
-            <FolderOpen className="mr-2" />
-          ) : (
-            <Folder className="mr-2" />
-          )}
-          <span>{folder}</span>
-        </button>
-        <button
-          onClick={(e) => onToggleDropdown(folder, e)}
-          className={clsx(
-            "px-2 h-8 cursor-pointer",
-            theme === "dark" ? "text-white" : "text-black"
-          )}
-        >
-          <ChevronDown className="w-4 h-4" />
-        </button>
+        {editingFolderName ? (
+          <div className="flex items-center w-full gap-2 p-2 h-8">
+            <input
+              ref={folderInputRef}
+              type="text"
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              onKeyDown={handleFolderInputKeyDown}
+              className={clsx(
+                "flex-1 text-xs p-1 rounded outline-none border",
+                theme === "dark"
+                  ? "bg-gray-800 text-white border-purple-500"
+                  : "bg-white text-gray-800 border-purple-500"
+              )}
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              onClick={handleFolderRenameSubmit}
+              className={clsx(
+                "p-1 rounded cursor-pointer",
+                theme === "dark"
+                  ? "text-green-400 hover:bg-gray-700"
+                  : "text-green-600 hover:bg-gray-200"
+              )}
+              title="Confirm"
+            >
+              <Check className="w-3 h-3" />
+            </button>
+            <button
+              onClick={handleFolderRenameCancel}
+              className={clsx(
+                "p-1 rounded cursor-pointer",
+                theme === "dark"
+                  ? "text-red-400 hover:bg-gray-700"
+                  : "text-red-600 hover:bg-gray-200"
+              )}
+              title="Cancel"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        ) : (
+          <>
+            <button
+              onClick={() => onToggleFolder(folder)}
+              className={clsx(
+                "w-full flex items-center p-2 text-left h-8 text-xs cursor-pointer",
+                theme === "dark" ? "text-white" : "text-gray-800"
+              )}
+            >
+              {isOpen ? (
+                <FolderOpen className="mr-2" />
+              ) : (
+                <Folder className="mr-2" />
+              )}
+              <span>{folder}</span>
+            </button>
+            <button
+              onClick={(e) => onToggleDropdown(folder, e)}
+              className={clsx(
+                "px-2 h-8 cursor-pointer",
+                theme === "dark" ? "text-white" : "text-black"
+              )}
+            >
+              <ChevronDown className="w-4 h-4" />
+            </button>
+          </>
+        )}
       </div>
-      {isDropdownOpen && (
+
+      {isDropdownOpen && !editingFolderName && (
         <div
           className={clsx(
-            "absolute right-0 mt-2 py-2 w-40 rounded-md shadow-xl border z-50",
+            "absolute right-0 mt-2 py-2 w-48 rounded-md shadow-xl border z-50",
             theme === "dark"
               ? "bg-gray-800 border-gray-700"
               : "bg-white border-gray-200"
@@ -135,7 +251,7 @@ export const FolderComponent = ({
             CREATE
           </div>
           <button
-            onClick={() => onCreateNewRequest(folder)}
+            onClick={() => onCreateNewRequest(folder, "http")}
             className={clsx(
               "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
               theme === "dark"
@@ -143,8 +259,20 @@ export const FolderComponent = ({
                 : "text-gray-700 hover:bg-gray-100"
             )}
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Code className="w-4 h-4 mr-2" />
             HTTP Request
+          </button>
+          <button
+            onClick={() => onCreateNewRequest(folder, "graphql")}
+            className={clsx(
+              "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
+              theme === "dark"
+                ? "text-gray-300 hover:bg-gray-700"
+                : "text-gray-700 hover:bg-gray-100"
+            )}
+          >
+            <Zap className="w-4 h-4 mr-2" />
+            GraphQL Request
           </button>
           <div
             className={clsx(
@@ -153,10 +281,22 @@ export const FolderComponent = ({
             )}
           ></div>
           <button
+            onClick={handleFolderRenameClick}
+            className={clsx(
+              "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
+              theme === "dark"
+                ? "text-gray-300 hover:bg-gray-700"
+                : "text-gray-700 hover:bg-gray-100"
+            )}
+          >
+            <Edit className="w-4 h-4 mr-2" />
+            Rename Folder
+          </button>
+          <button
             onClick={() => onRemoveFolder(folder)}
             className={clsx(
-              "px-4 py-2 text-sm w-full text-left flex items-center text-red-600 cursor-pointer",
-              theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"
+              "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
+              theme === "dark" ? "hover:bg-gray-700 text-gray-300" : "text-gray-700 hover:bg-gray-100"
             )}
           >
             <Trash className="w-4 h-4 mr-2" />
@@ -164,6 +304,7 @@ export const FolderComponent = ({
           </button>
         </div>
       )}
+
       {isOpen && (
         <div className="mt-2 space-y-2 ml-4">
           {files.map((file: any) => (
@@ -175,9 +316,9 @@ export const FolderComponent = ({
                   ? "bg-gray-700 hover:bg-gray-600"
                   : "bg-gray-200 hover:bg-gray-300",
                 file.fileName === currentRequestId &&
-                  (theme === "dark"
-                    ? "border-l-purple-800 border-l-8 transition-all"
-                    : "border-l-purple-900 border-l-8 transition-all")
+                (theme === "dark"
+                  ? "border-l-purple-800 border-l-8 transition-all"
+                  : "border-l-purple-900 border-l-8 transition-all")
               )}
             >
               {editingFileName === file.fileName ? (
@@ -209,14 +350,16 @@ export const FolderComponent = ({
                     <span
                       className={clsx(
                         "w-14 text-center text-xs px-1.5 text-black transition-all",
-                        file.fileData.method === "GET" && "bg-green-300",
-                        file.fileData.method === "POST" && "bg-blue-300",
-                        file.fileData.method === "PUT" && "bg-yellow-300",
-                        file.fileData.method === "DELETE" && "bg-red-300",
-                        file.fileData.method === "PATCH" && "bg-purple-300"
+                        getMethodColor(
+                          file.fileData.method,
+                          file.fileData.requestType
+                        )
                       )}
                     >
-                      {file.fileData.method}
+                      {getMethodLabel(
+                        file.fileData.method,
+                        file.fileData.requestType
+                      )}
                     </span>
                     <span
                       className={clsx(
@@ -269,23 +412,25 @@ export const FolderComponent = ({
                         <Edit className="w-4 h-4 mr-2" />
                         Rename
                       </button>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            generateCurl(file.fileData)
-                          );
-                          setFileDropdownOpen(null);
-                        }}
-                        className={clsx(
-                          "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
-                          theme === "dark"
-                            ? "text-gray-300 hover:bg-gray-700"
-                            : "text-gray-700 hover:bg-gray-100"
-                        )}
-                      >
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copy as cURL
-                      </button>
+                      {file.fileData.requestType !== "graphql" && (
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              generateCurl(file.fileData)
+                            );
+                            setFileDropdownOpen(null);
+                          }}
+                          className={clsx(
+                            "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
+                            theme === "dark"
+                              ? "text-gray-300 hover:bg-gray-700"
+                              : "text-gray-700 hover:bg-gray-100"
+                          )}
+                        >
+                          <Copy className="w-4 h-4 mr-2" />
+                          Copy as cURL
+                        </button>
+                      )}
                       <button
                         onClick={() => {
                           onRemoveFile(file.fileName);
