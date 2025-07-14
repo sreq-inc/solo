@@ -16,15 +16,16 @@ export default function Titlebar() {
   return (
     <div
       className={clsx(
-        "w-full h-8 flex items-center justify-between px-3 cursor-default",
+        "w-full h-8 flex items-center justify-between cursor-default",
         appBg,
-        textColor
+        textColor,
+        currentPlatform !== 'windows' ? 'px-3' : null
       )}
       data-tauri-drag-region
     >
-      {currentPlatform === 'macos' && <MacOsControls appBackground={appBg} textTheme={textColor}  />}
-      {currentPlatform === 'windows' && <WindowsControls appBackground={appBg} textTheme={textColor}  />}
-      {currentPlatform === 'linux' && <LinuxControls appBackground={appBg} textTheme={textColor}  />}
+      {currentPlatform === 'macos' && <MacOsControls textTheme={textColor}  />}
+      {currentPlatform === 'windows' && <WindowsControls textTheme={textColor}  />}
+      {currentPlatform === 'linux' && <LinuxControls textTheme={textColor}  />}
     </div>
   );
 }

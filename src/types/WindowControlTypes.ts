@@ -1,1 +1,1 @@
-type WindowControlsTypes = {appBackground: string, textTheme: string}
+type WindowControlsTypes = {appBackground?: string, textTheme: string}
