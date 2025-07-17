@@ -47,14 +47,14 @@ export default function WindowsControls({textTheme}: WindowControlsTypes) {
             <div />
             <div className={clsx("text-sm font-medium", textTheme)}>Solo</div>
             <section className="h-full grid grid-cols-3 items-center">
-                <button onClick={minimizeWindow} className="h-full flex items-center justify-center bg-transparent text-white px-4  hover:bg-neutral-500/10">
-                    <Minus size={12} className="stroke-white" />
+                <button onClick={minimizeWindow} className="h-full flex items-center justify-center bg-transparent px-4 hover:bg-neutral-500/10">
+                    <Minus size={12}  />
                 </button>
-                <button onClick={maximizeWindow} className="h-full flex items-center justify-center bg-transparent text-white px-4  hover:bg-neutral-500/10">
-                    {isMaximized ? <SquaresSubtract size={12} className="stroke-white"  /> : <Square size={12} className="stroke-white" />}
+                <button onClick={maximizeWindow} className="h-full flex items-center justify-center bg-transparent px-4 hover:bg-neutral-500/10">
+                    {isMaximized ? <SquaresSubtract size={12}   /> : <Square size={12}  />}
                 </button>
-                <button onClick={closeWindow} className="h-full flex items-center justify-center bg-transparent text-white px-4 hover:bg-red-600">
-                    <X size={16} className="stroke-white" />
+                <button onClick={closeWindow} className="h-full flex items-center justify-center bg-transparent px-4 hover:bg-red-600">
+                    <X size={16}  />
                 </button>
             </section>
         </>
