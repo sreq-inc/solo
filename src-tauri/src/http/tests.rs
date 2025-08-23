@@ -419,3 +419,67 @@ async fn test_graphql_mutation() {
     assert!(response.success);
     mock.assert();
 }
+
+#[tokio::test]
+async fn test_graphql_introspection_success() {
+    let server = MockServer::start();
+    let mock = server.mock(|when, then| {
+        when.method(POST)
+            .header("Content-Type", "application/json")
+            .json_body_partial(r#"{"query":"query IntrospectionQuery"#);
+        then.status(200)
+            .header("Content-Type", "application/json")
+            .json_body(json!({
+                "data": {
+                    "__schema": {
+                        "queryType": {"name": "Query"},
+                        "mutationType": {"name": "Mutation"},
+                        "subscriptionType": null,
+                        "types": [],
+                        "directives": []
+                    }
+                }
+            }));
+    });
+
+    let result = super::graphql_introspection(server.url("/graphql")).await;
+    
+    assert!(result.is_ok());
+    let response = result.unwrap();
+    assert!(response.success);
+    
+    mock.assert();
+}
+
+#[tokio::test]
+async fn test_graphql_introspection_with_bearer_auth() {
+    let server = MockServer::start();
+    let mock = server.mock(|when, then| {
+        when.method(POST)
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer test-token")
+            .json_body_partial(r#"{"query":"query IntrospectionQuery"#);
+        then.status(200)
+            .header("Content-Type", "application/json")
+            .json_body(json!({
+                "data": {
+                    "__schema": {
+                        "queryType": {"name": "Query"},
+                        "types": [],
+                        "directives": []
+                    }
+                }
+            }));
+    });
+
+    let result = super::graphql_introspection_with_auth(
+        server.url("/graphql"),
+        "bearer".to_string(),
+        Some("test-token".to_string()),
+        None,
+        None,
+    ).await;
+    
+    assert!(result.is_ok());
+    mock.assert();
+}

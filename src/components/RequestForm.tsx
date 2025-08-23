@@ -11,6 +11,7 @@ import { BearerToken } from "./BearerToken";
 import { Trash2Icon, Copy, Check } from "lucide-react";
 import { Checkbox } from "./Checkbox";
 import { VariablesTab } from "./VariablesTab";
+import { SchemaViewer } from "./SchemaViewer";
 
 export const RequestForm = () => {
   const { theme } = useTheme();
@@ -381,6 +382,11 @@ export const RequestForm = () => {
         {activeTab === "variables" && <VariablesTab />}
 
         {activeTab === "description" && <DescriptionTab />}
+        {activeTab === "schema" && requestType === "graphql" && (
+          <div className="mt-4">
+            <SchemaViewer />
+          </div>
+        )}
       </div>
     </>
   );

@@ -13,6 +13,8 @@ fn main() {
             http::bearer_auth_request,
             http::graphql_request,
             http::graphql_basic_auth_request,
+            http::graphql_introspection,
+            http::graphql_introspection_with_auth,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

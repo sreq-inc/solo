@@ -23,8 +23,8 @@ export const TabComponent = ({
           ? "bg-purple-700 text-white shadow-md"
           : "bg-purple-600 text-white shadow-md"
         : theme === "dark"
-          ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
-          : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+        ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+        : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
     );
   };
 
@@ -38,23 +38,28 @@ export const TabComponent = ({
           Body
         </button>
       )}
-
       {request === "graphql" && (
-        <button
-          onClick={() => onTabChange("graphql")}
-          className={getTabClasses(activeTab === "graphql")}
-        >
-          GraphQL
-        </button>
+        <>
+          <button
+            onClick={() => onTabChange("graphql")}
+            className={getTabClasses(activeTab === "graphql")}
+          >
+            GraphQL
+          </button>
+          <button
+            onClick={() => onTabChange("schema")}
+            className={getTabClasses(activeTab === "schema")}
+          >
+            Schema
+          </button>
+        </>
       )}
-
       <button
         onClick={() => onTabChange("auth")}
         className={getTabClasses(activeTab === "auth")}
       >
         Auth
       </button>
-
       {request === "http" && (
         <button
           onClick={() => onTabChange("params")}
@@ -63,14 +68,12 @@ export const TabComponent = ({
           Params
         </button>
       )}
-
       <button
         onClick={() => onTabChange("variables")}
         className={getTabClasses(activeTab === "variables")}
       >
         Variables
       </button>
-
       <button
         onClick={() => onTabChange("description")}
         className={getTabClasses(activeTab === "description")}

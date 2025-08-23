@@ -170,3 +170,130 @@ pub async fn graphql_bearer_auth_request(
 
 #[cfg(test)]
 mod tests;
+
+const INTROSPECTION_QUERY: &str = r#"
+query IntrospectionQuery {
+  __schema {
+    queryType { name }
+    mutationType { name }
+    subscriptionType { name }
+    types {
+      ...FullType
+    }
+    directives {
+      name
+      description
+      locations
+      args {
+        ...InputValue
+      }
+    }
+  }
+}
+
+fragment FullType on __Type {
+  kind
+  name
+  description
+  fields(includeDeprecated: true) {
+    name
+    description
+    args {
+      ...InputValue
+    }
+    type {
+      ...TypeRef
+    }
+    isDeprecated
+    deprecationReason
+  }
+  inputFields {
+    ...InputValue
+  }
+  interfaces {
+    ...TypeRef
+  }
+  enumValues(includeDeprecated: true) {
+    name
+    description
+    isDeprecated
+    deprecationReason
+  }
+  possibleTypes {
+    ...TypeRef
+  }
+}
+
+fragment InputValue on __InputValue {
+  name
+  description
+  type { ...TypeRef }
+  defaultValue
+}
+
+fragment TypeRef on __Type {
+  kind
+  name
+  ofType {
+    kind
+    name
+    ofType {
+      kind
+      name
+      ofType {
+        kind
+        name
+        ofType {
+          kind
+          name
+          ofType {
+            kind
+            name
+            ofType {
+              kind
+              name
+              ofType {
+                kind
+                name
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+"#;
+
+#[command]
+pub async fn graphql_introspection(url: String) -> Result<ApiResponse, String> {
+    let client = Client::new();
+    let request = build_graphql_request(&client, &url, INTROSPECTION_QUERY, None);
+    send_and_parse(request).await
+}
+
+#[command]
+pub async fn graphql_introspection_with_auth(
+    url: String,
+    auth_type: String,
+    token: Option<String>,
+    username: Option<String>,
+    password: Option<String>,
+) -> Result<ApiResponse, String> {
+    let client = Client::new();
+    let mut request = build_graphql_request(&client, &url, INTROSPECTION_QUERY, None);
+    
+    match auth_type.as_str() {
+        "bearer" => {
+            if let Some(bearer_token) = token {
+                request = request.header("Authorization", format!("Bearer {}", bearer_token));
+            }
+        }
+        "basic" => {
+            request = handle_basic_auth(request, username, password);
+        }
+        _ => {}
+    }
+    
+    send_and_parse(request).await
+}

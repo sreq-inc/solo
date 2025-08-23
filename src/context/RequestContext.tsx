@@ -2,7 +2,7 @@ import { createContext, useContext, useState, ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useVariables } from "./VariablesContext";
 
-export type Tab = "body" | "auth" | "params" | "graphql" | "variables" | "description";
+export type Tab = "body" | "auth" | "params" | "graphql" | "variables" | "description" | "schema";
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 export type RequestType = "http" | "graphql";
 
