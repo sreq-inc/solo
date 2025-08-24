@@ -1,10 +1,13 @@
 import { useTheme } from "../context/ThemeContext";
 import clsx from "clsx";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
+import { ShortcutsModal } from "./ShortcutsModal";
+import { useState, useEffect } from "react";
 
 export const ShortcutsDisplay = () => {
   const { theme } = useTheme();
   const shortcuts = useKeyboardShortcuts();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const formatShortcut = (shortcut: any) => {
     const keys = [];
@@ -14,6 +17,18 @@ export const ShortcutsDisplay = () => {
     keys.push(shortcut.key.toUpperCase());
     return keys.join(" + ");
   };
+
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isModalOpen) {
+        setIsModalOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isModalOpen]);
 
   return (
     <div
@@ -59,10 +74,29 @@ export const ShortcutsDisplay = () => {
           theme === "dark" ? "text-gray-500" : "text-gray-600"
         )}
       >
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className={clsx(
+              "text-xs px-2 py-1 rounded-md transition-colors border border-dashed cursor-pointer",
+              theme === "dark"
+                ? "border-gray-600 text-gray-400 hover:border-gray-500 hover:text-gray-300 hover:bg-gray-800/30"
+                : "border-gray-300 text-gray-500 hover:border-gray-400 hover:text-gray-600 hover:bg-gray-50"
+            )}
+            title="View all shortcuts"
+          >
+            View all shortcuts
+          </button>
+        </div>
         <p className="italic text-center">
           Tip: Press any shortcut to quickly perform actions
         </p>
       </div>
+
+      <ShortcutsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };
