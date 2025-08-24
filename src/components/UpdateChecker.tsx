@@ -155,7 +155,7 @@ export const UpdateChecker = () => {
         {showTooltip && updateState === "available" && updateInfo && (
           <div
             className={clsx(
-              "absolute bottom-full right-0 mb-2 p-3 rounded-lg shadow-xl z-50 w-64",
+              "absolute bottom-full -left-4 mb-2 p-3 mb-10 rounded-lg shadow-xl z-50 w-64",
               "border transition-all duration-200",
               theme === "dark"
                 ? "bg-gray-800 border-gray-700 text-white"
