@@ -1,6 +1,7 @@
 use super::*;
 use httpmock::Method::{DELETE, GET, PATCH, POST, PUT};
 use httpmock::MockServer;
+use reqwest::Client;
 use serde_json::json;
 
 /// Tests a GET request using plain_request against a mock server.

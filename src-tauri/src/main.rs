@@ -1,5 +1,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+pub mod auth;
+pub mod client;
+pub mod error;
+pub mod graphql;
 pub mod http;
 
 fn main() {

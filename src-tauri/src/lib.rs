@@ -8,4 +8,8 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
+pub mod auth;
+pub mod client;
+pub mod error;
+pub mod graphql;
 pub mod http;
