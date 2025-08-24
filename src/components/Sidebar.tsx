@@ -229,6 +229,8 @@ export const Sidebar = () => {
                 >
                   <ListCollapse className="h-4 w-4 cursor-pointer" />
                 </button>
+              </section>
+              <section className="flex flex-row items-center gap-2">
                 <button
                   title="GitHub Repository"
                   aria-label="GitHub Repository"
@@ -241,15 +243,15 @@ export const Sidebar = () => {
                   <Github className="h-4 w-4" />
                 </button>
                 <UpdateChecker />
+                <LatestRelease
+                  owner="sreq-inc"
+                  repo="Solo"
+                  className={clsx(
+                    "text-xs font-medium",
+                    theme === "dark" ? "text-gray-500" : "text-gray-900"
+                  )}
+                />
               </section>
-              <LatestRelease
-                owner="sreq-inc"
-                repo="Solo"
-                className={clsx(
-                  "text-xs font-medium",
-                  theme === "dark" ? "text-gray-500" : "text-gray-900"
-                )}
-              />
             </div>
           </>
         )}
