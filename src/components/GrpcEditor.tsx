@@ -290,8 +290,8 @@ export const GrpcEditor = () => {
                     ? "border-purple-500 bg-purple-900/20"
                     : "border-purple-500 bg-purple-50"
                   : theme === "dark"
-                  ? "border-gray-600 hover:border-gray-500"
-                  : "border-gray-300 hover:border-gray-400"
+                    ? "border-gray-600 hover:border-gray-500"
+                    : "border-gray-300 hover:border-gray-400"
               )}
             >
               <input
@@ -299,13 +299,26 @@ export const GrpcEditor = () => {
                 name="callType"
                 checked={grpcCallType === type}
                 onChange={() => setGrpcCallType(type)}
-                className="text-purple-600"
+                className={clsx(
+                  "text-purple-600",
+                  theme === "dark" ? "accent-purple-500" : "accent-purple-600"
+                )}
               />
               <div>
-                <div className="text-sm font-medium">
+                <div
+                  className={clsx(
+                    "text-sm font-medium",
+                    theme === "dark" ? "text-gray-100" : "text-gray-900"
+                  )}
+                >
                   {getCallTypeLabel(type)}
                 </div>
-                <div className="text-xs text-gray-500">
+                <div
+                  className={clsx(
+                    "text-xs",
+                    theme === "dark" ? "text-gray-400" : "text-gray-500"
+                  )}
+                >
                   {getCallTypeDescription(type)}
                 </div>
               </div>
@@ -359,28 +372,72 @@ export const GrpcEditor = () => {
               : "bg-gray-50 border-gray-300"
           )}
         >
-          <div className="text-sm font-medium mb-2">Method Information</div>
+          <div
+            className={clsx(
+              "text-sm font-medium mb-2",
+              theme === "dark" ? "text-gray-100" : "text-gray-900"
+            )}
+          >
+            Method Information
+          </div>
           {methods
             .filter((m) => m.name === grpcMethod)
             .map((method) => (
               <div key={method.name} className="text-xs space-y-1">
                 <div>
-                  <span className="text-gray-500">Input Type:</span>{" "}
-                  {method.input_type}
+                  <span
+                    className={clsx(
+                      theme === "dark" ? "text-gray-400" : "text-gray-500"
+                    )}
+                  >
+                    Input Type:
+                  </span>{" "}
+                  <span
+                    className={clsx(
+                      theme === "dark" ? "text-gray-200" : "text-gray-700"
+                    )}
+                  >
+                    {method.input_type}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Output Type:</span>{" "}
-                  {method.output_type}
+                  <span
+                    className={clsx(
+                      theme === "dark" ? "text-gray-400" : "text-gray-500"
+                    )}
+                  >
+                    Output Type:
+                  </span>{" "}
+                  <span
+                    className={clsx(
+                      theme === "dark" ? "text-gray-200" : "text-gray-700"
+                    )}
+                  >
+                    {method.output_type}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Streaming:</span>{" "}
-                  {method.is_client_streaming || method.is_server_streaming
-                    ? `${method.is_client_streaming ? "Client" : ""}${
-                        method.is_client_streaming && method.is_server_streaming
-                          ? " + "
-                          : ""
-                      }${method.is_server_streaming ? "Server" : ""}`
-                    : "None"}
+                  <span
+                    className={clsx(
+                      theme === "dark" ? "text-gray-400" : "text-gray-500"
+                    )}
+                  >
+                    Streaming:
+                  </span>{" "}
+                  <span
+                    className={clsx(
+                      theme === "dark" ? "text-gray-200" : "text-gray-700"
+                    )}
+                  >
+                    {method.is_client_streaming || method.is_server_streaming
+                      ? `${method.is_client_streaming ? "Client" : ""}${
+                          method.is_client_streaming &&
+                          method.is_server_streaming
+                            ? " + "
+                            : ""
+                        }${method.is_server_streaming ? "Server" : ""}`
+                      : "None"}
+                  </span>
                 </div>
               </div>
             ))}

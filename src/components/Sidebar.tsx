@@ -233,7 +233,12 @@ export const Sidebar = () => {
                   title="GitHub Repository"
                   aria-label="GitHub Repository"
                   type="button"
-                  className="flex cursor-pointer items-center justify-center text-gray-500 hover:text-gray-700"
+                  className={clsx(
+                    "flex cursor-pointer items-center justify-center transition-colors",
+                    theme === "dark"
+                      ? "text-gray-400 hover:text-gray-300"
+                      : "text-gray-500 hover:text-gray-700"
+                  )}
                   onClick={async () =>
                     await open("https://github.com/sreq-inc/Solo")
                   }
@@ -289,7 +294,12 @@ export const Sidebar = () => {
                 title="GitHub Repository"
                 aria-label="GitHub Repository"
                 type="button"
-                className="flex cursor-pointer items-center justify-center text-gray-500 hover:text-gray-700"
+                className={clsx(
+                  "flex cursor-pointer items-center justify-center transition-colors",
+                  theme === "dark"
+                    ? "text-gray-400 hover:text-gray-300"
+                    : "text-gray-500 hover:text-gray-700"
+                )}
                 onClick={async () =>
                   await open("https://github.com/sreq-inc/Solo")
                 }
