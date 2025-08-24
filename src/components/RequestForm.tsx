@@ -1,5 +1,6 @@
 import { TabComponent } from "./TabComponent";
 import { GraphQLEditor } from "./GraphQLEditor";
+import { GrpcEditor } from "./GrpcEditor";
 import { DescriptionTab } from "./DescriptionTab";
 import { useEffect, useState, useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
@@ -153,6 +154,8 @@ export const RequestForm = () => {
         {activeTab === "graphql" && requestType === "graphql" && (
           <GraphQLEditor />
         )}
+
+        {activeTab === "grpc" && requestType === "grpc" && <GrpcEditor />}
 
         {activeTab === "body" && requestType === "http" && (
           <div className="mt-4">

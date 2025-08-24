@@ -6,8 +6,15 @@ import { SmartUrlInput } from "./SmartUrlInput";
 import { useTheme } from "../context/ThemeContext";
 
 export const InputMethod = () => {
-  const { method, url, loading, setMethod, setUrl, handleRequest } =
-    useRequest();
+  const {
+    method,
+    url,
+    loading,
+    requestType,
+    setMethod,
+    setUrl,
+    handleRequest,
+  } = useRequest();
   const { replaceVariablesInUrl } = useVariables();
   const { theme } = useTheme();
 
@@ -48,20 +55,26 @@ export const InputMethod = () => {
 
   return (
     <div className="flex items-center gap-4">
-      <div className="flex-shrink-0 w-24 mr-2">
-        <SelectMethod
-          value={method}
-          options={["GET", "POST", "PUT", "DELETE", "PATCH"]}
-          onChange={(value) =>
-            setMethod(value as "GET" | "POST" | "PUT" | "DELETE" | "PATCH")
-          }
-        />
-      </div>
+      {requestType === "http" && (
+        <div className="flex-shrink-0 w-24 mr-2">
+          <SelectMethod
+            value={method}
+            options={["GET", "POST", "PUT", "DELETE", "PATCH"]}
+            onChange={(value) =>
+              setMethod(value as "GET" | "POST" | "PUT" | "DELETE" | "PATCH")
+            }
+          />
+        </div>
+      )}
       <div className="flex-grow">
         <SmartUrlInput
           value={url}
           onChange={setUrl}
-          placeholder="https://api.example.com/users or {{baseUrl}}/users"
+          placeholder={
+            requestType === "grpc"
+              ? "grpc://localhost:50051 or {{grpcUrl}}"
+              : "https://api.example.com/users or {{baseUrl}}/users"
+          }
           className={clsx(
             "w-full h-10 p-2 border rounded outline-none focus:ring-0",
             theme === "dark"

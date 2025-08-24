@@ -22,7 +22,10 @@ type FolderProps = {
   isDropdownOpen: boolean;
   onToggleFolder: (folder: string) => void;
   onToggleDropdown: (folder: string, e: React.MouseEvent) => void;
-  onCreateNewRequest: (folder: string, type?: "http" | "graphql") => void;
+  onCreateNewRequest: (
+    folder: string,
+    type?: "http" | "graphql" | "grpc"
+  ) => void;
   onRemoveFolder: (folder: string) => void;
   onRenameFolder: (oldName: string, newName: string) => void;
   onFileClick: (fileName: string) => void;
@@ -274,6 +277,30 @@ export const FolderComponent = ({
             <Zap className="w-4 h-4 mr-2" />
             GraphQL Request
           </button>
+          <button
+            onClick={() => onCreateNewRequest(folder, "grpc")}
+            className={clsx(
+              "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
+              theme === "dark"
+                ? "text-gray-300 hover:bg-gray-700"
+                : "text-gray-700 hover:bg-gray-100"
+            )}
+          >
+            <svg
+              className="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
+            gRPC Request
+          </button>
           <div
             className={clsx(
               "border-t my-2",
@@ -296,7 +323,9 @@ export const FolderComponent = ({
             onClick={() => onRemoveFolder(folder)}
             className={clsx(
               "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
-              theme === "dark" ? "hover:bg-gray-700 text-gray-300" : "text-gray-700 hover:bg-gray-100"
+              theme === "dark"
+                ? "hover:bg-gray-700 text-gray-300"
+                : "text-gray-700 hover:bg-gray-100"
             )}
           >
             <Trash className="w-4 h-4 mr-2" />
@@ -316,9 +345,9 @@ export const FolderComponent = ({
                   ? "bg-gray-700 hover:bg-gray-600"
                   : "bg-gray-200 hover:bg-gray-300",
                 file.fileName === currentRequestId &&
-                (theme === "dark"
-                  ? "border-l-purple-800 border-l-8 transition-all"
-                  : "border-l-purple-900 border-l-8 transition-all")
+                  (theme === "dark"
+                    ? "border-l-purple-800 border-l-8 transition-all"
+                    : "border-l-purple-900 border-l-8 transition-all")
               )}
             >
               {editingFileName === file.fileName ? (

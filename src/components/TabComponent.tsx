@@ -54,6 +54,22 @@ export const TabComponent = ({
           </button>
         </>
       )}
+      {request === "grpc" && (
+        <>
+          <button
+            onClick={() => onTabChange("grpc")}
+            className={getTabClasses(activeTab === "grpc")}
+          >
+            gRPC
+          </button>
+          <button
+            onClick={() => onTabChange("proto")}
+            className={getTabClasses(activeTab === "proto")}
+          >
+            Proto
+          </button>
+        </>
+      )}
       <button
         onClick={() => onTabChange("auth")}
         className={getTabClasses(activeTab === "auth")}
