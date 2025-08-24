@@ -26,16 +26,13 @@ const TabItem = ({ label, value, active, onClick }: TabItemProps) => {
           ? "bg-purple-700 text-white shadow-md"
           : "bg-purple-600 text-white shadow-md"
         : theme === "dark"
-          ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
-          : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+        ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+        : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
     );
   };
 
   return (
-    <button
-      onClick={() => onClick(value)}
-      className={getTabClasses(active)}
-    >
+    <button onClick={() => onClick(value)} className={getTabClasses(active)}>
       {label}
     </button>
   );
@@ -43,14 +40,8 @@ const TabItem = ({ label, value, active, onClick }: TabItemProps) => {
 
 export const ResponseView = () => {
   const { theme } = useTheme();
-  const {
-    response,
-    error,
-    loading,
-    isCopied,
-    handleCopyResponse,
-    url,
-  } = useRequest();
+  const { response, error, loading, isCopied, handleCopyResponse, url } =
+    useRequest();
 
   const { generateCurl } = useCurlGenerator();
   const [activeTab, setActiveTab] = useState<TabType>("response");
@@ -59,33 +50,33 @@ export const ResponseView = () => {
 
   const headers = response
     ? [
-      { key: "Content-Type", value: "application/json" },
-      { key: "Server", value: "Tauri/1.0" },
-      { key: "Date", value: new Date().toUTCString() },
-      {
-        key: "Content-Length",
-        value: JSON.stringify(response).length.toString(),
-      },
-    ]
+        { key: "Content-Type", value: "application/json" },
+        { key: "Server", value: "Tauri/1.0" },
+        { key: "Date", value: new Date().toUTCString() },
+        {
+          key: "Content-Length",
+          value: JSON.stringify(response).length.toString(),
+        },
+      ]
     : [];
 
   const timeline = response
     ? [
-      {
-        name: "Request Started",
-        timestamp: new Date(Date.now() - 500).toISOString(),
-      },
-      {
-        name: "Request Sent",
-        timestamp: new Date(Date.now() - 400).toISOString(),
-      },
-      {
-        name: "Response Received",
-        timestamp: new Date(Date.now() - 100).toISOString(),
-        duration: 300,
-      },
-      { name: "Response Parsed", timestamp: new Date().toISOString() },
-    ]
+        {
+          name: "Request Started",
+          timestamp: new Date(Date.now() - 500).toISOString(),
+        },
+        {
+          name: "Request Sent",
+          timestamp: new Date(Date.now() - 400).toISOString(),
+        },
+        {
+          name: "Response Received",
+          timestamp: new Date(Date.now() - 100).toISOString(),
+          duration: 300,
+        },
+        { name: "Response Parsed", timestamp: new Date().toISOString() },
+      ]
     : [];
 
   const renderContent = () => {
@@ -284,11 +275,7 @@ export const ResponseView = () => {
 
         {url && (
           <div className="ml-auto">
-            <CopyIcon
-              content={generateCurl()}
-              size={16}
-              className="mr-2"
-            />
+            <CopyIcon content={generateCurl()} size={16} className="mr-2" />
           </div>
         )}
       </div>
@@ -301,8 +288,8 @@ export const ResponseView = () => {
               ? "bg-[#10121b] border-gray-600"
               : "bg-transparent border-transparent"
             : response
-              ? "bg-gray-100 border-gray-300"
-              : "bg-transparent border-transparent"
+            ? "bg-gray-100 border-gray-300"
+            : "bg-transparent border-transparent"
         )}
       >
         {renderContent()}

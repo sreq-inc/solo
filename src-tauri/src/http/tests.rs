@@ -426,7 +426,7 @@ async fn test_graphql_introspection_success() {
     let mock = server.mock(|when, then| {
         when.method(POST)
             .header("Content-Type", "application/json")
-            .json_body_partial(r#"{"query":"query IntrospectionQuery"#);
+            .body_contains("query IntrospectionQuery");
         then.status(200)
             .header("Content-Type", "application/json")
             .json_body(json!({
@@ -443,11 +443,11 @@ async fn test_graphql_introspection_success() {
     });
 
     let result = super::graphql_introspection(server.url("/graphql")).await;
-    
+
     assert!(result.is_ok());
     let response = result.unwrap();
     assert!(response.success);
-    
+
     mock.assert();
 }
 
@@ -458,7 +458,7 @@ async fn test_graphql_introspection_with_bearer_auth() {
         when.method(POST)
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer test-token")
-            .json_body_partial(r#"{"query":"query IntrospectionQuery"#);
+            .body_contains("query IntrospectionQuery");
         then.status(200)
             .header("Content-Type", "application/json")
             .json_body(json!({
@@ -478,8 +478,9 @@ async fn test_graphql_introspection_with_bearer_auth() {
         Some("test-token".to_string()),
         None,
         None,
-    ).await;
-    
+    )
+    .await;
+
     assert!(result.is_ok());
     mock.assert();
 }

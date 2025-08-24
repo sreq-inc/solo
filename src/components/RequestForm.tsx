@@ -150,7 +150,9 @@ export const RequestForm = () => {
           request={requestType}
         />
 
-        {activeTab === "graphql" && requestType === "graphql" && <GraphQLEditor />}
+        {activeTab === "graphql" && requestType === "graphql" && (
+          <GraphQLEditor />
+        )}
 
         {activeTab === "body" && requestType === "http" && (
           <div className="mt-4">
@@ -382,6 +384,7 @@ export const RequestForm = () => {
         {activeTab === "variables" && <VariablesTab />}
 
         {activeTab === "description" && <DescriptionTab />}
+
         {activeTab === "schema" && requestType === "graphql" && (
           <div className="mt-4">
             <SchemaViewer />
