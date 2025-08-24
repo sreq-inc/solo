@@ -150,7 +150,7 @@ const TypeExplorer = ({ type }: { type: GraphQLType }) => {
       <button
         onClick={() => setExpanded(!expanded)}
         className={clsx(
-          "w-full p-3 flex items-center gap-2 text-left transition-colors",
+          "w-full p-3 flex items-center gap-2 text-left transition-colors cursor-pointer",
           theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"
         )}
       >
@@ -207,7 +207,7 @@ const TypeExplorer = ({ type }: { type: GraphQLType }) => {
             <div>
               <div
                 className={clsx(
-                  "font-medium mb-2 text-sm",
+                  "font-medium my-2 text-sm",
                   theme === "dark" ? "text-gray-200" : "text-gray-800"
                 )}
               >
@@ -376,7 +376,7 @@ export const SchemaViewer = () => {
         <button
           onClick={handleRunIntrospection}
           className={clsx(
-            "px-3 py-1 rounded text-sm transition-colors",
+            "px-3 py-1 rounded text-sm transition-colors cursor-pointer",
             theme === "dark"
               ? "bg-purple-700 hover:bg-purple-800 text-white"
               : "bg-purple-600 hover:bg-purple-700 text-white"
@@ -387,7 +387,7 @@ export const SchemaViewer = () => {
         <button
           onClick={clearSchema}
           className={clsx(
-            "px-3 py-1 rounded text-sm transition-colors",
+            "px-3 py-1 rounded text-sm transition-colors cursor-pointer",
             theme === "dark"
               ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
               : "bg-gray-200 hover:bg-gray-300 text-gray-700"
@@ -415,8 +415,8 @@ export const SchemaViewer = () => {
                     ? "border-purple-400 text-purple-300"
                     : "border-purple-600 text-purple-600"
                   : theme === "dark"
-                  ? "border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500"
-                  : "border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-400"
+                    ? "border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500"
+                    : "border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-400"
               )}
             >
               {tab}
