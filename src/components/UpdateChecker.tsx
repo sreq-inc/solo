@@ -109,15 +109,15 @@ export const UpdateChecker = () => {
   const getStateMessage = () => {
     switch (updateState) {
       case "checking":
-        return "Verificando atualizações...";
+        return "Checking for updates...";
       case "downloading":
-        return "Baixando atualização...";
+        return "Downloading update...";
       case "ready":
-        return "Atualização baixada e pronta para instalar";
+        return "Update downloaded and ready to install";
       case "installing":
-        return "Instalando atualização...";
+        return "Installing update...";
       case "error":
-        return `Erro: ${error}`;
+        return `Error: ${error}`;
       default:
         return "";
     }
@@ -130,7 +130,7 @@ export const UpdateChecker = () => {
           <button
             onClick={() => setShowSettings(true)}
             className="flex cursor-pointer items-center justify-center text-gray-500 hover:text-gray-700"
-            title="Configurações de atualização"
+            title="Update settings"
           >
             <Settings className="w-4 h-4" />
           </button>
@@ -155,7 +155,7 @@ export const UpdateChecker = () => {
         {showTooltip && updateState === "available" && updateInfo && (
           <div
             className={clsx(
-              "absolute bottom-full -left-4 mb-2 p-3 mb-10 rounded-lg shadow-xl z-50 w-64",
+              "absolute bottom-full -left-4 mb-2 p-3 rounded-lg shadow-xl z-50 w-64",
               "border transition-all duration-200",
               theme === "dark"
                 ? "bg-gray-800 border-gray-700 text-white"
@@ -166,11 +166,11 @@ export const UpdateChecker = () => {
               <Download className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
               <div className="flex-1">
                 <h4 className="font-medium text-sm mb-1">
-                  Nova versão disponível
+                  New version available
                 </h4>
                 <p className="text-xs mb-3 opacity-80">
-                  Versão {updateInfo.version} está disponível. Deseja baixar
-                  agora?
+                  Version {updateInfo.version} is available. Do you want to
+                  download now?
                 </p>
                 <div className="flex gap-2">
                   <button
@@ -182,7 +182,7 @@ export const UpdateChecker = () => {
                         : "bg-blue-600 hover:bg-blue-700 text-white"
                     )}
                   >
-                    Baixar
+                    Download
                   </button>
                   <button
                     onClick={handleTooltipDismiss}
@@ -193,7 +193,7 @@ export const UpdateChecker = () => {
                         : "bg-gray-200 hover:bg-gray-300 text-gray-700"
                     )}
                   >
-                    Depois
+                    Later
                   </button>
                 </div>
               </div>
@@ -230,9 +230,9 @@ export const UpdateChecker = () => {
           <div className="flex items-start gap-3">
             <div className="w-3 h-3 rounded-full bg-green-500 flex-shrink-0 mt-1" />
             <div className="flex-1">
-              <h3 className="font-medium text-sm mb-1">Pronto para instalar</h3>
+              <h3 className="font-medium text-sm mb-1">Ready to install</h3>
               <p className="text-xs mb-3 opacity-80">
-                A atualização foi baixada com sucesso.
+                The update was downloaded successfully.
               </p>
               <div className="flex gap-2">
                 <button
@@ -244,7 +244,7 @@ export const UpdateChecker = () => {
                       : "bg-green-600 hover:bg-green-700 text-white"
                   )}
                 >
-                  Instalar e Reiniciar
+                  Install and Restart
                 </button>
                 <button
                   onClick={() => setShowNotification(false)}
@@ -255,7 +255,7 @@ export const UpdateChecker = () => {
                       : "bg-gray-200 hover:bg-gray-300 text-gray-700"
                   )}
                 >
-                  Mais tarde
+                  Later
                 </button>
               </div>
             </div>

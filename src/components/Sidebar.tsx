@@ -3,7 +3,7 @@ import { useFile } from "../context/FileContext";
 import { FolderComponent } from "./Folder";
 import { ThemeToggle } from "./ThemeToggle";
 import { useLayoutEffect, useState } from "react";
-import { Search, Plus, X, Github, ChevronLeft, ChevronRight, ListCollapse } from "lucide-react";
+import { Search, Plus, X, Github, ListCollapse } from "lucide-react";
 import { open } from "@tauri-apps/plugin-shell";
 import { LatestRelease } from "./LatestRelease";
 import clsx from "clsx";
@@ -138,8 +138,6 @@ export const Sidebar = () => {
         )}
         style={{ width: `${displayWidth}px` }}
       >
-
-
         {!isCollapsed && (
           <>
             <div className="flex justify-between items-center mb-4">
@@ -224,8 +222,10 @@ export const Sidebar = () => {
                       ? "text-gray-500 hover:text-gray-300"
                       : "text-gray-500 hover:text-gray-700"
                   )}
-                  title={isCollapsed ? "Expandir sidebar" : "Recolher sidebar"}
-                  aria-label={isCollapsed ? "Expandir sidebar" : "Recolher sidebar"}
+                  title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                  aria-label={
+                    isCollapsed ? "Expand sidebar" : "Collapse sidebar"
+                  }
                 >
                   <ListCollapse className="h-4 w-4 cursor-pointer" />
                 </button>
@@ -270,7 +270,7 @@ export const Sidebar = () => {
             >
               <Plus className="w-4 h-4" />
             </button>
-            
+
             <div className="mt-auto mb-4 flex flex-col items-center gap-2">
               <button
                 onClick={toggleSidebar}
@@ -280,8 +280,8 @@ export const Sidebar = () => {
                     ? "text-gray-500 hover:text-gray-300"
                     : "text-gray-500 hover:text-gray-700"
                 )}
-                title={isCollapsed ? "Expandir sidebar" : "Recolher sidebar"}
-                aria-label={isCollapsed ? "Expandir sidebar" : "Recolher sidebar"}
+                title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
               >
                 <ListCollapse className="h-4 w-4" />
               </button>

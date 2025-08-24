@@ -23,13 +23,13 @@ export function useLatestRelease(owner: string, repo: string) {
         );
 
         if (!res.ok) {
-          throw new Error(`Erro ao buscar release: ${res.status}`);
+          throw new Error(`Error fetching release: ${res.status}`);
         }
 
         const data = await res.json();
         setRelease({ tag: data.tag_name });
       } catch (err: any) {
-        setError(err.message || "Erro desconhecido");
+        setError(err.message || "Unknown error");
       } finally {
         setLoading(false);
       }
