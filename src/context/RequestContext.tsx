@@ -2,9 +2,18 @@ import { createContext, useContext, useState, ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useVariables } from "./VariablesContext";
 
-export type Tab = "body" | "auth" | "params" | "graphql" | "variables" | "description" | "schema";
+export type Tab =
+  | "body"
+  | "auth"
+  | "params"
+  | "graphql"
+  | "grpc"
+  | "proto"
+  | "variables"
+  | "description"
+  | "schema";
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-export type RequestType = "http" | "graphql";
+export type RequestType = "http" | "graphql" | "grpc";
 
 export type QueryParam = {
   key: string;
@@ -29,6 +38,15 @@ type RequestContextType = {
   requestType: RequestType;
   graphqlQuery: string;
   graphqlVariables: string;
+  grpcService: string;
+  grpcMethod: string;
+  grpcMessage: string;
+  grpcCallType:
+    | "unary"
+    | "server_streaming"
+    | "client_streaming"
+    | "bidirectional";
+  protoContent: string;
   description: string;
   setMethod: (method: HttpMethod) => void;
   setUrl: (url: string) => void;
@@ -42,6 +60,13 @@ type RequestContextType = {
   setRequestType: (type: RequestType) => void;
   setGraphqlQuery: (query: string) => void;
   setGraphqlVariables: (variables: string) => void;
+  setGrpcService: (service: string) => void;
+  setGrpcMethod: (method: string) => void;
+  setGrpcMessage: (message: string) => void;
+  setGrpcCallType: (
+    type: "unary" | "server_streaming" | "client_streaming" | "bidirectional"
+  ) => void;
+  setProtoContent: (content: string) => void;
   setDescription: (description: string) => void;
   handleRequest: (processedUrl?: string) => Promise<void>;
   resetFields: () => void;
@@ -71,6 +96,13 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
   const [requestType, setRequestType] = useState<RequestType>("http");
   const [graphqlQuery, setGraphqlQuery] = useState("");
   const [graphqlVariables, setGraphqlVariables] = useState("{}");
+  const [grpcService, setGrpcService] = useState("");
+  const [grpcMethod, setGrpcMethod] = useState("");
+  const [grpcMessage, setGrpcMessage] = useState("{}");
+  const [grpcCallType, setGrpcCallType] = useState<
+    "unary" | "server_streaming" | "client_streaming" | "bidirectional"
+  >("unary");
+  const [protoContent, setProtoContent] = useState("");
   const [description, setDescription] = useState("");
 
   const { clearVariables } = useVariables();
@@ -82,7 +114,13 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     setUsername("");
     setPassword("");
     setUseBasicAuth(false);
-    setActiveTab(requestType === "graphql" ? "graphql" : "body");
+    setActiveTab(
+      requestType === "graphql"
+        ? "graphql"
+        : requestType === "grpc"
+        ? "grpc"
+        : "body"
+    );
     setResponse(null);
     setError(null);
     setBearerToken("");
@@ -90,6 +128,11 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     setQueryParams([{ key: "", value: "", enabled: true }]);
     setGraphqlQuery("");
     setGraphqlVariables("{}");
+    setGrpcService("");
+    setGrpcMethod("");
+    setGrpcMessage("{}");
+    setGrpcCallType("unary");
+    setProtoContent("");
     setDescription("");
     clearVariables();
   };
@@ -155,6 +198,41 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
             variables,
           });
         }
+      } else if (requestType === "grpc") {
+        const message = grpcMessage.trim() ? JSON.parse(grpcMessage) : {};
+
+        if (grpcCallType === "unary") {
+          result = await invoke("grpc_unary_request", {
+            url: finalUrl,
+            service: grpcService,
+            method: grpcMethod,
+            message,
+            metadata: bearerToken.trim()
+              ? { authorization: `Bearer ${bearerToken}` }
+              : undefined,
+          });
+        } else if (grpcCallType === "server_streaming") {
+          result = await invoke("grpc_server_streaming_request", {
+            url: finalUrl,
+            service: grpcService,
+            method: grpcMethod,
+            message,
+            metadata: bearerToken.trim()
+              ? { authorization: `Bearer ${bearerToken}` }
+              : undefined,
+          });
+        } else {
+          // For now, handle other streaming types as unary
+          result = await invoke("grpc_unary_request", {
+            url: finalUrl,
+            service: grpcService,
+            method: grpcMethod,
+            message,
+            metadata: bearerToken.trim()
+              ? { authorization: `Bearer ${bearerToken}` }
+              : undefined,
+          });
+        }
       } else {
         const body = payload.trim() ? JSON.parse(payload) : null;
 
@@ -217,6 +295,11 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
         requestType,
         graphqlQuery,
         graphqlVariables,
+        grpcService,
+        grpcMethod,
+        grpcMessage,
+        grpcCallType,
+        protoContent,
         description,
         setMethod,
         setUrl,
@@ -230,6 +313,11 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
         setRequestType,
         setGraphqlQuery,
         setGraphqlVariables,
+        setGrpcService,
+        setGrpcMethod,
+        setGrpcMessage,
+        setGrpcCallType,
+        setProtoContent,
         setDescription,
         handleRequest,
         resetFields,

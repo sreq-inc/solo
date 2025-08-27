@@ -7,23 +7,23 @@ pub type AppResult<T> = Result<T, AppError>;
 pub enum AppError {
     HttpError {
         message: String,
-        status_code: Option<u16>
+        status_code: Option<u16>,
     },
     ParseError {
-        message: String
+        message: String,
     },
     AuthError {
-        message: String
+        message: String,
     },
     ValidationError {
         field: String,
-        message: String
+        message: String,
     },
     NetworkError {
-        message: String
+        message: String,
     },
     InternalError {
-        message: String
+        message: String,
     },
 }
 
@@ -92,12 +92,13 @@ impl AppError {
 impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            AppError::HttpError { message, status_code } => {
-                match status_code {
-                    Some(code) => write!(f, "HTTP Error ({}): {}", code, message),
-                    None => write!(f, "HTTP Error: {}", message),
-                }
-            }
+            AppError::HttpError {
+                message,
+                status_code,
+            } => match status_code {
+                Some(code) => write!(f, "HTTP Error ({}): {}", code, message),
+                None => write!(f, "HTTP Error: {}", message),
+            },
             AppError::ParseError { message } => write!(f, "Parse Error: {}", message),
             AppError::AuthError { message } => write!(f, "Authentication Error: {}", message),
             AppError::ValidationError { field, message } => {
@@ -131,6 +132,18 @@ impl From<reqwest::Error> for AppError {
 impl From<serde_json::Error> for AppError {
     fn from(err: serde_json::Error) -> Self {
         AppError::parse(format!("JSON parsing failed: {}", err))
+    }
+}
+
+impl From<tonic::codegen::http::uri::InvalidUri> for AppError {
+    fn from(err: tonic::codegen::http::uri::InvalidUri) -> Self {
+        AppError::validation("url", format!("Invalid gRPC URL: {}", err))
+    }
+}
+
+impl From<tonic::transport::Error> for AppError {
+    fn from(err: tonic::transport::Error) -> Self {
+        AppError::network(format!("gRPC transport error: {}", err))
     }
 }
 

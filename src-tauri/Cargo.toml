@@ -28,6 +28,13 @@ reqwest = { version = "0.11", features = ["json"] }
 base64 = "0.21.0"
 tauri-plugin-shell = "2.0"
 tauri-plugin-os = "2"
+tonic = "0.10"
+prost = "0.12"
+prost-types = "0.12"
+tokio = { version = "1", features = ["full"] }
+tower = "0.4"
+bytes = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
 
 [dev-dependencies]
 httpmock = "0.6"

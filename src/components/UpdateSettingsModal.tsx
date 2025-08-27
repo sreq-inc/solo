@@ -50,7 +50,12 @@ export const UpdateSettingsModal = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded hover:bg-opacity-10 cursor-pointer"
+            className={clsx(
+              "p-1 rounded hover:bg-opacity-10 cursor-pointer transition-colors",
+              theme === "dark"
+                ? "text-gray-300 hover:bg-gray-700"
+                : "text-gray-600 hover:bg-gray-200"
+            )}
           >
             <X className="w-5 h-5" />
           </button>
@@ -68,7 +73,10 @@ export const UpdateSettingsModal = ({
                   name="preference"
                   checked={tempSettings.preference === "notify"}
                   onChange={() => handlePreferenceChange("notify")}
-                  className="text-purple-600"
+                  className={clsx(
+                    "text-purple-600",
+                    theme === "dark" ? "accent-purple-500" : "accent-purple-600"
+                  )}
                 />
                 <div>
                   <div className="text-sm font-medium">
@@ -86,7 +94,10 @@ export const UpdateSettingsModal = ({
                   name="preference"
                   checked={tempSettings.preference === "auto"}
                   onChange={() => handlePreferenceChange("auto")}
-                  className="text-purple-600"
+                  className={clsx(
+                    "text-purple-600",
+                    theme === "dark" ? "accent-purple-500" : "accent-purple-600"
+                  )}
                 />
                 <div>
                   <div className="text-sm font-medium">Automatic</div>

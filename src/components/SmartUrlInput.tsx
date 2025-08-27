@@ -5,12 +5,12 @@ import { useVariables } from "../context/VariablesContext";
 
 // Interface for variable match results when parsing URL
 interface VariableMatch {
-  variable: string;      // The variable name found
-  exists: boolean;       // Whether the variable exists in our collection
-  value: string;         // The resolved value
-  fullMatch: string;     // The complete match string (e.g., "{{baseUrl}}")
-  start: number;         // Start position in the string
-  end: number;           // End position in the string
+  variable: string; // The variable name found
+  exists: boolean; // Whether the variable exists in our collection
+  value: string; // The resolved value
+  fullMatch: string; // The complete match string (e.g., "{{baseUrl}}")
+  start: number; // Start position in the string
+  end: number; // End position in the string
 }
 
 // Props interface for the SmartUrlInput component
@@ -25,7 +25,7 @@ export const SmartUrlInput: React.FC<SmartUrlInputProps> = ({
   value,
   onChange,
   placeholder = "",
-  className = ""
+  className = "",
 }) => {
   const { theme } = useTheme();
   const { variables, replaceVariablesInUrl } = useVariables();
@@ -117,20 +117,26 @@ export const SmartUrlInput: React.FC<SmartUrlInputProps> = ({
   };
 
   // Get color for variable indicator dots based on variable state
-  const getVariableIndicatorColor = (match: VariableMatch, index: number): string => {
+  const getVariableIndicatorColor = (
+    match: VariableMatch,
+    index: number
+  ): string => {
     return clsx({
       "bg-red-500": !match.exists, // Red for undefined variables
       "bg-green-500": match.exists && index === 0, // Green for first existing variable
-      "bg-purple-500": match.exists && index > 0 // Purple for all existing variables after the first
+      "bg-purple-500": match.exists && index > 0, // Purple for all existing variables after the first
     });
   };
 
   // Get color for variable preview boxes
-  const getVariablePreviewColor = (match: VariableMatch, index: number): string => {
+  const getVariablePreviewColor = (
+    match: VariableMatch,
+    index: number
+  ): string => {
     return clsx({
       "bg-red-500 text-white": !match.exists,
       "bg-green-600 text-white": match.exists && index === 0,
-      "bg-purple-600 text-white": match.exists && index > 0 // Purple for all existing variables after the first
+      "bg-purple-600 text-white": match.exists && index > 0, // Purple for all existing variables after the first
     });
   };
 
@@ -171,67 +177,75 @@ export const SmartUrlInput: React.FC<SmartUrlInputProps> = ({
 
       {/* Variable preview panel - shown on focus when variables exist */}
       {showPreview && hasVariables && (
-        <div className={clsx(
-          "absolute top-full left-0 right-0 mt-1 p-3 rounded-md shadow-lg z-50 border",
-          {
-            "bg-gray-800 border-gray-600 text-white": theme === "dark",
-            "bg-white border-gray-300 text-gray-900": theme === "light"
-          }
-        )}>
-
+        <div
+          className={clsx(
+            "absolute top-full left-0 right-0 mt-1 p-3 rounded-md shadow-lg z-50 border",
+            theme === "dark"
+              ? "bg-gray-800 border-gray-600 text-white"
+              : "bg-white border-gray-300 text-gray-900"
+          )}
+        >
           {/* Variables found section */}
           <div className="mb-3">
-            <div className={clsx(
-              "font-semibold mb-2 text-xs",
-              {
-                "text-gray-300": theme === "dark",
-                "text-gray-600": theme === "light"
-              }
-            )}>
+            <div
+              className={clsx(
+                "font-semibold mb-2 text-xs",
+                theme === "dark" ? "text-gray-300" : "text-gray-600"
+              )}
+            >
               Variables found:
             </div>
             <div className="space-y-1">
               {variableMatches.map((match, index) => (
-                <div key={`${match.variable}-preview-${index}`} className="flex items-center gap-2 text-xs">
+                <div
+                  key={`${match.variable}-preview-${index}`}
+                  className="flex items-center gap-2 text-xs"
+                >
                   {/* Color indicator dot */}
-                  <div className={clsx(
-                    "w-2 h-2 rounded-full",
-                    getVariableIndicatorColor(match, index)
-                  )} />
+                  <div
+                    className={clsx(
+                      "w-2 h-2 rounded-full",
+                      getVariableIndicatorColor(match, index)
+                    )}
+                  />
 
                   {/* Variable name in original syntax */}
-                  <span className={clsx(
-                    "font-mono px-2 py-1 rounded",
-                    getVariablePreviewColor(match, index)
-                  )}>
+                  <span
+                    className={clsx(
+                      "font-mono px-2 py-1 rounded",
+                      getVariablePreviewColor(match, index)
+                    )}
+                  >
                     {match.fullMatch}
                   </span>
 
                   {/* Arrow and resolved value (if variable exists) */}
                   {match.exists ? (
                     <>
-                      <span className={clsx({
-                        "text-gray-400": theme === "dark",
-                        "text-gray-500": theme === "light"
-                      })}>→</span>
-                      <span className={clsx(
-                        "font-mono px-2 py-1 rounded",
-                        {
+                      <span
+                        className={clsx({
+                          "text-gray-400": theme === "dark",
+                          "text-gray-500": theme === "light",
+                        })}
+                      >
+                        →
+                      </span>
+                      <span
+                        className={clsx("font-mono px-2 py-1 rounded", {
                           "text-blue-300 bg-blue-900": theme === "dark",
-                          "text-blue-600 bg-blue-50": theme === "light"
-                        }
-                      )}>
+                          "text-blue-600 bg-blue-50": theme === "light",
+                        })}
+                      >
                         {match.value}
                       </span>
                     </>
                   ) : (
-                    <span className={clsx(
-                      "font-medium",
-                      {
-                        "text-red-400": theme === "dark",
-                        "text-red-600": theme === "light"
-                      }
-                    )}>
+                    <span
+                      className={clsx(
+                        "font-medium",
+                        theme === "dark" ? "text-red-400" : "text-red-600"
+                      )}
+                    >
                       (not defined)
                     </span>
                   )}
@@ -242,39 +256,42 @@ export const SmartUrlInput: React.FC<SmartUrlInputProps> = ({
 
           {/* Final URL preview section */}
           <div>
-            <div className={clsx(
-              "font-semibold mb-1 text-xs",
-              {
-                "text-gray-300": theme === "dark",
-                "text-gray-600": theme === "light"
-              }
-            )}>
+            <div
+              className={clsx(
+                "font-semibold mb-1 text-xs",
+                theme === "dark" ? "text-gray-300" : "text-gray-600"
+              )}
+            >
               Final URL:
             </div>
-            <div className={clsx(
-              "font-mono p-2 rounded border text-xs",
-              {
+            <div
+              className={clsx("font-mono p-2 rounded border text-xs", {
                 // Unresolved variables styling
-                "text-red-400 bg-red-900 border-red-600": hasUnresolvedVariables && theme === "dark",
-                "text-red-600 bg-red-50 border-red-200": hasUnresolvedVariables && theme === "light",
+                "text-red-400 bg-red-900 border-red-600":
+                  hasUnresolvedVariables && theme === "dark",
+                "text-red-600 bg-red-50 border-red-200":
+                  hasUnresolvedVariables && theme === "light",
                 // Normal styling
-                "bg-gray-700 border-gray-600 text-gray-200": !hasUnresolvedVariables && theme === "dark",
-                "bg-gray-50 border-gray-200 text-gray-800": !hasUnresolvedVariables && theme === "light"
-              }
-            )}>
+                "bg-gray-700 border-gray-600 text-gray-200":
+                  !hasUnresolvedVariables && theme === "dark",
+                "bg-gray-50 border-gray-200 text-gray-800":
+                  !hasUnresolvedVariables && theme === "light",
+              })}
+            >
               {processedUrl}
             </div>
           </div>
 
           {/* Warning for unresolved variables */}
           {hasUnresolvedVariables && (
-            <div className={clsx(
-              "mt-2 p-2 rounded text-xs border",
-              {
-                "bg-yellow-900 border-yellow-600 text-yellow-300": theme === "dark",
-                "bg-yellow-50 border-yellow-200 text-yellow-800": theme === "light"
-              }
-            )}>
+            <div
+              className={clsx(
+                "mt-2 p-2 rounded text-xs border",
+                theme === "dark"
+                  ? "bg-yellow-900 border-yellow-600 text-yellow-300"
+                  : "bg-yellow-50 border-yellow-200 text-yellow-800"
+              )}
+            >
               ⚠️ Some variables are not defined
             </div>
           )}

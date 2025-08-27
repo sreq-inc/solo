@@ -38,7 +38,7 @@ export const UsernameAndPassword = ({
           htmlFor="useBasicAuth"
           className={clsx(
             "text-sm font-medium",
-            theme === "dark" ? "text-white" : "text-gray-700",
+            theme === "dark" ? "text-white" : "text-gray-700"
           )}
         >
           Use Basic Authentication
@@ -50,7 +50,7 @@ export const UsernameAndPassword = ({
           <label
             className={clsx(
               "block text-sm mb-1",
-              theme === "dark" ? "text-gray-300" : "text-gray-700",
+              theme === "dark" ? "text-gray-300" : "text-gray-700"
             )}
           >
             Username
@@ -64,7 +64,7 @@ export const UsernameAndPassword = ({
               "w-full p-2 border rounded text-sm",
               theme === "dark"
                 ? "bg-gray-700 border-gray-600 text-white"
-                : "bg-white border-gray-300 text-gray-800",
+                : "bg-white border-gray-300 text-gray-800"
             )}
           />
         </div>
@@ -72,7 +72,7 @@ export const UsernameAndPassword = ({
           <label
             className={clsx(
               "block text-sm mb-1",
-              theme === "dark" ? "text-gray-300" : "text-gray-700",
+              theme === "dark" ? "text-gray-300" : "text-gray-700"
             )}
           >
             Password
@@ -87,16 +87,19 @@ export const UsernameAndPassword = ({
                 "w-full p-2 border rounded text-sm",
                 theme === "dark"
                   ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-white border-gray-300 text-gray-800",
+                  : "bg-white border-gray-300 text-gray-800"
               )}
             />
             <button
-              className="cursor-pointer text-left"
+              className={clsx(
+                "cursor-pointer text-left",
+                theme === "dark"
+                  ? "text-gray-400 hover:text-gray-300"
+                  : "text-gray-500 hover:text-gray-700"
+              )}
               onClick={() => setShowPassword(!showPassword)}
             >
-              <span className="text-sm text-gray-500 hover:text-gray-700">
-                {showPassword ? "Hide" : "Show"}
-              </span>
+              <span className="text-sm">{showPassword ? "Hide" : "Show"}</span>
             </button>
           </div>
         </div>
