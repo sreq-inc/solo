@@ -5,7 +5,7 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { useRequest, QueryParam } from "./RequestContext";
+import { useRequest, QueryParam, Tab } from "./RequestContext";
 import { useVariables } from "./VariablesContext";
 
 type RequestData = {
@@ -17,7 +17,7 @@ type RequestData = {
   username?: string;
   password?: string;
   bearerToken?: string;
-  activeTab?: "body" | "auth" | "params" | "graphql" | "variables" | "description";
+  activeTab?: Tab;
   queryParams?: QueryParam[];
   requestType?: "http" | "graphql";
   graphqlQuery?: string;
