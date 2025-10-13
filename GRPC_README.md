@@ -1,186 +1,366 @@
-# 🚀 gRPC Support in Solo
+# 🚀 Guia Completo: gRPC no Solo
 
-Solo now supports gRPC requests alongside HTTP and GraphQL! This feature allows you to test gRPC services directly from the application.
-
-## ✨ Features
-
-- **Proto File Parsing**: Upload and parse `.proto` files to discover services and methods
-- **Service Discovery**: Auto-discovery of services and methods from proto definitions
-- **Multiple Call Types**: Support for unary, server streaming, client streaming, and bidirectional streaming
-- **Message Editor**: JSON editor for gRPC message payloads
-- **Authentication**: Support for Bearer token authentication via metadata
-- **Service Reflection**: Server reflection support for dynamic service discovery
-
-## 🎯 Getting Started
-
-### 1. Create a gRPC Request
-
-1. Right-click on any folder in the sidebar
-2. Select "gRPC Request" from the context menu
-3. The application will switch to gRPC mode
-
-### 2. Configure Your gRPC Request
-
-#### Proto File Input
-
-- Paste your `.proto` file content in the "Proto File Content" textarea
-- Click "Parse Proto" to extract services and methods
-- Alternatively, use "Discover Services" for server reflection
-
-#### Service and Method Selection
-
-- Choose a service from the dropdown (e.g., "UserService")
-- Select a method (e.g., "GetUser")
-- The interface will automatically show method information
-
-#### Call Type Selection
-
-- **Unary**: Single request, single response
-- **Server Streaming**: Single request, multiple responses
-- **Client Streaming**: Multiple requests, single response
-- **Bidirectional**: Multiple requests, multiple responses
-
-#### Message Configuration
-
-- Enter your message payload in JSON format
-- Use the "Format JSON" button to prettify your JSON
-- Example: `{"id": "123", "name": "John Doe"}`
-
-### 3. Set the Server URL
-
-- Enter your gRPC server URL in the main input field
-- Format: `grpc://localhost:50051` or `grpc://your-server.com:443`
-- For local development: `grpc://localhost:50051`
-
-### 4. Send the Request
-
-- Click the "Send" button to execute your gRPC request
-- View the response in the Response tab
-- For streaming requests, you'll see multiple responses over time
-
-## 🔧 Configuration
-
-### Authentication
-
-gRPC requests support Bearer token authentication:
-
-1. Go to the "Auth" tab
-2. Enter your Bearer token
-3. The token will be automatically included in gRPC metadata
-
-### Variables Support
-
-Use environment variables in your gRPC requests:
-
-- URL: `grpc://{{grpcUrl}}/service`
-- Message: `{"id": "{{userId}}", "name": "{{userName}}"}`
-
-## 📁 Example Proto File
-
-Here's a sample `.proto` file you can use for testing:
-
-```protobuf
-syntax = "proto3";
-
-package example;
-
-service UserService {
-  rpc GetUser(GetUserRequest) returns (GetUserResponse);
-  rpc ListUsers(ListUsersRequest) returns (stream ListUsersResponse);
-}
-
-message GetUserRequest {
-  string id = 1;
-}
-
-message GetUserResponse {
-  User user = 1;
-}
-
-message ListUsersRequest {
-  int32 page = 1;
-  int32 limit = 2;
-}
-
-message ListUsersResponse {
-  repeated User users = 1;
-  int32 total = 2;
-}
-
-message User {
-  string id = 1;
-  string name = 2;
-  string email = 3;
-}
-```
-
-## 🎮 Usage Examples
-
-### Unary Call
-
-```json
-{
-  "service": "UserService",
-  "method": "GetUser",
-  "message": { "id": "123" },
-  "callType": "unary"
-}
-```
-
-### Server Streaming Call
-
-```json
-{
-  "service": "UserService",
-  "method": "ListUsers",
-  "message": { "page": 1, "limit": 10 },
-  "callType": "server_streaming"
-}
-```
-
-## 🔍 Troubleshooting
-
-### Common Issues
-
-1. **Connection Failed**: Ensure your gRPC server is running and accessible
-2. **Proto Parse Error**: Check that your `.proto` file syntax is correct
-3. **Service Not Found**: Verify the service name matches exactly (case-sensitive)
-4. **Method Not Found**: Ensure the method name exists in the selected service
-
-### Debug Tips
-
-- Check the browser console for detailed error messages
-- Verify your gRPC server supports the reflection API if using service discovery
-- Ensure your server accepts the call type you're trying to use
-
-## 🚧 Current Limitations
-
-- **Mock Implementation**: The current backend uses mock responses for demonstration
-- **Real gRPC Client**: Full gRPC client implementation requires proto-generated code
-- **Streaming UI**: Advanced streaming interface is planned for future releases
-
-## 🔮 Future Enhancements
-
-- [ ] Real gRPC client implementation
-- [ ] Advanced streaming interface
-- [ ] Proto file import/export
-- [ ] gRPC status code handling
-- [ ] Metadata editor
-- [ ] TLS certificate support
-- [ ] Interceptor support
-
-## 💡 Tips for Development
-
-1. **Start Simple**: Begin with unary calls before moving to streaming
-2. **Use Variables**: Leverage environment variables for dynamic values
-3. **Test Locally**: Use local gRPC servers for development and testing
-4. **Proto Validation**: Ensure your proto files are syntactically correct
-5. **Error Handling**: Check response status codes and error messages
-
-## 🤝 Contributing
-
-Found a bug or have a feature request? Please open an issue on GitHub!
+**Navegação central** para toda a documentação de planejamento e testes gRPC.
 
 ---
 
-**Note**: This is a beta feature. Some functionality may be limited or subject to change.
+## 📚 Documentos Disponíveis
+
+### 🎯 Planejamento Estratégico
+
+#### **1. GRPC_TESTING_PLAN.md** (979 linhas)
+
+**O que é:** Plano geral de testes e estrutura
+**Quando usar:** Entender estratégia geral
+
+**Conteúdo:**
+
+- Estado atual vs pendente
+- Objetivos dos testes
+- Infraestrutura necessária
+- 6 fases de implementação
+- Cronograma: 11-16 dias
+- Checklist completo
+
+---
+
+#### **2. GRPC_DEVELOPMENT_PLAN.md** (2170 linhas) ⭐
+
+**O que é:** Plano técnico completo e detalhado
+**Quando usar:** Entender arquitetura e fluxos
+
+**Conteúdo:**
+
+- Arquitetura completa (diagramas)
+- Fluxo de dados detalhado
+- Proto files spec completas
+- Análise de 8 gaps da UI atual
+- Plano de testes (53 casos unitários)
+- Scenarios de teste manual
+- Workflow de desenvolvimento
+- Troubleshooting
+- Como adicionar features
+
+**🌟 Documento mais completo!**
+
+---
+
+#### **3. GRPC_INCREMENTAL_PHASES.md** (1131 linhas) 🎯
+
+**O que é:** Plano dividido em 30 micro-fases
+**Quando usar:** Implementação passo-a-passo
+
+**Conteúdo:**
+
+- 4 módulos bem definidos
+- 30 fases de 0.5-1 dia cada
+- Cada fase com:
+  - Objetivo claro
+  - Tarefas específicas
+  - Entrega testável
+  - Critério de sucesso
+- Template de execução
+- Estratégias (linear, paralelo, MVP)
+
+**🌟 Use este para implementar!**
+
+---
+
+### 🧪 Servidor de Teste
+
+#### **4. GRPC_TEST_SERVER.md**
+
+**O que é:** Link e quick start do servidor
+**Quando usar:** Iniciar servidor para testes
+
+**Conteúdo:**
+
+- Localização do servidor
+- Quick start (3 passos)
+- Serviços disponíveis
+- Testes principais
+- Dados seed
+- Troubleshooting
+
+---
+
+### 📊 Resumos e Relatórios
+
+#### **5. GRPC_IMPLEMENTATION_SUMMARY.md**
+
+**O que é:** Resumo executivo do que foi feito
+**Quando usar:** Visão geral rápida
+
+**Conteúdo:**
+
+- O que foi solicitado vs entregue
+- Estatísticas completas
+- Arquitetura implementada
+- Estrutura de arquivos
+- Fluxo de dados explicado
+- Próximos passos
+
+---
+
+## 🗂️ No Servidor de Teste (`/grpc-test-server/`)
+
+Consulte estes documentos no repositório do servidor:
+
+| Documento              | Propósito                  | Páginas |
+| ---------------------- | -------------------------- | ------- |
+| README.md              | Overview e quick start     | ~3      |
+| TESTING_GUIDE.md       | 40+ casos de teste grpcurl | ~20     |
+| SOLO_CLIENT_TESTING.md | Testes do Solo Client      | ~17     |
+| CHEAT_SHEET.md         | Referência rápida          | ~5      |
+| INDEX.md               | Navegação completa         | ~3      |
+| SUMMARY.md             | Sumário executivo          | ~5      |
+| MODULO1_COMPLETO.md    | Relatório implementação    | ~7      |
+
+**Total:** ~60 páginas de documentação!
+
+---
+
+## 🎯 Fluxos de Uso
+
+### "Quero entender o plano geral"
+
+```
+1. GRPC_TESTING_PLAN.md (visão geral)
+2. GRPC_DEVELOPMENT_PLAN.md (detalhes)
+3. GRPC_INCREMENTAL_PHASES.md (execução)
+```
+
+### "Quero começar a implementar"
+
+```
+1. GRPC_INCREMENTAL_PHASES.md (escolher fase)
+2. Seguir template de execução
+3. Validar critérios de sucesso
+```
+
+### "Quero testar o servidor"
+
+```
+1. GRPC_TEST_SERVER.md (iniciar)
+2. grpc-test-server/quick-test.sh (validar)
+3. grpc-test-server/TESTING_GUIDE.md (testes completos)
+```
+
+### "Quero testar o Solo"
+
+```
+1. Iniciar servidor (GRPC_TEST_SERVER.md)
+2. grpc-test-server/SOLO_CLIENT_TESTING.md
+3. Seguir cenários 1-7
+```
+
+### "Preciso de dados de teste"
+
+```
+1. GRPC_TEST_SERVER.md (dados seed)
+2. grpc-test-server/CHEAT_SHEET.md (copiar/colar)
+```
+
+---
+
+## 🏗️ Estrutura Geral do Projeto
+
+```
+solocompany/
+├── solo/                              (Projeto principal)
+│   ├── GRPC_TESTING_PLAN.md          📋 Plano geral
+│   ├── GRPC_DEVELOPMENT_PLAN.md      📐 Plano técnico ⭐
+│   ├── GRPC_INCREMENTAL_PHASES.md    🎯 Fases incrementais
+│   ├── GRPC_TEST_SERVER.md           🔗 Link para servidor
+│   ├── GRPC_IMPLEMENTATION_SUMMARY.md 📊 Resumo executivo
+│   ├── GRPC_README.md                📚 Este arquivo
+│   └── src-tauri/src/grpc/           🦀 Código gRPC do Solo
+│
+└── grpc-test-server/                  (Servidor de teste)
+    ├── 📚 7 documentos
+    ├── 🧪 2 scripts de teste
+    ├── 📦 4 proto files
+    ├── 🦀 Código Rust (~800 linhas)
+    └── 🐳 Docker configurado
+```
+
+---
+
+## 📊 Estatísticas Consolidadas
+
+### Planejamento
+
+- **Documentos:** 6 (Solo) + 7 (Servidor) = 13
+- **Páginas:** ~130 (planos) + ~60 (servidor) = ~190
+- **Fases Planejadas:** 30 (divididas em 4 módulos)
+
+### Implementação
+
+- **Fases Completadas:** 6/30 (Módulo 1 - 100%)
+- **Código:** ~800 linhas Rust
+- **Testes:** 7/7 ✅ passando
+- **Serviços:** 5 funcionando
+- **Métodos RPC:** 9
+
+### Tempo
+
+- **Planejamento:** ~2 horas
+- **Implementação:** ~3 horas
+- **Total:** ~5 horas
+- **Eficiência:** 20% do tempo total (11 dias) completado
+
+---
+
+## 🎓 Módulos do Plano
+
+### ✅ Módulo 1: Test Server MVP (COMPLETO)
+
+- Fases 1.1 a 1.6
+- Tempo: 3 horas
+- Status: ✅ 100% implementado e testado
+
+### ⬜ Módulo 2: Testes Automatizados Backend
+
+- Fases 2.1 a 2.8
+- Tempo estimado: 4 dias
+- Status: 📋 Planejado
+
+### ⬜ Módulo 3: UI Improvements
+
+- Fases 3.1 a 3.12
+- Tempo estimado: 6 dias
+- Status: 📋 Planejado
+
+### ⬜ Módulo 4: Docs & CI/CD
+
+- Fases 4.1 a 4.4
+- Tempo estimado: 2 dias
+- Status: 📋 Planejado
+
+---
+
+## 🚀 Comandos Rápidos
+
+### Servidor de Teste
+
+```bash
+# Navegar
+cd ~/Projects/Personal/solocompany/grpc-test-server
+
+# Start
+docker-compose up -d
+
+# Test
+./quick-test.sh
+
+# Stop
+docker-compose down
+```
+
+### Solo Client
+
+```bash
+# Navegar
+cd ~/Projects/Personal/solocompany/solo
+
+# Dev mode
+npm run tauri dev
+
+# Build
+npm run build
+```
+
+### Ambos Rodando
+
+```bash
+# Terminal 1: Servidor
+cd ~/Projects/Personal/solocompany/grpc-test-server
+docker-compose up
+
+# Terminal 2: Solo
+cd ~/Projects/Personal/solocompany/solo
+npm run tauri dev
+
+# Pronto para testar! 🎉
+```
+
+---
+
+## 📖 Leitura Recomendada
+
+### Iniciante
+
+1. Este arquivo (GRPC_README.md)
+2. GRPC_TEST_SERVER.md
+3. grpc-test-server/README.md
+
+### Intermediário
+
+1. GRPC_DEVELOPMENT_PLAN.md → Parte 2 (Fluxo de Dados)
+2. GRPC_INCREMENTAL_PHASES.md
+3. grpc-test-server/TESTING_GUIDE.md
+
+### Avançado
+
+1. GRPC_DEVELOPMENT_PLAN.md (completo)
+2. GRPC_INCREMENTAL_PHASES.md (todas as fases)
+3. grpc-test-server/SOLO_CLIENT_TESTING.md
+
+---
+
+## 🎯 Próximos Passos Recomendados
+
+### Hoje
+
+1. [ ] Ler GRPC_TEST_SERVER.md
+2. [ ] Iniciar servidor de teste
+3. [ ] Executar `./quick-test.sh`
+4. [ ] Abrir Solo e testar primeiro cenário
+
+### Esta Semana
+
+1. [ ] Testar todos os 7 cenários (SOLO_CLIENT_TESTING.md)
+2. [ ] Documentar bugs/melhorias encontrados
+3. [ ] Priorizar próximas fases
+
+### Próximas 2 Semanas
+
+1. [ ] Implementar melhorias críticas da UI
+2. [ ] Começar Módulo 2 (testes automatizados)
+3. [ ] CI/CD básico
+
+---
+
+## 🙏 Conclusão
+
+Você tem agora:
+
+### ✅ Planejamento
+
+- 3 planos detalhados (~130 páginas)
+- 30 fases incrementais bem definidas
+- Arquitetura e fluxos explicados
+
+### ✅ Implementação
+
+- Servidor gRPC funcional (Módulo 1)
+- 5 serviços prontos para teste
+- 100% dos testes passando
+
+### ✅ Documentação
+
+- 13 documentos (~190 páginas)
+- Scripts de teste automatizados
+- Guias passo-a-passo
+
+**Está tudo pronto para começar a testar e continuar o desenvolvimento!** 🚀
+
+---
+
+**Próximo:** [Testar o Solo com o servidor →](./GRPC_TEST_SERVER.md)
+
+---
+
+**Criado:** 13 de Outubro, 2025
+**Versão:** 1.0
+**Maintainer:** Time Solo

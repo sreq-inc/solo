@@ -36,14 +36,24 @@ export const InputMethod = () => {
       return;
     }
 
-    if (
-      !processedUrl.startsWith("http://") &&
-      !processedUrl.startsWith("https://")
-    ) {
-      alert(
-        `URL must start with http:// or https://\nCurrent URL: "${processedUrl}"`
-      );
-      return;
+    // Validate URL scheme by request type
+    if (requestType === "grpc") {
+      if (!processedUrl.startsWith("grpc://")) {
+        alert(
+          `For gRPC requests, URL must start with grpc://\nCurrent URL: "${processedUrl}"`
+        );
+        return;
+      }
+    } else {
+      if (
+        !processedUrl.startsWith("http://") &&
+        !processedUrl.startsWith("https://")
+      ) {
+        alert(
+          `URL must start with http:// or https://\nCurrent URL: "${processedUrl}"`
+        );
+        return;
+      }
     }
 
     try {

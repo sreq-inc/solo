@@ -11,7 +11,8 @@ export type Tab =
   | "proto"
   | "variables"
   | "description"
-  | "schema";
+  | "schema"
+  | "metadata";
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 export type RequestType = "http" | "graphql" | "grpc";
 
@@ -46,8 +47,13 @@ type RequestContextType = {
     | "server_streaming"
     | "client_streaming"
     | "bidirectional";
+  grpcMetadata: string;
   protoContent: string;
   description: string;
+  grpcSchema: {
+    services: any[];
+    messages: any[];
+  };
   setMethod: (method: HttpMethod) => void;
   setUrl: (url: string) => void;
   setPayload: (payload: string) => void;
@@ -66,8 +72,10 @@ type RequestContextType = {
   setGrpcCallType: (
     type: "unary" | "server_streaming" | "client_streaming" | "bidirectional"
   ) => void;
+  setGrpcMetadata: (metadataJson: string) => void;
   setProtoContent: (content: string) => void;
   setDescription: (description: string) => void;
+  setGrpcSchema: (schema: { services: any[]; messages: any[] }) => void;
   handleRequest: (processedUrl?: string) => Promise<void>;
   resetFields: () => void;
   formatJson: () => void;
@@ -103,7 +111,12 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     "unary" | "server_streaming" | "client_streaming" | "bidirectional"
   >("unary");
   const [protoContent, setProtoContent] = useState("");
+  const [grpcMetadata, setGrpcMetadata] = useState<string>("{}");
   const [description, setDescription] = useState("");
+  const [grpcSchema, setGrpcSchema] = useState<{
+    services: any[];
+    messages: any[];
+  }>({ services: [], messages: [] });
 
   const { clearVariables } = useVariables();
 
@@ -118,8 +131,8 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
       requestType === "graphql"
         ? "graphql"
         : requestType === "grpc"
-        ? "grpc"
-        : "body"
+          ? "grpc"
+          : "body"
     );
     setResponse(null);
     setError(null);
@@ -134,6 +147,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     setGrpcCallType("unary");
     setProtoContent("");
     setDescription("");
+    setGrpcSchema({ services: [], messages: [] });
     clearVariables();
   };
 
@@ -200,6 +214,33 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
         }
       } else if (requestType === "grpc") {
         const message = grpcMessage.trim() ? JSON.parse(grpcMessage) : {};
+        // Parse custom metadata if provided (JSON object)
+        let customMetadata: Record<string, string> | undefined = undefined;
+        try {
+          if (grpcMetadata && grpcMetadata.trim()) {
+            const parsed = JSON.parse(grpcMetadata);
+            if (parsed && typeof parsed === "object") {
+              customMetadata = Object.entries(parsed).reduce(
+                (acc: Record<string, string>, [k, v]) => {
+                  if (v !== null && v !== undefined) acc[String(k)] = String(v);
+                  return acc;
+                },
+                {}
+              );
+            }
+          }
+        } catch (_) {
+          // ignore parse error here; UI will guide user
+        }
+
+        const authMetadata = bearerToken.trim()
+          ? { authorization: `Bearer ${bearerToken}` }
+          : undefined;
+
+        const mergedMetadata = {
+          ...(customMetadata || {}),
+          ...(authMetadata || {}),
+        } as Record<string, string> | undefined;
 
         if (grpcCallType === "unary") {
           result = await invoke("grpc_unary_request", {
@@ -207,8 +248,8 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
             service: grpcService,
             method: grpcMethod,
             message,
-            metadata: bearerToken.trim()
-              ? { authorization: `Bearer ${bearerToken}` }
+            metadata: Object.keys(mergedMetadata || {}).length
+              ? mergedMetadata
               : undefined,
           });
         } else if (grpcCallType === "server_streaming") {
@@ -217,8 +258,8 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
             service: grpcService,
             method: grpcMethod,
             message,
-            metadata: bearerToken.trim()
-              ? { authorization: `Bearer ${bearerToken}` }
+            metadata: Object.keys(mergedMetadata || {}).length
+              ? mergedMetadata
               : undefined,
           });
         } else {
@@ -228,8 +269,8 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
             service: grpcService,
             method: grpcMethod,
             message,
-            metadata: bearerToken.trim()
-              ? { authorization: `Bearer ${bearerToken}` }
+            metadata: Object.keys(mergedMetadata || {}).length
+              ? mergedMetadata
               : undefined,
           });
         }
@@ -300,7 +341,9 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
         grpcMessage,
         grpcCallType,
         protoContent,
+        grpcMetadata,
         description,
+        grpcSchema,
         setMethod,
         setUrl,
         setPayload,
@@ -318,7 +361,9 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
         setGrpcMessage,
         setGrpcCallType,
         setProtoContent,
+        setGrpcMetadata,
         setDescription,
+        setGrpcSchema,
         handleRequest,
         resetFields,
         formatJson,

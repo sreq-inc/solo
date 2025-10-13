@@ -40,3 +40,6 @@ chrono = { version = "0.4", features = ["serde"] }
 httpmock = "0.6"
 reqwest = { version = "0.11", features = ["json"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tower-test = "0.4"
+tokio-test = "0.4"
+tempfile = "3.0"

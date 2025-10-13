@@ -133,3 +133,150 @@ pub async fn grpc_get_method_info(
         Err(e) => Err(format!("Failed to create reflection client: {}", e)),
     }
 }
+
+#[derive(serde::Serialize)]
+pub struct ConnectionStatus {
+    pub connected: bool,
+    pub message: String,
+    pub latency_ms: Option<u64>,
+}
+
+#[command]
+pub async fn grpc_test_connection(url: String) -> Result<ConnectionStatus, String> {
+    let start = std::time::Instant::now();
+
+    match GrpcReflection::new(&url).await {
+        Ok(_reflection) => {
+            let latency = start.elapsed().as_millis() as u64;
+            Ok(ConnectionStatus {
+                connected: true,
+                message: "Successfully connected to gRPC server".to_string(),
+                latency_ms: Some(latency),
+            })
+        }
+        Err(e) => Ok(ConnectionStatus {
+            connected: false,
+            message: format!("Failed to connect: {}", e),
+            latency_ms: None,
+        }),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_grpc_response_to_api_response_success() {
+        let grpc_response = GrpcResponse {
+            success: true,
+            data: Some(serde_json::json!({"result": "ok"})),
+            error: None,
+            status_code: Some(0),
+            status_message: Some("OK".to_string()),
+        };
+
+        let api_response = grpc_response_to_api_response(grpc_response);
+
+        assert!(api_response.success);
+        assert!(api_response.data.is_some());
+        assert!(api_response.error.is_none());
+    }
+
+    #[test]
+    fn test_grpc_response_to_api_response_error() {
+        let grpc_response = GrpcResponse {
+            success: false,
+            data: None,
+            error: Some("Connection failed".to_string()),
+            status_code: Some(14),
+            status_message: Some("UNAVAILABLE".to_string()),
+        };
+
+        let api_response = grpc_response_to_api_response(grpc_response);
+
+        assert!(!api_response.success);
+        assert!(api_response.data.is_none());
+        assert!(api_response.error.is_some());
+        assert_eq!(api_response.error.unwrap(), "Connection failed");
+    }
+
+    #[tokio::test]
+    async fn test_grpc_parse_proto_file_command() {
+        let proto_content = r#"
+syntax = "proto3";
+
+service TestService {
+  rpc Test(TestRequest) returns (TestResponse);
+}
+
+message TestRequest { string id = 1; }
+message TestResponse { string result = 1; }
+"#.to_string();
+
+        let result = grpc_parse_proto_file(proto_content).await;
+
+        assert!(result.is_ok());
+        let schema = result.unwrap();
+        assert_eq!(schema.services.len(), 1);
+        assert_eq!(schema.services[0].name, "TestService");
+    }
+
+    #[tokio::test]
+    async fn test_grpc_parse_proto_file_empty() {
+        let result = grpc_parse_proto_file("".to_string()).await;
+
+        assert!(result.is_ok());
+        let schema = result.unwrap();
+        assert_eq!(schema.services.len(), 0);
+        assert_eq!(schema.messages.len(), 0);
+    }
+
+    #[tokio::test]
+    async fn test_grpc_parse_proto_with_multiple_services() {
+        let proto = r#"
+service ServiceA {
+  rpc MethodA(RequestA) returns (ResponseA);
+}
+
+service ServiceB {
+  rpc MethodB(RequestB) returns (ResponseB);
+}
+
+message RequestA { string id = 1; }
+message ResponseA { string data = 1; }
+message RequestB { string id = 1; }
+message ResponseB { string data = 1; }
+"#.to_string();
+
+        let result = grpc_parse_proto_file(proto).await;
+
+        assert!(result.is_ok());
+        let schema = result.unwrap();
+        assert_eq!(schema.services.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_grpc_response_conversion_preserves_data() {
+        let original_data = serde_json::json!({
+            "users": [
+                {"id": 1, "name": "Alice"},
+                {"id": 2, "name": "Bob"}
+            ],
+            "total": 2
+        });
+
+        let grpc_response = GrpcResponse {
+            success: true,
+            data: Some(original_data.clone()),
+            error: None,
+            status_code: Some(0),
+            status_message: Some("OK".to_string()),
+        };
+
+        let api_response = grpc_response_to_api_response(grpc_response);
+
+        assert!(api_response.success);
+        assert_eq!(api_response.data, Some(original_data));
+    }
+}

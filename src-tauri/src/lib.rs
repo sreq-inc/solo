@@ -12,4 +12,5 @@ pub mod auth;
 pub mod client;
 pub mod error;
 pub mod graphql;
+pub mod grpc;
 pub mod http;

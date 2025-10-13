@@ -90,3 +90,74 @@ impl Default for GrpcClient {
         unimplemented!("GrpcClient requires a valid channel")
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashMap;
+
+    fn create_test_request(call_type: GrpcCallType) -> GrpcRequest {
+        GrpcRequest {
+            url: "http://localhost:50051".to_string(),
+            service: "TestService".to_string(),
+            method: "TestMethod".to_string(),
+            message: serde_json::json!({"test": "data"}),
+            metadata: Some(HashMap::new()),
+            call_type,
+        }
+    }
+
+    #[test]
+    fn test_grpc_request_creation() {
+        let request = create_test_request(GrpcCallType::Unary);
+
+        assert_eq!(request.service, "TestService");
+        assert_eq!(request.method, "TestMethod");
+        assert!(request.metadata.is_some());
+    }
+
+    #[test]
+    fn test_grpc_response_structure() {
+        let response = GrpcResponse {
+            success: true,
+            data: Some(serde_json::json!({"result": "ok"})),
+            error: None,
+            status_code: Some(0),
+            status_message: Some("OK".to_string()),
+        };
+
+        assert!(response.success);
+        assert!(response.data.is_some());
+        assert!(response.error.is_none());
+        assert_eq!(response.status_code, Some(0));
+    }
+
+    #[test]
+    fn test_grpc_response_error() {
+        let response = GrpcResponse {
+            success: false,
+            data: None,
+            error: Some("Connection failed".to_string()),
+            status_code: Some(14),
+            status_message: Some("UNAVAILABLE".to_string()),
+        };
+
+        assert!(!response.success);
+        assert!(response.error.is_some());
+        assert_eq!(response.error.unwrap(), "Connection failed");
+    }
+
+    #[test]
+    fn test_call_type_variants() {
+        let unary = GrpcCallType::Unary;
+        let server_streaming = GrpcCallType::ServerStreaming;
+        let client_streaming = GrpcCallType::ClientStreaming;
+        let bidirectional = GrpcCallType::Bidirectional;
+
+        // Just verify all variants compile and can be created
+        assert!(matches!(unary, GrpcCallType::Unary));
+        assert!(matches!(server_streaming, GrpcCallType::ServerStreaming));
+        assert!(matches!(client_streaming, GrpcCallType::ClientStreaming));
+        assert!(matches!(bidirectional, GrpcCallType::Bidirectional));
+    }
+}

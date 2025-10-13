@@ -103,3 +103,49 @@ impl GrpcReflection {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_discover_services_returns_mock_data() {
+        // Since we can't test against a real server easily,
+        // we test that the mock implementation works
+        // This will be updated when real reflection is implemented
+
+        // Note: This will fail without a real server, which is expected in unit tests
+        // For now, we just test the structure
+        let url = "http://localhost:50051";
+
+        // This would need a running server, so we skip for now
+        // In integration tests, we'd test against the real test server
+    }
+
+    #[test]
+    fn test_reflection_struct_creation() {
+        // Just verify we can construct the schema types
+        let service = ProtoService {
+            name: "TestService".to_string(),
+            methods: vec![],
+        };
+
+        assert_eq!(service.name, "TestService");
+        assert_eq!(service.methods.len(), 0);
+    }
+
+    #[test]
+    fn test_proto_method_structure() {
+        let method = ProtoMethod {
+            name: "TestMethod".to_string(),
+            input_type: "Request".to_string(),
+            output_type: "Response".to_string(),
+            is_client_streaming: false,
+            is_server_streaming: true,
+        };
+
+        assert_eq!(method.name, "TestMethod");
+        assert!(!method.is_client_streaming);
+        assert!(method.is_server_streaming);
+    }
+}

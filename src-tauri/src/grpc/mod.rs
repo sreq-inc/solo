@@ -4,6 +4,9 @@ pub mod proto_parser;
 pub mod streaming;
 pub mod commands;
 
+#[cfg(test)]
+pub mod test_utils;
+
 use serde::{Deserialize, Serialize};
 use tonic::metadata::{MetadataMap, MetadataKey, MetadataValue};
 use tonic::Request;

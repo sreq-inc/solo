@@ -42,19 +42,48 @@ export const GrpcEditor = () => {
     grpcMessage,
     grpcCallType,
     protoContent,
+    url,
     setGrpcService,
     setGrpcMethod,
     setGrpcMessage,
     setGrpcCallType,
     setProtoContent,
+    setGrpcSchema,
   } = useRequest();
 
   const [services, setServices] = useState<ProtoService[]>([]);
   const [methods, setMethods] = useState<ProtoMethod[]>([]);
-  const [discoveredServices, setDiscoveredServices] = useState<ProtoService[]>(
-    []
-  );
   const [isDiscovering, setIsDiscovering] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
+  const [parseError, setParseError] = useState<string>("");
+  const [discoveryError, setDiscoveryError] = useState<string>("");
+  const [jsonError, setJsonError] = useState<string>("");
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [isJsonValid, setIsJsonValid] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState<{
+    connected: boolean;
+    message: string;
+    latency_ms?: number;
+  } | null>(null);
+
+  // Validate JSON in real-time
+  useEffect(() => {
+    if (!grpcMessage.trim()) {
+      setJsonError("");
+      setIsJsonValid(true);
+      return;
+    }
+
+    try {
+      JSON.parse(grpcMessage);
+      setJsonError("");
+      setIsJsonValid(true);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Invalid JSON";
+      setJsonError(errorMsg);
+      setIsJsonValid(false);
+    }
+  }, [grpcMessage]);
 
   // Parse proto content when it changes
   useEffect(() => {
@@ -78,32 +107,113 @@ export const GrpcEditor = () => {
   }, [grpcService, services]);
 
   const parseProtoContent = async () => {
+    setIsParsing(true);
+    setParseError("");
+
     try {
       const result = (await invoke("grpc_parse_proto_file", {
         content: protoContent,
       })) as any;
 
-      if (result.success && result.data) {
-        const schema = result.data as ProtoSchema;
+      // Support both shapes:
+      // - Raw ProtoSchema (Tauri Ok)
+      // - { success, data } (legacy shape)
+      const schema: ProtoSchema | undefined = result?.services
+        ? (result as ProtoSchema)
+        : result?.data;
+
+      if (schema && Array.isArray(schema.services)) {
         setServices(schema.services);
-        setDiscoveredServices(schema.services);
+        setGrpcSchema({
+          services: schema.services,
+          messages: schema.messages || [],
+        });
+
+        if (schema.services.length === 0) {
+          setParseError("No services found in proto file");
+        }
+      } else {
+        setParseError(result?.error || "Failed to parse proto file");
       }
     } catch (error) {
+      const errorMsg =
+        error instanceof Error ? error.message : "Failed to parse proto file";
+      setParseError(errorMsg);
       console.error("Failed to parse proto file:", error);
+    } finally {
+      setIsParsing(false);
     }
   };
 
   const discoverServices = async () => {
-    // This would be called when user wants to discover services from a server
+    if (!url) {
+      setDiscoveryError("Please enter a URL first");
+      return;
+    }
+
     setIsDiscovering(true);
+    setDiscoveryError("");
+
     try {
-      // For now, we'll use the parsed services
-      // In a real implementation, this would call the reflection API
-      setServices(discoveredServices);
+      const result = (await invoke("grpc_discover_services", {
+        url: url,
+      })) as any;
+
+      const schema: ProtoSchema | undefined = result?.services
+        ? (result as ProtoSchema)
+        : result?.data;
+
+      if (schema && Array.isArray(schema.services)) {
+        setServices(schema.services);
+        setProtoContent("// Services discovered via reflection");
+        setGrpcSchema({
+          services: schema.services,
+          messages: schema.messages || [],
+        });
+
+        if (schema.services.length === 0) {
+          setDiscoveryError("No services found at this URL");
+        }
+      } else {
+        setDiscoveryError(result?.error || "Failed to discover services");
+      }
     } catch (error) {
+      const errorMsg =
+        error instanceof Error ? error.message : "Failed to discover services";
+      setDiscoveryError(errorMsg);
       console.error("Failed to discover services:", error);
     } finally {
       setIsDiscovering(false);
+    }
+  };
+
+  const testConnection = async () => {
+    if (!url) {
+      setConnectionStatus({
+        connected: false,
+        message: "Please enter a URL first",
+      });
+      return;
+    }
+
+    setTestingConnection(true);
+    setConnectionStatus(null);
+
+    try {
+      const result = (await invoke("grpc_test_connection", {
+        url: url,
+      })) as { connected: boolean; message: string; latency_ms?: number };
+
+      setConnectionStatus(result);
+    } catch (error) {
+      const errorMsg =
+        error instanceof Error ? error.message : "Failed to test connection";
+      setConnectionStatus({
+        connected: false,
+        message: errorMsg,
+      });
+    } finally {
+      setTestingConnection(false);
     }
   };
 
@@ -160,31 +270,114 @@ export const GrpcEditor = () => {
         >
           Proto File Content
         </label>
-        <div className="flex gap-2 mb-2">
-          <button
-            onClick={parseProtoContent}
-            disabled={!protoContent.trim()}
-            className={clsx(
-              "px-3 py-1 text-xs rounded font-medium",
-              theme === "dark"
-                ? "bg-purple-700 hover:bg-purple-800 text-white disabled:bg-gray-700 disabled:text-gray-400"
-                : "bg-purple-600 hover:bg-purple-700 text-white disabled:bg-gray-400 disabled:text-gray-600"
-            )}
-          >
-            Parse Proto
-          </button>
-          <button
-            onClick={discoverServices}
-            disabled={isDiscovering}
-            className={clsx(
-              "px-3 py-1 text-xs rounded font-medium",
-              theme === "dark"
-                ? "bg-blue-700 hover:bg-blue-800 text-white disabled:bg-gray-700 disabled:text-gray-400"
-                : "bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-400 disabled:text-gray-600"
-            )}
-          >
-            {isDiscovering ? "Discovering..." : "Discover Services"}
-          </button>
+        <div className="space-y-2 mb-2">
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={parseProtoContent}
+              disabled={!protoContent.trim() || isParsing}
+              title="Parse proto file content to extract services and methods"
+              className={clsx(
+                "px-3 py-1 text-xs rounded font-medium transition-colors",
+                theme === "dark"
+                  ? "bg-purple-700 hover:bg-purple-800 text-white disabled:bg-gray-700 disabled:text-gray-400"
+                  : "bg-purple-600 hover:bg-purple-700 text-white disabled:bg-gray-400 disabled:text-gray-600"
+              )}
+            >
+              {isParsing ? "Parsing..." : "Parse Proto"}
+            </button>
+            <button
+              onClick={discoverServices}
+              disabled={isDiscovering || !url}
+              title="Automatically discover services via gRPC reflection (server must support reflection)"
+              className={clsx(
+                "px-3 py-1 text-xs rounded font-medium transition-colors",
+                theme === "dark"
+                  ? "bg-blue-700 hover:bg-blue-800 text-white disabled:bg-gray-700 disabled:text-gray-400"
+                  : "bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-400 disabled:text-gray-600"
+              )}
+            >
+              {isDiscovering ? "Discovering..." : "Discover Services"}
+            </button>
+            <button
+              onClick={testConnection}
+              disabled={testingConnection || !url}
+              title="Test connectivity to gRPC server and measure latency"
+              className={clsx(
+                "px-3 py-1 text-xs rounded font-medium transition-colors",
+                theme === "dark"
+                  ? "bg-green-700 hover:bg-green-800 text-white disabled:bg-gray-700 disabled:text-gray-400"
+                  : "bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400 disabled:text-gray-600"
+              )}
+            >
+              {testingConnection ? "Testing..." : "Test Connection"}
+            </button>
+          </div>
+
+          {/* Error Messages */}
+          {parseError && (
+            <div
+              className={clsx(
+                "text-xs p-2 rounded border",
+                theme === "dark"
+                  ? "bg-red-900/20 border-red-700 text-red-300"
+                  : "bg-red-50 border-red-300 text-red-700"
+              )}
+            >
+              ❌ {parseError}
+            </div>
+          )}
+
+          {discoveryError && (
+            <div
+              className={clsx(
+                "text-xs p-2 rounded border",
+                theme === "dark"
+                  ? "bg-red-900/20 border-red-700 text-red-300"
+                  : "bg-red-50 border-red-300 text-red-700"
+              )}
+            >
+              ❌ {discoveryError}
+            </div>
+          )}
+
+          {/* Success Message */}
+          {services.length > 0 && !parseError && !discoveryError && (
+            <div
+              className={clsx(
+                "text-xs p-2 rounded border",
+                theme === "dark"
+                  ? "bg-green-900/20 border-green-700 text-green-300"
+                  : "bg-green-50 border-green-300 text-green-700"
+              )}
+            >
+              ✅ Found {services.length} service
+              {services.length !== 1 ? "s" : ""}
+            </div>
+          )}
+
+          {/* Connection Status */}
+          {connectionStatus && (
+            <div
+              className={clsx(
+                "text-xs p-2 rounded border",
+                connectionStatus.connected
+                  ? theme === "dark"
+                    ? "bg-green-900/20 border-green-700 text-green-300"
+                    : "bg-green-50 border-green-300 text-green-700"
+                  : theme === "dark"
+                    ? "bg-red-900/20 border-red-700 text-red-300"
+                    : "bg-red-50 border-red-300 text-red-700"
+              )}
+            >
+              {connectionStatus.connected ? "🟢" : "🔴"}{" "}
+              {connectionStatus.message}
+              {connectionStatus.latency_ms && (
+                <span className="ml-2 font-mono">
+                  ({connectionStatus.latency_ms}ms)
+                </span>
+              )}
+            </div>
+          )}
         </div>
         <textarea
           value={protoContent}
@@ -337,12 +530,21 @@ export const GrpcEditor = () => {
             )}
           >
             Message (JSON)
+            {grpcMessage.trim() && (
+              <span className="ml-2 text-lg">{isJsonValid ? "✅" : "❌"}</span>
+            )}
           </label>
           <button
             onClick={formatGrpcMessage}
+            disabled={!isJsonValid}
+            title="Format and prettify JSON message (Ctrl/Cmd + Shift + F)"
             className={clsx(
-              "text-xs px-2 py-1 rounded font-medium cursor-pointer",
-              theme === "dark" ? "text-gray-600" : "text-gray-500"
+              "text-xs px-2 py-1 rounded font-medium cursor-pointer transition-colors",
+              isJsonValid
+                ? theme === "dark"
+                  ? "text-gray-400 hover:text-gray-300"
+                  : "text-gray-500 hover:text-gray-700"
+                : "text-gray-600 cursor-not-allowed"
             )}
           >
             Format JSON
@@ -354,12 +556,28 @@ export const GrpcEditor = () => {
           placeholder='{"id": "123", "name": "example"}'
           rows={6}
           className={clsx(
-            "w-full p-3 border rounded-xl text-sm resize-none focus:outline-none focus:ring-2 font-mono",
-            theme === "dark"
-              ? "bg-[#10121b] text-white border-gray-600 focus:ring-purple-500 focus:border-purple-500 placeholder-gray-400"
-              : "bg-white text-gray-800 border-gray-300 focus:ring-purple-500 focus:border-purple-500 placeholder-gray-500"
+            "w-full p-3 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 font-mono",
+            !isJsonValid && grpcMessage.trim()
+              ? theme === "dark"
+                ? "border-2 border-red-500 bg-[#10121b] text-white focus:ring-red-500"
+                : "border-2 border-red-500 bg-white text-gray-800 focus:ring-red-500"
+              : theme === "dark"
+                ? "border border-gray-600 bg-[#10121b] text-white focus:ring-purple-500 focus:border-purple-500 placeholder-gray-400"
+                : "border border-gray-300 bg-white text-gray-800 focus:ring-purple-500 focus:border-purple-500 placeholder-gray-500"
           )}
         />
+        {jsonError && (
+          <div
+            className={clsx(
+              "text-xs mt-2 p-2 rounded border",
+              theme === "dark"
+                ? "bg-red-900/20 border-red-700 text-red-300"
+                : "bg-red-50 border-red-300 text-red-700"
+            )}
+          >
+            ❌ {jsonError}
+          </div>
+        )}
       </div>
 
       {/* Method Info Display */}

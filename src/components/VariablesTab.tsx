@@ -108,7 +108,6 @@ export const VariablesTab = () => {
                     onChange={(checked) =>
                       updateVariable(index, "enabled", checked)
                     }
-                    theme={theme}
                   />
                   <button
                     onClick={() => removeVariable(index)}

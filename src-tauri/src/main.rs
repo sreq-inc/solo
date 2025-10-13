@@ -26,6 +26,7 @@ fn main() {
             grpc::commands::grpc_parse_proto_file,
             grpc::commands::grpc_get_service_info,
             grpc::commands::grpc_get_method_info,
+            grpc::commands::grpc_test_connection,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
