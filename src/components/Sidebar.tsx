@@ -8,6 +8,7 @@ import { open } from "@tauri-apps/plugin-shell";
 import { LatestRelease } from "./LatestRelease";
 import clsx from "clsx";
 import { UpdateChecker } from "./UpdateChecker";
+import { useToast } from "../hooks/useToast";
 
 export const Sidebar = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -33,6 +34,7 @@ export const Sidebar = () => {
     createFolder,
     renameFile,
   } = useFile();
+  const toast = useToast();
 
   useLayoutEffect(() => {
     if (showModal) {
@@ -102,11 +104,11 @@ export const Sidebar = () => {
         setShowModal(false);
       } catch (error) {
         console.error("Error creating folder:", error);
-        alert("Error creating folder. Please try again.");
+        toast.error("Error creating folder. Please try again.");
       }
     } else {
       console.log("Folder name is empty");
-      alert("Please enter a folder name.");
+      toast.warning("Please enter a folder name.");
     }
   };
 

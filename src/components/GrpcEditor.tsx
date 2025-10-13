@@ -3,6 +3,7 @@ import { useRequest } from "../context/RequestContext";
 import clsx from "clsx";
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { useToast } from "../hooks/useToast";
 
 interface ProtoSchema {
   services: ProtoService[];
@@ -50,21 +51,15 @@ export const GrpcEditor = () => {
     setProtoContent,
     setGrpcSchema,
   } = useRequest();
+  const toast = useToast();
 
   const [services, setServices] = useState<ProtoService[]>([]);
   const [methods, setMethods] = useState<ProtoMethod[]>([]);
   const [isDiscovering, setIsDiscovering] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
-  const [parseError, setParseError] = useState<string>("");
-  const [discoveryError, setDiscoveryError] = useState<string>("");
   const [jsonError, setJsonError] = useState<string>("");
   const [testingConnection, setTestingConnection] = useState(false);
   const [isJsonValid, setIsJsonValid] = useState(true);
-  const [connectionStatus, setConnectionStatus] = useState<{
-    connected: boolean;
-    message: string;
-    latency_ms?: number;
-  } | null>(null);
 
   // Validate JSON in real-time
   useEffect(() => {
@@ -85,10 +80,10 @@ export const GrpcEditor = () => {
     }
   }, [grpcMessage]);
 
-  // Parse proto content when it changes
+  // Parse proto content when it changes (silently, without toasts)
   useEffect(() => {
     if (protoContent.trim()) {
-      parseProtoContent();
+      parseProtoContent(false);
     }
   }, [protoContent]);
 
@@ -106,9 +101,8 @@ export const GrpcEditor = () => {
     }
   }, [grpcService, services]);
 
-  const parseProtoContent = async () => {
+  const parseProtoContent = async (showToast: boolean = true) => {
     setIsParsing(true);
-    setParseError("");
 
     try {
       const result = (await invoke("grpc_parse_proto_file", {
@@ -129,16 +123,24 @@ export const GrpcEditor = () => {
           messages: schema.messages || [],
         });
 
-        if (schema.services.length === 0) {
-          setParseError("No services found in proto file");
+        if (showToast) {
+          if (schema.services.length === 0) {
+            toast.warning("No services found in proto file");
+          } else {
+            toast.success(`Found ${schema.services.length} service${schema.services.length !== 1 ? "s" : ""}`);
+          }
         }
       } else {
-        setParseError(result?.error || "Failed to parse proto file");
+        if (showToast) {
+          toast.error(result?.error || "Failed to parse proto file");
+        }
       }
     } catch (error) {
       const errorMsg =
         error instanceof Error ? error.message : "Failed to parse proto file";
-      setParseError(errorMsg);
+      if (showToast) {
+        toast.error(errorMsg);
+      }
       console.error("Failed to parse proto file:", error);
     } finally {
       setIsParsing(false);
@@ -147,12 +149,11 @@ export const GrpcEditor = () => {
 
   const discoverServices = async () => {
     if (!url) {
-      setDiscoveryError("Please enter a URL first");
+      toast.warning("Please enter a URL first");
       return;
     }
 
     setIsDiscovering(true);
-    setDiscoveryError("");
 
     try {
       const result = (await invoke("grpc_discover_services", {
@@ -172,15 +173,17 @@ export const GrpcEditor = () => {
         });
 
         if (schema.services.length === 0) {
-          setDiscoveryError("No services found at this URL");
+          toast.warning("No services found at this URL");
+        } else {
+          toast.success(`Discovered ${schema.services.length} service${schema.services.length !== 1 ? "s" : ""} via reflection`);
         }
       } else {
-        setDiscoveryError(result?.error || "Failed to discover services");
+        toast.error(result?.error || "Failed to discover services");
       }
     } catch (error) {
       const errorMsg =
         error instanceof Error ? error.message : "Failed to discover services";
-      setDiscoveryError(errorMsg);
+      toast.error(errorMsg);
       console.error("Failed to discover services:", error);
     } finally {
       setIsDiscovering(false);
@@ -189,29 +192,27 @@ export const GrpcEditor = () => {
 
   const testConnection = async () => {
     if (!url) {
-      setConnectionStatus({
-        connected: false,
-        message: "Please enter a URL first",
-      });
+      toast.warning("Please enter a URL first");
       return;
     }
 
     setTestingConnection(true);
-    setConnectionStatus(null);
 
     try {
       const result = (await invoke("grpc_test_connection", {
         url: url,
       })) as { connected: boolean; message: string; latency_ms?: number };
 
-      setConnectionStatus(result);
+      if (result.connected) {
+        const latencyMsg = result.latency_ms ? ` (${result.latency_ms}ms)` : "";
+        toast.success(`${result.message}${latencyMsg}`);
+      } else {
+        toast.error(result.message);
+      }
     } catch (error) {
       const errorMsg =
         error instanceof Error ? error.message : "Failed to test connection";
-      setConnectionStatus({
-        connected: false,
-        message: errorMsg,
-      });
+      toast.error(errorMsg);
     } finally {
       setTestingConnection(false);
     }
@@ -224,7 +225,7 @@ export const GrpcEditor = () => {
       setGrpcMessage(JSON.stringify(parsed, null, 2));
     } catch (error) {
       console.error("Invalid JSON");
-      alert("Invalid JSON format. Please correct it before formatting.");
+      toast.error("Invalid JSON format. Please correct it before formatting.");
     }
   };
 
@@ -273,7 +274,7 @@ export const GrpcEditor = () => {
         <div className="space-y-2 mb-2">
           <div className="flex gap-2 flex-wrap">
             <button
-              onClick={parseProtoContent}
+              onClick={() => parseProtoContent(true)}
               disabled={!protoContent.trim() || isParsing}
               title="Parse proto file content to extract services and methods"
               className={clsx(
@@ -312,72 +313,6 @@ export const GrpcEditor = () => {
               {testingConnection ? "Testing..." : "Test Connection"}
             </button>
           </div>
-
-          {/* Error Messages */}
-          {parseError && (
-            <div
-              className={clsx(
-                "text-xs p-2 rounded border",
-                theme === "dark"
-                  ? "bg-red-900/20 border-red-700 text-red-300"
-                  : "bg-red-50 border-red-300 text-red-700"
-              )}
-            >
-              ❌ {parseError}
-            </div>
-          )}
-
-          {discoveryError && (
-            <div
-              className={clsx(
-                "text-xs p-2 rounded border",
-                theme === "dark"
-                  ? "bg-red-900/20 border-red-700 text-red-300"
-                  : "bg-red-50 border-red-300 text-red-700"
-              )}
-            >
-              ❌ {discoveryError}
-            </div>
-          )}
-
-          {/* Success Message */}
-          {services.length > 0 && !parseError && !discoveryError && (
-            <div
-              className={clsx(
-                "text-xs p-2 rounded border",
-                theme === "dark"
-                  ? "bg-green-900/20 border-green-700 text-green-300"
-                  : "bg-green-50 border-green-300 text-green-700"
-              )}
-            >
-              ✅ Found {services.length} service
-              {services.length !== 1 ? "s" : ""}
-            </div>
-          )}
-
-          {/* Connection Status */}
-          {connectionStatus && (
-            <div
-              className={clsx(
-                "text-xs p-2 rounded border",
-                connectionStatus.connected
-                  ? theme === "dark"
-                    ? "bg-green-900/20 border-green-700 text-green-300"
-                    : "bg-green-50 border-green-300 text-green-700"
-                  : theme === "dark"
-                    ? "bg-red-900/20 border-red-700 text-red-300"
-                    : "bg-red-50 border-red-300 text-red-700"
-              )}
-            >
-              {connectionStatus.connected ? "🟢" : "🔴"}{" "}
-              {connectionStatus.message}
-              {connectionStatus.latency_ms && (
-                <span className="ml-2 font-mono">
-                  ({connectionStatus.latency_ms}ms)
-                </span>
-              )}
-            </div>
-          )}
         </div>
         <textarea
           value={protoContent}

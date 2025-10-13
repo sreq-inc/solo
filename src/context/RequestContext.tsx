@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useVariables } from "./VariablesContext";
+import { useToast } from "../hooks/useToast";
 
 export type Tab =
   | "body"
@@ -119,6 +120,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
   }>({ services: [], messages: [] });
 
   const { clearVariables } = useVariables();
+  const toast = useToast();
 
   const resetFields = () => {
     setMethod(requestType === "graphql" ? "POST" : "GET");
@@ -158,7 +160,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
       setPayload(JSON.stringify(parsed, null, 2));
     } catch (error) {
       console.error("Invalid JSON");
-      alert("Invalid JSON format. Please correct it before formatting.");
+      toast.error("Invalid JSON format. Please correct it before formatting.");
     }
   };
 
@@ -171,7 +173,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
       setGraphqlVariables(JSON.stringify(parsed, null, 2));
     } catch (error) {
       console.error("Invalid JSON");
-      alert("Invalid JSON format. Please correct it before formatting.");
+      toast.error("Invalid JSON format. Please correct it before formatting.");
     }
   };
 

@@ -4,6 +4,7 @@ import { useVariables } from "../context/VariablesContext";
 import { SelectMethod } from "./SelectMethod";
 import { SmartUrlInput } from "./SmartUrlInput";
 import { useTheme } from "../context/ThemeContext";
+import { useToast } from "../hooks/useToast";
 
 export const InputMethod = () => {
   const {
@@ -17,13 +18,14 @@ export const InputMethod = () => {
   } = useRequest();
   const { replaceVariablesInUrl } = useVariables();
   const { theme } = useTheme();
+  const toast = useToast();
 
   const handleRequestWithVariables = async () => {
     const processedUrl = replaceVariablesInUrl(url);
 
     if (processedUrl.includes("{{")) {
       const unresolvedVars = processedUrl.match(/\{\{[^}]+\}\}/g);
-      alert(
+      toast.warning(
         `Some variables are not defined: ${unresolvedVars?.join(
           ", "
         )}\nCheck the Variables tab.`
@@ -32,14 +34,14 @@ export const InputMethod = () => {
     }
 
     if (!processedUrl.trim()) {
-      alert("URL is required");
+      toast.warning("URL is required");
       return;
     }
 
     // Validate URL scheme by request type
     if (requestType === "grpc") {
       if (!processedUrl.startsWith("grpc://")) {
-        alert(
+        toast.warning(
           `For gRPC requests, URL must start with grpc://\nCurrent URL: "${processedUrl}"`
         );
         return;
@@ -49,7 +51,7 @@ export const InputMethod = () => {
         !processedUrl.startsWith("http://") &&
         !processedUrl.startsWith("https://")
       ) {
-        alert(
+        toast.warning(
           `URL must start with http:// or https://\nCurrent URL: "${processedUrl}"`
         );
         return;
