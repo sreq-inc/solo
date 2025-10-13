@@ -7,6 +7,7 @@ import {
 } from "react";
 import { useRequest, QueryParam, RequestType } from "./RequestContext";
 import { useVariables } from "./VariablesContext";
+import { useToast } from "../hooks/useToast";
 
 type RequestData = {
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -118,6 +119,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
   } = useRequest();
 
   const { loadVariablesForFolder, clearVariables } = useVariables();
+  const toast = useToast();
 
   const [folders, setFolders] = useState<FolderStructure>({});
   const [openFolders, setOpenFolders] = useState<{ [key: string]: boolean }>(
@@ -183,7 +185,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
 
   const createFolder = (folderName: string) => {
     if (!folderName || folders[folderName]) {
-      alert("Folder name is invalid or already exists.");
+      toast.error("Folder name is invalid or already exists.");
       return;
     }
     setFolders((prev) => ({ ...prev, [folderName]: [] }));
@@ -217,7 +219,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Check if new folder name already exists
       if (folders[trimmedNewName]) {
-        alert("A folder with this name already exists.");
+        toast.warning("A folder with this name already exists.");
         return;
       }
 
@@ -276,7 +278,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       );
     } catch (error) {
       console.error("Error renaming folder:", error);
-      alert("Error renaming folder. Please try again.");
+      toast.error("Error renaming folder. Please try again.");
     }
   };
 
@@ -591,7 +593,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
 
       setCurrentRequestId(fileName);
     } else {
-      alert("File not found.");
+      toast.info("File not found.");
     }
   };
 
