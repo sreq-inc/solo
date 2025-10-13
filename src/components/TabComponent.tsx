@@ -23,8 +23,8 @@ export const TabComponent = ({
           ? "bg-purple-700 text-white shadow-md"
           : "bg-purple-600 text-white shadow-md"
         : theme === "dark"
-        ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
-        : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+          ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+          : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
     );
   };
 
@@ -45,6 +45,34 @@ export const TabComponent = ({
             className={getTabClasses(activeTab === "graphql")}
           >
             GraphQL
+          </button>
+          <button
+            onClick={() => onTabChange("schema")}
+            className={getTabClasses(activeTab === "schema")}
+          >
+            Schema
+          </button>
+        </>
+      )}
+      {request === "grpc" && (
+        <>
+          <button
+            onClick={() => onTabChange("grpc")}
+            className={getTabClasses(activeTab === "grpc")}
+          >
+            gRPC
+          </button>
+          <button
+            onClick={() => onTabChange("proto")}
+            className={getTabClasses(activeTab === "proto")}
+          >
+            Proto
+          </button>
+          <button
+            onClick={() => onTabChange("metadata")}
+            className={getTabClasses(activeTab === "metadata")}
+          >
+            Metadata
           </button>
           <button
             onClick={() => onTabChange("schema")}

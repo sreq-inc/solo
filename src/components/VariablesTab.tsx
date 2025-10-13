@@ -13,7 +13,7 @@ export const VariablesTab = () => {
     removeVariable,
     updateVariable,
     currentFolder,
-    detectAndLoadCurrentFolder
+    detectAndLoadCurrentFolder,
   } = useVariables();
 
   // Auto-detect current folder when Variables tab is opened
@@ -21,10 +21,7 @@ export const VariablesTab = () => {
     if (!currentFolder) {
       detectAndLoadCurrentFolder();
     }
-  }, [
-    currentFolder,
-    detectAndLoadCurrentFolder
-  ]);
+  }, [currentFolder, detectAndLoadCurrentFolder]);
 
   return (
     <div>
@@ -38,7 +35,14 @@ export const VariablesTab = () => {
           Environment Variables
         </label>
         {currentFolder && (
-          <div className="flex items-center gap-1 px-2 py-1 rounded text-xs bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200">
+          <div
+            className={clsx(
+              "flex items-center gap-1 px-2 py-1 rounded text-xs",
+              theme === "dark"
+                ? "bg-purple-900 text-purple-200"
+                : "bg-purple-100 text-purple-800"
+            )}
+          >
             <Folder className="w-3 h-3" />
             <span>{currentFolder}</span>
           </div>
@@ -75,9 +79,7 @@ export const VariablesTab = () => {
                 <input
                   type="text"
                   value={variable.key}
-                  onChange={(e) =>
-                    updateVariable(index, "key", e.target.value)
-                  }
+                  onChange={(e) => updateVariable(index, "key", e.target.value)}
                   placeholder="Variable Name (e.g., baseUrl)"
                   className={clsx(
                     "flex-1 min-w-0 px-2 py-1 border rounded text-xs ring-0 focus:outline-0",
@@ -106,7 +108,6 @@ export const VariablesTab = () => {
                     onChange={(checked) =>
                       updateVariable(index, "enabled", checked)
                     }
-                    theme={theme}
                   />
                   <button
                     onClick={() => removeVariable(index)}
@@ -157,47 +158,77 @@ export const VariablesTab = () => {
             >
               <div className="space-y-2 text-xs">
                 <div>
-                  <span className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
+                  <span
+                    className={
+                      theme === "dark" ? "text-gray-400" : "text-gray-600"
+                    }
+                  >
                     Define variable:
                   </span>
-                  <code className={clsx(
-                    "ml-2 px-2 py-1 rounded",
-                    theme === "dark" ? "bg-gray-800 text-green-400" : "bg-gray-100 text-green-600"
-                  )}>
+                  <code
+                    className={clsx(
+                      "ml-2 px-2 py-1 rounded",
+                      theme === "dark"
+                        ? "bg-gray-800 text-green-400"
+                        : "bg-gray-100 text-green-600"
+                    )}
+                  >
                     baseUrl = https://api.example.com
                   </code>
                 </div>
                 <div>
-                  <span className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
+                  <span
+                    className={
+                      theme === "dark" ? "text-gray-400" : "text-gray-600"
+                    }
+                  >
                     Use in URL:
                   </span>
-                  <code className={clsx(
-                    "ml-2 px-2 py-1 rounded",
-                    theme === "dark" ? "bg-gray-800 text-blue-400" : "bg-gray-100 text-blue-600"
-                  )}>
+                  <code
+                    className={clsx(
+                      "ml-2 px-2 py-1 rounded",
+                      theme === "dark"
+                        ? "bg-gray-800 text-blue-400"
+                        : "bg-gray-100 text-blue-600"
+                    )}
+                  >
                     {"{{baseUrl}}/users"}
                   </code>
                 </div>
                 <div>
-                  <span className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
+                  <span
+                    className={
+                      theme === "dark" ? "text-gray-400" : "text-gray-600"
+                    }
+                  >
                     Result:
                   </span>
-                  <code className={clsx(
-                    "ml-2 px-2 py-1 rounded",
-                    theme === "dark" ? "bg-gray-800 text-purple-400" : "bg-gray-100 text-purple-600"
-                  )}>
+                  <code
+                    className={clsx(
+                      "ml-2 px-2 py-1 rounded",
+                      theme === "dark"
+                        ? "bg-gray-800 text-purple-400"
+                        : "bg-gray-100 text-purple-600"
+                    )}
+                  >
                     https://api.example.com/users
                   </code>
                 </div>
               </div>
 
-              <div className={clsx(
-                "mt-3 pt-3 border-t text-xs",
-                theme === "dark" ? "border-gray-700 text-gray-500" : "border-gray-300 text-gray-600"
-              )}>
+              <div
+                className={clsx(
+                  "mt-3 pt-3 border-t text-xs",
+                  theme === "dark"
+                    ? "border-gray-700 text-gray-500"
+                    : "border-gray-300 text-gray-600"
+                )}
+              >
                 <div className="flex items-center gap-1">
                   <Folder className="w-3 h-3" />
-                  <span>Variables are saved per collection: {currentFolder}</span>
+                  <span>
+                    Variables are saved per collection: {currentFolder}
+                  </span>
                 </div>
               </div>
             </div>

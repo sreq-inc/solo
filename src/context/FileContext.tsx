@@ -5,7 +5,7 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { useRequest, QueryParam, Tab } from "./RequestContext";
+import { useRequest, QueryParam, RequestType } from "./RequestContext";
 import { useVariables } from "./VariablesContext";
 
 type RequestData = {
@@ -17,11 +17,29 @@ type RequestData = {
   username?: string;
   password?: string;
   bearerToken?: string;
-  activeTab?: Tab;
+  activeTab?:
+    | "body"
+    | "auth"
+    | "params"
+    | "graphql"
+    | "grpc"
+    | "proto"
+    | "variables"
+    | "description"
+    | "schema";
   queryParams?: QueryParam[];
-  requestType?: "http" | "graphql";
+  requestType?: RequestType;
   graphqlQuery?: string;
   graphqlVariables?: string;
+  grpcService?: string;
+  grpcMethod?: string;
+  grpcMessage?: string;
+  grpcCallType?:
+    | "unary"
+    | "server_streaming"
+    | "client_streaming"
+    | "bidirectional";
+  protoContent?: string;
   description?: string;
 };
 
@@ -46,7 +64,7 @@ type FileContextType = {
   createFolder: (folderName: string) => void;
   toggleFolder: (folder: string) => void;
   toggleDropdown: (folder: string, e: React.MouseEvent) => void;
-  createNewRequest: (folder: string, type?: "http" | "graphql") => void;
+  createNewRequest: (folder: string, type?: RequestType) => void;
   removeFolder: (folder: string) => void;
   handleFileClick: (fileName: string) => void;
   handleRemoveFile: (fileName: string) => void;
@@ -72,6 +90,11 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     requestType,
     graphqlQuery,
     graphqlVariables,
+    grpcService,
+    grpcMethod,
+    grpcMessage,
+    grpcCallType,
+    protoContent,
     description,
     resetFields,
     setMethod,
@@ -86,6 +109,11 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     setRequestType,
     setGraphqlQuery,
     setGraphqlVariables,
+    setGrpcService,
+    setGrpcMethod,
+    setGrpcMessage,
+    setGrpcCallType,
+    setProtoContent,
     setDescription,
   } = useRequest();
 
@@ -123,6 +151,11 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     requestType,
     graphqlQuery,
     graphqlVariables,
+    grpcService,
+    grpcMethod,
+    grpcMessage,
+    grpcCallType,
+    protoContent,
     description,
   ]);
 
@@ -134,7 +167,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     const loadedFolders: FolderStructure = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && !key.startsWith('solo-variables-')) {
+      if (key && !key.startsWith("solo-variables-")) {
         try {
           const files = JSON.parse(
             localStorage.getItem(key) || "[]"
@@ -190,7 +223,9 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
 
       // Get old folder data
       const oldFolderData = localStorage.getItem(oldName);
-      const oldVariablesData = localStorage.getItem(`solo-variables-${oldName}`);
+      const oldVariablesData = localStorage.getItem(
+        `solo-variables-${oldName}`
+      );
 
       if (!oldFolderData) {
         console.error(`Folder '${oldName}' not found`);
@@ -202,7 +237,10 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
 
       // Migrate variables if they exist
       if (oldVariablesData) {
-        localStorage.setItem(`solo-variables-${trimmedNewName}`, oldVariablesData);
+        localStorage.setItem(
+          `solo-variables-${trimmedNewName}`,
+          oldVariablesData
+        );
       }
 
       // Update folders state
@@ -233,7 +271,9 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem(oldName);
       localStorage.removeItem(`solo-variables-${oldName}`);
 
-      console.log(`Folder renamed from '${oldName}' to '${trimmedNewName}' successfully`);
+      console.log(
+        `Folder renamed from '${oldName}' to '${trimmedNewName}' successfully`
+      );
     } catch (error) {
       console.error("Error renaming folder:", error);
       alert("Error renaming folder. Please try again.");
@@ -260,10 +300,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     setDropdownOpen((prev) => (prev === folder ? null : folder));
   };
 
-  const createNewRequest = (
-    folder: string,
-    type: "http" | "graphql" = "http"
-  ) => {
+  const createNewRequest = (folder: string, type: RequestType = "http") => {
     const newRequestId = `request_${Date.now()}`;
     setCurrentFolder(folder);
     setOpenFolders((prev) => ({ ...prev, [folder]: true }));
@@ -277,12 +314,18 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       useBasicAuth: false,
       username: "",
       password: "",
-      activeTab: type === "graphql" ? "graphql" : "body",
+      activeTab:
+        type === "graphql" ? "graphql" : type === "grpc" ? "grpc" : "body",
       bearerToken: "",
       queryParams: [{ key: "", value: "", enabled: true }],
       requestType: type,
       graphqlQuery: type === "graphql" ? "query {\n  \n}" : "",
       graphqlVariables: type === "graphql" ? "{}" : "",
+      grpcService: type === "grpc" ? "" : "",
+      grpcMethod: type === "grpc" ? "" : "",
+      grpcMessage: type === "grpc" ? "{}" : "",
+      grpcCallType: type === "grpc" ? "unary" : "unary",
+      protoContent: type === "grpc" ? "" : "",
       description: "",
     };
 
@@ -355,7 +398,9 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       files.push({
         fileName: requestId,
         fileData: request,
-        displayName: displayName || `${request.method} Request`,
+        displayName:
+          displayName ||
+          `${request.requestType === "grpc" ? "gRPC" : request.method} Request`,
       });
     }
 
@@ -386,12 +431,16 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
           useBasicAuth,
           username,
           password,
-          activeTab,
           bearerToken,
           queryParams,
           requestType,
           graphqlQuery,
           graphqlVariables,
+          grpcService,
+          grpcMethod,
+          grpcMessage,
+          grpcCallType,
+          protoContent,
           description,
         },
         currentRequestId,
@@ -474,7 +523,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
   ): { folder: string; data: RequestData; displayName?: string } | null => {
     for (let i = 0; i < localStorage.length; i++) {
       const folderName = localStorage.key(i);
-      if (folderName && !folderName.startsWith('solo-variables-')) {
+      if (folderName && !folderName.startsWith("solo-variables-")) {
         try {
           const files = JSON.parse(
             localStorage.getItem(folderName) || "[]"
@@ -514,7 +563,12 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       setUsername(data.username || "");
       setPassword(data.password || "");
       setActiveTab(
-        data.activeTab || (data.requestType === "graphql" ? "graphql" : "body")
+        data.activeTab ||
+          (data.requestType === "graphql"
+            ? "graphql"
+            : data.requestType === "grpc"
+              ? "grpc"
+              : "body")
       );
       setBearerToken(data.bearerToken || "");
       setQueryParams(
@@ -525,6 +579,14 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       if (data.requestType === "graphql") {
         setGraphqlQuery(data.graphqlQuery || "");
         setGraphqlVariables(data.graphqlVariables || "{}");
+      }
+
+      if (data.requestType === "grpc") {
+        setGrpcService(data.grpcService || "");
+        setGrpcMethod(data.grpcMethod || "");
+        setGrpcMessage(data.grpcMessage || "{}");
+        setGrpcCallType(data.grpcCallType || "unary");
+        setProtoContent(data.protoContent || "");
       }
 
       setCurrentRequestId(fileName);

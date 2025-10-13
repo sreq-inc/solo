@@ -1,5 +1,6 @@
 import { TabComponent } from "./TabComponent";
 import { GraphQLEditor } from "./GraphQLEditor";
+import { GrpcEditor } from "./GrpcEditor";
 import { DescriptionTab } from "./DescriptionTab";
 import { useEffect, useState, useRef } from "react";
 import { useTheme } from "../context/ThemeContext";
@@ -12,6 +13,8 @@ import { Trash2Icon, Copy, Check } from "lucide-react";
 import { Checkbox } from "./Checkbox";
 import { VariablesTab } from "./VariablesTab";
 import { SchemaViewer } from "./SchemaViewer";
+import { MetadataTab } from "./MetadataTab";
+import { GrpcSchemaViewer } from "./GrpcSchemaViewer";
 
 export const RequestForm = () => {
   const { theme } = useTheme();
@@ -34,6 +37,9 @@ export const RequestForm = () => {
     formatJson,
     setUrl,
     setQueryParams,
+    grpcMetadata,
+    setGrpcMetadata,
+    grpcSchema,
   } = useRequest();
 
   const options = [
@@ -153,6 +159,8 @@ export const RequestForm = () => {
         {activeTab === "graphql" && requestType === "graphql" && (
           <GraphQLEditor />
         )}
+
+        {activeTab === "grpc" && requestType === "grpc" && <GrpcEditor />}
 
         {activeTab === "body" && requestType === "http" && (
           <div className="mt-4">
@@ -308,7 +316,6 @@ export const RequestForm = () => {
                       onChange={(checked) =>
                         updateQueryParam(index, "enabled", checked)
                       }
-                      theme={theme}
                     />
                     <button
                       onClick={() => removeQueryParam(index)}
@@ -383,11 +390,38 @@ export const RequestForm = () => {
 
         {activeTab === "variables" && <VariablesTab />}
 
+        {activeTab === "metadata" && requestType === "grpc" && (
+          <div className="mt-4">
+            <MetadataTab
+              metadata={grpcMetadata}
+              onMetadataChange={setGrpcMetadata}
+            />
+          </div>
+        )}
+
         {activeTab === "description" && <DescriptionTab />}
 
         {activeTab === "schema" && requestType === "graphql" && (
           <div className="mt-4">
             <SchemaViewer />
+          </div>
+        )}
+
+        {activeTab === "schema" && requestType === "grpc" && (
+          <div className="mt-4">
+            <div
+              className={clsx(
+                "p-4 border rounded-xl",
+                theme === "dark"
+                  ? "bg-[#10121b] border-gray-700"
+                  : "bg-white border-gray-300"
+              )}
+            >
+              <GrpcSchemaViewer
+                services={grpcSchema.services}
+                messages={grpcSchema.messages}
+              />
+            </div>
           </div>
         )}
       </div>

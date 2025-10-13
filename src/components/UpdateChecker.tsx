@@ -37,11 +37,14 @@ export const UpdateChecker = () => {
       checkForUpdates();
     }
     if (settings.preference !== "manual") {
-      const interval = setInterval(() => {
-        if (shouldCheckForUpdates()) {
-          checkForUpdates();
-        }
-      }, settings.checkInterval * 60 * 60 * 1000);
+      const interval = setInterval(
+        () => {
+          if (shouldCheckForUpdates()) {
+            checkForUpdates();
+          }
+        },
+        settings.checkInterval * 60 * 60 * 1000
+      );
       return () => clearInterval(interval);
     }
   }, [settings]);
@@ -129,7 +132,12 @@ export const UpdateChecker = () => {
         <div className="flex flex-row gap-2">
           <button
             onClick={() => setShowSettings(true)}
-            className="flex cursor-pointer items-center justify-center text-gray-500 hover:text-gray-700"
+            className={clsx(
+              "flex cursor-pointer items-center justify-center transition-colors",
+              theme === "dark"
+                ? "text-gray-400 hover:text-gray-300"
+                : "text-gray-500 hover:text-gray-700"
+            )}
             title="Update settings"
           >
             <Settings className="w-4 h-4" />
@@ -139,7 +147,12 @@ export const UpdateChecker = () => {
             <button
               onClick={checkForUpdates}
               disabled={updateState === "checking"}
-              className="flex cursor-pointer items-center justify-center text-gray-500 hover:text-gray-700"
+              className={clsx(
+                "flex cursor-pointer items-center justify-center transition-colors",
+                theme === "dark"
+                  ? "text-gray-400 hover:text-gray-300"
+                  : "text-gray-500 hover:text-gray-700"
+              )}
               title="Check for updates"
             >
               <RefreshCw
