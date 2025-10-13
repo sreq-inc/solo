@@ -50,7 +50,6 @@ message EchoResponse {
 /// Test Scenario 2: Discovery via Reflection
 /// Note: This requires the test server to be running
 #[tokio::test]
-#[ignore] // Requires live server
 async fn test_scenario_2_discover_services() {
     let reflection = GrpcReflection::new(TEST_SERVER_URL).await;
 
@@ -59,7 +58,7 @@ async fn test_scenario_2_discover_services() {
         return;
     }
 
-    let reflection = reflection.unwrap();
+    let mut reflection = reflection.unwrap();
     let schema = reflection.discover_services().await;
 
     assert!(schema.is_ok(), "Should discover services successfully");

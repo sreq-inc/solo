@@ -147,6 +147,36 @@ impl From<tonic::transport::Error> for AppError {
     }
 }
 
+impl From<String> for AppError {
+    fn from(err: String) -> Self {
+        AppError::internal(err)
+    }
+}
+
+impl From<&str> for AppError {
+    fn from(err: &str) -> Self {
+        AppError::internal(err.to_string())
+    }
+}
+
+impl From<prost_reflect::DescriptorError> for AppError {
+    fn from(err: prost_reflect::DescriptorError) -> Self {
+        AppError::parse(format!("Descriptor error: {}", err))
+    }
+}
+
+impl From<prost::DecodeError> for AppError {
+    fn from(err: prost::DecodeError) -> Self {
+        AppError::parse(format!("Protobuf decode error: {}", err))
+    }
+}
+
+impl From<tonic::Status> for AppError {
+    fn from(err: tonic::Status) -> Self {
+        AppError::network(format!("gRPC error: {}", err.message()))
+    }
+}
+
 impl From<AppError> for String {
     fn from(err: AppError) -> Self {
         err.to_string()

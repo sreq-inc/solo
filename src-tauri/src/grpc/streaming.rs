@@ -171,7 +171,6 @@ pub fn create_streaming_channels() -> (mpsc::Sender<Value>, mpsc::Receiver<Value
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashMap;
 
     #[tokio::test]
     async fn test_server_streaming_sends_multiple_messages() {

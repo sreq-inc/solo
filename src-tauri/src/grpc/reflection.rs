@@ -1,85 +1,150 @@
 use crate::error::AppResult;
 use crate::grpc::{ProtoField, ProtoMessage, ProtoMethod, ProtoSchema, ProtoService};
+use prost_reflect::DescriptorPool;
+use prost_types::FileDescriptorSet;
 use tonic::transport::Channel;
+use tonic_reflection::pb::server_reflection_client::ServerReflectionClient;
+use tonic_reflection::pb::server_reflection_request::MessageRequest;
+use tonic_reflection::pb::server_reflection_response::MessageResponse;
+use tonic_reflection::pb::{ServerReflectionRequest, ServerReflectionResponse};
 
 pub struct GrpcReflection {
     channel: Channel,
+    descriptor_pool: Option<DescriptorPool>,
 }
 
 impl GrpcReflection {
     pub async fn new(url: &str) -> AppResult<Self> {
         let channel = Channel::from_shared(url.to_string())?.connect().await?;
 
-        Ok(Self { channel })
-    }
-
-    pub async fn discover_services(&self) -> AppResult<ProtoSchema> {
-        // Use the channel by cloning it for potential future use
-        let _channel_clone = self.channel.clone();
-
-        // Mock implementation for now
-        // In a real implementation, this would use the reflection API
-
-        let mock_services = vec![
-            ProtoService {
-                name: "UserService".to_string(),
-                methods: vec![
-                    ProtoMethod {
-                        name: "GetUser".to_string(),
-                        input_type: "GetUserRequest".to_string(),
-                        output_type: "GetUserResponse".to_string(),
-                        is_client_streaming: false,
-                        is_server_streaming: false,
-                    },
-                    ProtoMethod {
-                        name: "ListUsers".to_string(),
-                        input_type: "ListUsersRequest".to_string(),
-                        output_type: "ListUsersResponse".to_string(),
-                        is_client_streaming: false,
-                        is_server_streaming: true,
-                    },
-                ],
-            },
-            ProtoService {
-                name: "ProductService".to_string(),
-                methods: vec![ProtoMethod {
-                    name: "CreateProduct".to_string(),
-                    input_type: "CreateProductRequest".to_string(),
-                    output_type: "CreateProductResponse".to_string(),
-                    is_client_streaming: false,
-                    is_server_streaming: false,
-                }],
-            },
-        ];
-
-        let mock_messages = vec![
-            ProtoMessage {
-                name: "GetUserRequest".to_string(),
-                fields: vec![ProtoField {
-                    name: "id".to_string(),
-                    field_type: "string".to_string(),
-                    number: 1,
-                    repeated: false,
-                }],
-            },
-            ProtoMessage {
-                name: "GetUserResponse".to_string(),
-                fields: vec![ProtoField {
-                    name: "user".to_string(),
-                    field_type: "User".to_string(),
-                    number: 1,
-                    repeated: false,
-                }],
-            },
-        ];
-
-        Ok(ProtoSchema {
-            services: mock_services,
-            messages: mock_messages,
+        Ok(Self {
+            channel,
+            descriptor_pool: None,
         })
     }
 
-    pub async fn get_service_info(&self, service_name: &str) -> AppResult<Option<ProtoService>> {
+    /// Get the descriptor pool, initializing it if needed
+    pub async fn get_descriptor_pool(&mut self) -> AppResult<&DescriptorPool> {
+        if self.descriptor_pool.is_none() {
+            let pool = self.fetch_descriptor_pool().await?;
+            self.descriptor_pool = Some(pool);
+        }
+        Ok(self.descriptor_pool.as_ref().unwrap())
+    }
+
+    /// Fetch all file descriptors from the server via reflection
+    async fn fetch_descriptor_pool(&self) -> AppResult<DescriptorPool> {
+        let mut client = ServerReflectionClient::new(self.channel.clone());
+
+        // First, list all services
+        let list_services_request = ServerReflectionRequest {
+            host: String::new(),
+            message_request: Some(MessageRequest::ListServices(String::new())),
+        };
+
+        let mut stream = client.server_reflection_info(tokio_stream::once(list_services_request)).await?.into_inner();
+
+        let mut file_descriptor_protos = Vec::new();
+
+        // Collect service names
+        let mut service_names = Vec::new();
+        if let Some(response) = stream.message().await? {
+            if let Some(ServerReflectionResponse { message_response: Some(msg), .. }) = Some(response) {
+                if let MessageResponse::ListServicesResponse(services) = msg {
+                    for service in services.service {
+                        service_names.push(service.name);
+                    }
+                }
+            }
+        }
+
+        // For each service, get its file descriptor
+        for service_name in service_names {
+            let request = ServerReflectionRequest {
+                host: String::new(),
+                message_request: Some(MessageRequest::FileContainingSymbol(service_name)),
+            };
+
+            let mut stream = client.server_reflection_info(tokio_stream::once(request)).await?.into_inner();
+
+            if let Some(response) = stream.message().await? {
+                if let Some(ServerReflectionResponse { message_response: Some(msg), .. }) = Some(response) {
+                    if let MessageResponse::FileDescriptorResponse(fd_response) = msg {
+                        for fd_bytes in fd_response.file_descriptor_proto {
+                            file_descriptor_protos.push(fd_bytes);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Decode file descriptors
+        use prost::Message;
+        let mut file_descriptors = Vec::new();
+        for bytes in file_descriptor_protos {
+            if let Ok(fd) = prost_types::FileDescriptorProto::decode(&bytes[..]) {
+                file_descriptors.push(fd);
+            }
+        }
+
+        // Create descriptor pool
+        let fds = FileDescriptorSet {
+            file: file_descriptors,
+        };
+
+        let pool = DescriptorPool::from_file_descriptor_set(fds)?;
+        Ok(pool)
+    }
+
+    pub async fn discover_services(&mut self) -> AppResult<ProtoSchema> {
+        let pool = self.get_descriptor_pool().await?;
+
+        let mut services = Vec::new();
+        let mut messages = Vec::new();
+
+        // Extract services
+        for service in pool.services() {
+            let mut methods = Vec::new();
+
+            for method in service.methods() {
+                methods.push(ProtoMethod {
+                    name: method.name().to_string(),
+                    input_type: method.input().full_name().to_string(),
+                    output_type: method.output().full_name().to_string(),
+                    is_client_streaming: method.is_client_streaming(),
+                    is_server_streaming: method.is_server_streaming(),
+                });
+            }
+
+            services.push(ProtoService {
+                name: service.full_name().to_string(),
+                methods,
+            });
+        }
+
+        // Extract messages
+        for message in pool.all_messages() {
+            let mut fields = Vec::new();
+
+            for field in message.fields() {
+                fields.push(ProtoField {
+                    name: field.name().to_string(),
+                    field_type: format!("{:?}", field.kind()),
+                    number: field.number(),
+                    repeated: field.is_list(),
+                });
+            }
+
+            messages.push(ProtoMessage {
+                name: message.full_name().to_string(),
+                fields,
+            });
+        }
+
+        Ok(ProtoSchema { services, messages })
+    }
+
+    pub async fn get_service_info(&mut self, service_name: &str) -> AppResult<Option<ProtoService>> {
         let schema = self.discover_services().await?;
 
         Ok(schema
@@ -89,7 +154,7 @@ impl GrpcReflection {
     }
 
     pub async fn get_method_info(
-        &self,
+        &mut self,
         service_name: &str,
         method_name: &str,
     ) -> AppResult<Option<ProtoMethod>> {
@@ -101,6 +166,11 @@ impl GrpcReflection {
         } else {
             Ok(None)
         }
+    }
+
+    /// Get the internal descriptor pool for making dynamic calls
+    pub async fn descriptor_pool(&mut self) -> AppResult<&DescriptorPool> {
+        self.get_descriptor_pool().await
     }
 }
 
@@ -116,7 +186,7 @@ mod tests {
 
         // Note: This will fail without a real server, which is expected in unit tests
         // For now, we just test the structure
-        let url = "http://localhost:50051";
+        let _url = "http://localhost:50051";
 
         // This would need a running server, so we skip for now
         // In integration tests, we'd test against the real test server

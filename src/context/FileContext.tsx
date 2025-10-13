@@ -431,7 +431,6 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
           useBasicAuth,
           username,
           password,
-          activeTab,
           bearerToken,
           queryParams,
           requestType,
@@ -568,8 +567,8 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
           (data.requestType === "graphql"
             ? "graphql"
             : data.requestType === "grpc"
-            ? "grpc"
-            : "body")
+              ? "grpc"
+              : "body")
       );
       setBearerToken(data.bearerToken || "");
       setQueryParams(

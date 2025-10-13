@@ -31,9 +31,13 @@ tauri-plugin-os = "2"
 tonic = "0.10"
 prost = "0.12"
 prost-types = "0.12"
+prost-reflect = { version = "0.12", features = ["serde"] }
+tonic-reflection = "0.10"
 tokio = { version = "1", features = ["full"] }
+tokio-stream = "0.1"
 tower = "0.4"
 bytes = "1.0"
+http = "0.2"
 chrono = { version = "0.4", features = ["serde"] }
 
 [dev-dependencies]

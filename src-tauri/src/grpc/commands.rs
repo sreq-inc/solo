@@ -31,7 +31,7 @@ pub async fn grpc_unary_request(
     };
 
     match GrpcClient::new(&request.url).await {
-        Ok(client) => match client.execute(request).await {
+        Ok(mut client) => match client.execute(request).await {
             Ok(response) => Ok(grpc_response_to_api_response(response)),
             Err(e) => Ok(ApiResponse {
                 success: false,
@@ -65,7 +65,7 @@ pub async fn grpc_server_streaming_request(
     };
 
     match GrpcClient::new(&request.url).await {
-        Ok(client) => match client.execute(request).await {
+        Ok(mut client) => match client.execute(request).await {
             Ok(response) => Ok(grpc_response_to_api_response(response)),
             Err(e) => Ok(ApiResponse {
                 success: false,
@@ -84,7 +84,7 @@ pub async fn grpc_server_streaming_request(
 #[command]
 pub async fn grpc_discover_services(url: String) -> Result<ProtoSchema, String> {
     match GrpcReflection::new(&url).await {
-        Ok(reflection) => match reflection.discover_services().await {
+        Ok(mut reflection) => match reflection.discover_services().await {
             Ok(schema) => Ok(schema),
             Err(e) => Err(format!("Failed to discover services: {}", e)),
         },
@@ -106,7 +106,7 @@ pub async fn grpc_get_service_info(
     service_name: String,
 ) -> Result<Option<crate::grpc::ProtoService>, String> {
     match GrpcReflection::new(&url).await {
-        Ok(reflection) => match reflection.get_service_info(&service_name).await {
+        Ok(mut reflection) => match reflection.get_service_info(&service_name).await {
             Ok(service) => Ok(service),
             Err(e) => Err(format!("Failed to get service info: {}", e)),
         },
@@ -121,7 +121,7 @@ pub async fn grpc_get_method_info(
     method_name: String,
 ) -> Result<Option<crate::grpc::ProtoMethod>, String> {
     match GrpcReflection::new(&url).await {
-        Ok(reflection) => {
+        Ok(mut reflection) => {
             match reflection
                 .get_method_info(&service_name, &method_name)
                 .await
