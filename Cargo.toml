@@ -1,0 +1,12 @@
+[package]
+name = "version_manager"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "version_manager"
+path = "version_manager.rs"
+
+[dependencies]
+regex = "1.10"
+

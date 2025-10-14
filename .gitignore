@@ -29,3 +29,7 @@ __MACOSX
 
 generate-snapshot.sh
 solo-project.md
+
+# Rust build artifacts (root level)
+/target
+/Cargo.lock

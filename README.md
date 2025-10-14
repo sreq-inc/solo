@@ -3,13 +3,9 @@
   <h1>Solo - Your next API Client ⚡</h1>
 </div>
 
-
 [![CI](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml) [![publish](https://github.com/sreq-inc/solo/actions/workflows/publish.yml/badge.svg)](https://github.com/sreq-inc/solo/actions/workflows/publish.yml)
 
 <img width="1106" alt="image" src="https://github.com/user-attachments/assets/1edebfa9-ff8a-466a-a5ae-4b8eed207a39" />
-
-
-
 
 ## Installation
 
@@ -51,6 +47,23 @@ bun tauri dev
 # Build the application
 bun tauri build
 ```
+
+## Development
+
+### Version Management
+
+To update the project version across all configuration files:
+
+```bash
+./version.sh
+```
+
+This script will:
+
+- Display the current version
+- Prompt for the new version
+- Update `package.json`, `src-tauri/Cargo.toml`, and `src-tauri/tauri.conf.json`
+- Create a git commit with the changes
 
 ## License
 
