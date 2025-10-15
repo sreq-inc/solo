@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { ShortcutsDisplay } from "./ShortcutsDisplay";
 import { useCurlGenerator } from "../hooks/useCurlGenerator";
 import { CopyIcon } from "./CopyIcon";
+import { JsonViewer } from "./JsonViewer";
 
 type TabType = "response" | "headers" | "timeline";
 
@@ -46,8 +47,6 @@ export const ResponseView = () => {
   const { generateCurl } = useCurlGenerator();
   const [activeTab, setActiveTab] = useState<TabType>("response");
 
-  const lines = response ? JSON.stringify(response, null, 2).split("\n") : [];
-
   const headers = response
     ? [
         { key: "Content-Type", value: "application/json" },
@@ -82,66 +81,24 @@ export const ResponseView = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "response":
-        return (
-          <table className="w-full table-fixed">
-            <tbody className="text-sm">
-              {loading ? (
-                <tr>
-                  <td
-                    className={clsx(
-                      "text-center select-none w-12 border-r sticky left-0",
-                      theme === "dark"
-                        ? "text-gray-500 border-gray-700 bg-gray-700"
-                        : "text-gray-500 border-gray-300 bg-gray-100"
-                    )}
-                  >
-                    1
-                  </td>
-                  <td
-                    className={clsx(
-                      "pl-4",
-                      theme === "dark" ? "text-gray-300" : "text-gray-800"
-                    )}
-                  >
-                    Loading...
-                  </td>
-                </tr>
-              ) : !response ? (
-                <ShortcutsDisplay />
-              ) : (
-                lines.map((line, i) => (
-                  <tr
-                    key={i}
-                    className={clsx(
-                      theme === "dark"
-                        ? "hover:bg-gray-800"
-                        : "hover:bg-gray-200"
-                    )}
-                  >
-                    <td
-                      className={clsx(
-                        "text-center select-none w-12 border-r sticky left-0",
-                        theme === "dark"
-                          ? "text-gray-500 border-gray-700 bg-gray-900"
-                          : "text-gray-500 border-gray-300 bg-gray-100"
-                      )}
-                    >
-                      {i + 1}
-                    </td>
-                    <td
-                      className={clsx(
-                        "pl-4 whitespace-pre-wrap break-words",
-                        theme === "dark" ? "text-gray-300" : "text-gray-800"
-                      )}
-                    >
-                      {line}
-                    </td>
-                  </tr>
-                ))
+        if (loading) {
+          return (
+            <div
+              className={clsx(
+                "p-4",
+                theme === "dark" ? "text-gray-300" : "text-gray-800"
               )}
-            </tbody>
-          </table>
-        );
+            >
+              Loading...
+            </div>
+          );
+        }
+
+        if (!response) {
+          return <ShortcutsDisplay />;
+        }
+
+        return <JsonViewer data={response} />;
 
       case "headers":
         return (
