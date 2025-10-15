@@ -1,13 +1,49 @@
 import { useTheme } from "../context/ThemeContext";
 import { useRequest } from "../context/RequestContext";
 import clsx from "clsx";
+import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export const GraphQLEditor = () => {
   const { theme } = useTheme();
-  const { graphqlQuery, graphqlVariables, setGraphqlQuery, setGraphqlVariables, formatGraphqlVariables } = useRequest();
+  const {
+    graphqlQuery,
+    graphqlVariables,
+    setGraphqlQuery,
+    setGraphqlVariables,
+    formatGraphqlVariables,
+  } = useRequest();
+  const [isFormattingVariables, setIsFormattingVariables] = useState(false);
+  const [variablesValidationError, setVariablesValidationError] = useState<
+    string | null
+  >(null);
 
   const queryLines = graphqlQuery.split("\n");
   const variablesLines = graphqlVariables.split("\n");
+
+  // Validate GraphQL variables JSON in real-time
+  useEffect(() => {
+    if (graphqlVariables.trim() === "" || graphqlVariables.trim() === "{}") {
+      setVariablesValidationError(null);
+      return;
+    }
+
+    try {
+      JSON.parse(graphqlVariables);
+      setVariablesValidationError(null);
+    } catch (error) {
+      if (error instanceof Error) {
+        setVariablesValidationError(error.message);
+      }
+    }
+  }, [graphqlVariables]);
+
+  const handleFormatVariables = async () => {
+    setIsFormattingVariables(true);
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    formatGraphqlVariables();
+    setIsFormattingVariables(false);
+  };
 
   return (
     <div className="mt-4 space-y-4">
@@ -50,13 +86,25 @@ export const GraphQLEditor = () => {
             <textarea
               value={graphqlQuery}
               onChange={(e) => setGraphqlQuery(e.target.value)}
-              placeholder="query {
-  users {
+              placeholder={`query GetUser($userId: ID!) {
+  user(id: $userId) {
     id
     name
     email
+    posts {
+      title
+      content
+    }
   }
-}"
+}
+
+# Or a mutation:
+# mutation CreateUser($input: UserInput!) {
+#   createUser(input: $input) {
+#     id
+#     name
+#   }
+# }`}
               className={clsx(
                 "flex-1 px-4 pb-4 text-xs focus:outline-0 ring-0 resize-none border-0 bg-transparent leading-6 overflow-y-auto",
                 theme === "dark" ? "text-white" : "text-gray-800"
@@ -69,14 +117,32 @@ export const GraphQLEditor = () => {
 
       {/* GraphQL Variables Section */}
       <div>
-        <label
-          className={clsx(
-            "block text-sm mb-2",
-            theme === "dark" ? "text-gray-300" : "text-gray-700"
-          )}
-        >
-          Variables (JSON)
-        </label>
+        <div className="flex items-center justify-between mb-2">
+          <label
+            className={clsx(
+              "block text-sm",
+              theme === "dark" ? "text-gray-300" : "text-gray-700"
+            )}
+          >
+            Variables (JSON)
+          </label>
+          {graphqlVariables.trim() !== "" &&
+            graphqlVariables.trim() !== "{}" && (
+              <div className="flex items-center gap-1.5 text-xs">
+                {variablesValidationError ? (
+                  <>
+                    <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                    <span className="text-red-500">Invalid JSON</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                    <span className="text-green-500">Valid JSON</span>
+                  </>
+                )}
+              </div>
+            )}
+        </div>
         <div
           className={clsx(
             "border rounded-xl min-h-[150px] max-h-[150px] overflow-hidden",
@@ -106,10 +172,14 @@ export const GraphQLEditor = () => {
             <textarea
               value={graphqlVariables}
               onChange={(e) => setGraphqlVariables(e.target.value)}
-              placeholder='{
-  "userId": 1,
-  "limit": 10
-}'
+              placeholder={`{
+  "userId": "123",
+  "limit": 10,
+  "input": {
+    "name": "John Doe",
+    "email": "john@example.com"
+  }
+}`}
               className={clsx(
                 "flex-1 px-4 pb-4 text-xs focus:outline-0 ring-0 resize-none border-0 bg-transparent leading-6 overflow-y-auto",
                 theme === "dark" ? "text-white" : "text-gray-800"
@@ -118,13 +188,37 @@ export const GraphQLEditor = () => {
             />
           </div>
         </div>
+        {variablesValidationError && (
+          <div
+            className={clsx(
+              "mt-2 p-2 rounded text-xs flex items-start gap-2",
+              theme === "dark"
+                ? "bg-red-900/20 text-red-400"
+                : "bg-red-100 text-red-700"
+            )}
+          >
+            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <span>{variablesValidationError}</span>
+          </div>
+        )}
         <button
-          onClick={formatGraphqlVariables}
+          onClick={handleFormatVariables}
+          disabled={isFormattingVariables || !!variablesValidationError}
+          title={
+            variablesValidationError
+              ? "Fix JSON errors before formatting"
+              : "Format Variables JSON"
+          }
           className={clsx(
-            "mt-2 py-2 rounded text-xs font-semibold cursor-pointer",
-            theme === "dark" ? "text-gray-600" : "text-gray-500"
+            "mt-2 py-2 rounded text-xs font-semibold cursor-pointer flex items-center gap-2",
+            theme === "dark" ? "text-gray-600" : "text-gray-500",
+            (isFormattingVariables || variablesValidationError) &&
+              "opacity-50 cursor-not-allowed"
           )}
         >
+          {isFormattingVariables && (
+            <Loader2 className="w-3 h-3 animate-spin" />
+          )}
           Format Variables JSON
         </button>
       </div>

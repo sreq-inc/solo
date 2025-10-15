@@ -21,8 +21,9 @@ export const SelectMethod: React.FC<SelectMethodProps> = ({
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          title={`HTTP Method: ${value}`}
           className={clsx(
-            "block appearance-none w-full border rounded-lg py-2 px-4 pr-8 leading-tight focus:outline-none focus:ring-1",
+            "block appearance-none w-full border rounded-lg py-2 px-4 pr-8 leading-tight focus:outline-none focus:ring-1 cursor-pointer",
             theme === "dark"
               ? "text-white bg-[#10121b] border-purple-500 ring-purple-500 border-2"
               : " text-gray-700 bg-white border-purple-500 ring-purple-500 border-2"

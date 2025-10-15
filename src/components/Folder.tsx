@@ -340,15 +340,20 @@ export const FolderComponent = ({
             <div
               key={file.fileName}
               className={clsx(
-                "flex items-center p-1.5 rounded hover:bg-gray-300 relative",
+                "flex items-center p-1.5 rounded hover:bg-gray-300 relative transition-all",
                 theme === "dark"
                   ? "bg-gray-700 hover:bg-gray-600"
                   : "bg-gray-200 hover:bg-gray-300",
                 file.fileName === currentRequestId &&
                   (theme === "dark"
-                    ? "border-l-purple-800 border-l-8 transition-all"
-                    : "border-l-purple-900 border-l-8 transition-all")
+                    ? "border-l-purple-500 border-l-4 bg-purple-900/30 shadow-lg"
+                    : "border-l-purple-600 border-l-4 bg-purple-50 shadow-lg")
               )}
+              title={
+                file.fileName === currentRequestId
+                  ? "Currently active request"
+                  : `Open ${file.displayName || "Request"}`
+              }
             >
               {editingFileName === file.fileName ? (
                 <div

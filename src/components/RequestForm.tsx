@@ -9,7 +9,14 @@ import clsx from "clsx";
 import { SelectAuth } from "./SelectAuth";
 import { UsernameAndPassword } from "./UsernameAndPassword";
 import { BearerToken } from "./BearerToken";
-import { Trash2Icon, Copy, Check } from "lucide-react";
+import {
+  Trash2Icon,
+  Copy,
+  Check,
+  AlertCircle,
+  CheckCircle,
+  Loader2,
+} from "lucide-react";
 import { Checkbox } from "./Checkbox";
 import { VariablesTab } from "./VariablesTab";
 import { SchemaViewer } from "./SchemaViewer";
@@ -52,6 +59,10 @@ export const RequestForm = () => {
   const [urlCopied, setUrlCopied] = useState(false);
   const isInternalUpdate = useRef(false);
   const isLoadingParams = useRef(false);
+  const [isFormattingJson, setIsFormattingJson] = useState(false);
+  const [jsonValidationError, setJsonValidationError] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     if (isInternalUpdate.current || isLoadingParams.current) {
@@ -96,6 +107,31 @@ export const RequestForm = () => {
   }, [url, requestType]);
 
   const lines = payload.split("\n");
+
+  // Validate JSON in real-time
+  useEffect(() => {
+    if (payload.trim() === "" || payload.trim() === "{}") {
+      setJsonValidationError(null);
+      return;
+    }
+
+    try {
+      JSON.parse(payload);
+      setJsonValidationError(null);
+    } catch (error) {
+      if (error instanceof Error) {
+        setJsonValidationError(error.message);
+      }
+    }
+  }, [payload]);
+
+  const handleFormatJson = async () => {
+    setIsFormattingJson(true);
+    // Simulate a brief delay for visual feedback
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    formatJson();
+    setIsFormattingJson(false);
+  };
 
   const addQueryParam = () => {
     setQueryParams([...queryParams, { key: "", value: "", enabled: true }]);
@@ -164,14 +200,31 @@ export const RequestForm = () => {
 
         {activeTab === "body" && requestType === "http" && (
           <div className="mt-4">
-            <label
-              className={clsx(
-                "block text-sm mb-2",
-                theme === "dark" ? "text-gray-300" : "text-gray-700"
+            <div className="flex items-center justify-between mb-2">
+              <label
+                className={clsx(
+                  "block text-sm",
+                  theme === "dark" ? "text-gray-300" : "text-gray-700"
+                )}
+              >
+                JSON Payload (optional)
+              </label>
+              {payload.trim() !== "" && payload.trim() !== "{}" && (
+                <div className="flex items-center gap-1.5 text-xs">
+                  {jsonValidationError ? (
+                    <>
+                      <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                      <span className="text-red-500">Invalid JSON</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                      <span className="text-green-500">Valid JSON</span>
+                    </>
+                  )}
+                </div>
               )}
-            >
-              JSON Payload (optional)
-            </label>
+            </div>
             <div
               className={clsx(
                 "border rounded-xl min-h-[492px] max-h-[492px] overflow-hidden",
@@ -210,13 +263,35 @@ export const RequestForm = () => {
                 />
               </div>
             </div>
+            {jsonValidationError && (
+              <div
+                className={clsx(
+                  "mt-2 p-2 rounded text-xs flex items-start gap-2",
+                  theme === "dark"
+                    ? "bg-red-900/20 text-red-400"
+                    : "bg-red-100 text-red-700"
+                )}
+              >
+                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>{jsonValidationError}</span>
+              </div>
+            )}
             <button
-              onClick={formatJson}
+              onClick={handleFormatJson}
+              disabled={isFormattingJson || !!jsonValidationError}
+              title={
+                jsonValidationError
+                  ? "Fix JSON errors before formatting"
+                  : "Format JSON"
+              }
               className={clsx(
-                "mt-2 py-2 rounded text-xs font-semibold cursor-pointer",
-                theme === "dark" ? "text-gray-600" : "text-gray-500"
+                "mt-2 py-2 rounded text-xs font-semibold cursor-pointer flex items-center gap-2",
+                theme === "dark" ? "text-gray-600" : "text-gray-500",
+                (isFormattingJson || jsonValidationError) &&
+                  "opacity-50 cursor-not-allowed"
               )}
             >
+              {isFormattingJson && <Loader2 className="w-3 h-3 animate-spin" />}
               Format JSON
             </button>
           </div>

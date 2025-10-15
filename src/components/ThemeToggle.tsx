@@ -15,6 +15,7 @@ export const ThemeToggle = () => {
           : "text-gray-700 hover:bg-gray-200"
       )}
       aria-label="Toggle theme"
+      title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
     >
       {theme === "light" ? (
         <Moon className="w-5 h-5" />
