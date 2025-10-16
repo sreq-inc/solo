@@ -10,6 +10,7 @@ import {
   Zap,
   Check,
   X,
+  CopyPlus,
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import clsx from "clsx";
@@ -31,6 +32,7 @@ type FolderProps = {
   onFileClick: (fileName: string) => void;
   onRemoveFile: (fileName: string) => void;
   onRenameFile: (folder: string, fileName: string, newName: string) => void;
+  onDuplicateRequest: (folder: string, fileName: string) => void;
   currentRequestId: string | null;
 };
 
@@ -46,6 +48,7 @@ export const FolderComponent = ({
   onFileClick,
   onRemoveFile,
   onRenameFile,
+  onDuplicateRequest,
   currentRequestId,
 }: FolderProps) => {
   const { theme } = useTheme();
@@ -226,7 +229,22 @@ export const FolderComponent = ({
               ) : (
                 <Folder className="mr-2" />
               )}
-              <span>{folder}</span>
+              <span className="flex-1">{folder}</span>
+              {files.length > 0 && (
+                <span
+                  className={clsx(
+                    "text-[10px] px-1.5 py-0.5 rounded-full font-medium mr-2",
+                    theme === "dark"
+                      ? "bg-purple-900 text-purple-300"
+                      : "bg-purple-200 text-purple-700"
+                  )}
+                  title={`${files.length} request${
+                    files.length !== 1 ? "s" : ""
+                  }`}
+                >
+                  {files.length}
+                </span>
+              )}
             </button>
             <button
               onClick={(e) => onToggleDropdown(folder, e)}
@@ -445,6 +463,21 @@ export const FolderComponent = ({
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Rename
+                      </button>
+                      <button
+                        onClick={() => {
+                          onDuplicateRequest(folder, file.fileName);
+                          setFileDropdownOpen(null);
+                        }}
+                        className={clsx(
+                          "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
+                          theme === "dark"
+                            ? "text-gray-300 hover:bg-gray-700"
+                            : "text-gray-700 hover:bg-gray-100"
+                        )}
+                      >
+                        <CopyPlus className="w-4 h-4 mr-2" />
+                        Duplicate
                       </button>
                       {file.fileData.requestType !== "graphql" && (
                         <button

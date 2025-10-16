@@ -33,6 +33,7 @@ export const Sidebar = () => {
     handleRemoveFile,
     createFolder,
     renameFile,
+    duplicateRequest,
   } = useFile();
   const toast = useToast();
 
@@ -208,6 +209,7 @@ export const Sidebar = () => {
                     onFileClick={handleFileClick}
                     onRemoveFile={handleRemoveFile}
                     onRenameFile={renameFile}
+                    onDuplicateRequest={duplicateRequest}
                     currentRequestId={currentRequestId}
                   />
                 ))}

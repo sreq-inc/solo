@@ -72,6 +72,7 @@ type FileContextType = {
   saveCurrentRequest: () => void;
   renameFile: (folder: string, fileName: string, newName: string) => void;
   renameFolder: (oldName: string, newName: string) => void;
+  duplicateRequest: (folder: string, fileName: string) => void;
 };
 
 const FileContext = createContext<FileContextType | undefined>(undefined);
@@ -569,8 +570,8 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
           (data.requestType === "graphql"
             ? "graphql"
             : data.requestType === "grpc"
-              ? "grpc"
-              : "body")
+            ? "grpc"
+            : "body")
       );
       setBearerToken(data.bearerToken || "");
       setQueryParams(
@@ -597,6 +598,41 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const duplicateRequest = (folder: string, fileName: string) => {
+    try {
+      const files = JSON.parse(
+        localStorage.getItem(folder) || "[]"
+      ) as StoredFile[];
+
+      const originalFile = files.find((file) => file.fileName === fileName);
+
+      if (!originalFile) {
+        toast.error("Request not found.");
+        return;
+      }
+
+      const newRequestId = `request_${Date.now()}`;
+      const duplicatedFile: StoredFile = {
+        fileName: newRequestId,
+        fileData: { ...originalFile.fileData },
+        displayName: `${originalFile.displayName || "Request"} (Copy)`,
+      };
+
+      files.push(duplicatedFile);
+      localStorage.setItem(folder, JSON.stringify(files));
+
+      setFolders((prev) => ({
+        ...prev,
+        [folder]: [...(prev[folder] || []), newRequestId],
+      }));
+
+      toast.success("Request duplicated successfully!");
+    } catch (error) {
+      console.error("Error duplicating request:", error);
+      toast.error("Error duplicating request. Please try again.");
+    }
+  };
+
   return (
     <FileContext.Provider
       value={{
@@ -617,6 +653,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         saveCurrentRequest,
         renameFile,
         setShowModal,
+        duplicateRequest,
       }}
     >
       {children}

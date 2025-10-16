@@ -8,11 +8,48 @@ import Titlebar from "./components/TitleBar";
 import { InputMethod } from "./components/InputMethod";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useState, useLayoutEffect } from "react";
+import { Maximize2, Minimize2 } from "lucide-react";
 
 function App() {
   const { theme } = useTheme();
   const appBg = theme === "dark" ? "bg-[#10121b]" : "bg-[#f0eee6]";
   const cardBg = theme === "dark" ? "bg-[#1a1c25]" : "bg-gray-200";
+
+  const [splitPosition, setSplitPosition] = useState(40); // Percentage for left panel
+  const [isResizing, setIsResizing] = useState(false);
+  const [isRequestCollapsed, setIsRequestCollapsed] = useState(false);
+
+  useLayoutEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+
+      const container = document.getElementById('split-container');
+      if (!container) return;
+
+      const containerRect = container.getBoundingClientRect();
+      const percentage = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+
+      // Limit between 20% and 70%
+      if (percentage >= 20 && percentage <= 70) {
+        setSplitPosition(percentage);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
 
   return (
     <div className="flex flex-col h-screen">
@@ -34,16 +71,53 @@ function App() {
             <Sidebar />
             <section className="flex flex-col w-full px-4 overflow-hidden">
               {/* Área fixa: InputMethod */}
-              <div className="p-4 space-y-4 flex-shrink-0">
+              <div className="py-3 px-4 flex-shrink-0">
                 <InputMethod />
               </div>
-              {/* Área com scroll: RequestForm e ResponseView */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 flex-1 overflow-hidden pb-4">
-                <div className="flex flex-col overflow-y-auto">
-                  <RequestForm />
+              {/* Área com scroll: RequestForm e ResponseView com split resizable */}
+              <div id="split-container" className="flex flex-1 overflow-hidden pb-4 gap-1 relative">
+                {/* Request Form Panel */}
+                <div
+                  className={clsx(
+                    "flex flex-col overflow-y-auto transition-all duration-300",
+                    isRequestCollapsed ? "w-0 opacity-0" : ""
+                  )}
+                  style={{
+                    width: isRequestCollapsed ? '0%' : `${splitPosition}%`,
+                  }}
+                >
+                  {!isRequestCollapsed && <RequestForm />}
                 </div>
-                <div className="flex flex-col overflow-y-auto">
-                  <ResponseView />
+
+                {/* Resize Handle */}
+                {!isRequestCollapsed && (
+                  <div
+                    className={clsx(
+                      "w-1 cursor-col-resize relative flex-shrink-0 group",
+                      theme === "dark" ? "hover:bg-purple-600" : "hover:bg-purple-500"
+                    )}
+                    onMouseDown={() => setIsResizing(true)}
+                  >
+                    <div
+                      className={clsx(
+                        "absolute inset-y-0 -left-1 w-3 group-hover:bg-opacity-20",
+                        theme === "dark" ? "group-hover:bg-purple-600" : "group-hover:bg-purple-500"
+                      )}
+                    />
+                  </div>
+                )}
+
+                {/* Response View Panel */}
+                <div
+                  className="flex flex-col overflow-y-auto flex-1 relative"
+                  style={{
+                    width: isRequestCollapsed ? '100%' : `${100 - splitPosition}%`,
+                  }}
+                >
+                  <ResponseView
+                    isRequestCollapsed={isRequestCollapsed}
+                    onToggleCollapse={() => setIsRequestCollapsed(!isRequestCollapsed)}
+                  />
                 </div>
               </div>
             </section>

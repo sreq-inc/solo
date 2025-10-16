@@ -55,6 +55,8 @@ type RequestContextType = {
     services: any[];
     messages: any[];
   };
+  responseTime: number | null;
+  statusCode: number | null;
   setMethod: (method: HttpMethod) => void;
   setUrl: (url: string) => void;
   setPayload: (payload: string) => void;
@@ -118,6 +120,8 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     services: any[];
     messages: any[];
   }>({ services: [], messages: [] });
+  const [responseTime, setResponseTime] = useState<number | null>(null);
+  const [statusCode, setStatusCode] = useState<number | null>(null);
 
   const { clearVariables } = useVariables();
   const toast = useToast();
@@ -133,8 +137,8 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
       requestType === "graphql"
         ? "graphql"
         : requestType === "grpc"
-          ? "grpc"
-          : "body"
+        ? "grpc"
+        : "body"
     );
     setResponse(null);
     setError(null);
@@ -150,6 +154,8 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     setProtoContent("");
     setDescription("");
     setGrpcSchema({ services: [], messages: [] });
+    setResponseTime(null);
+    setStatusCode(null);
     clearVariables();
   };
 
@@ -181,6 +187,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     setError(null);
     setIsCopied(false);
+    const startTime = performance.now();
 
     const finalUrl = processedUrl || url;
 
@@ -303,8 +310,28 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
         }
       }
 
+      const endTime = performance.now();
+      setResponseTime(Math.round(endTime - startTime));
+
+      // Extract status code if available
+      if (result && typeof result === "object") {
+        if ("status" in result) {
+          setStatusCode(result.status as number);
+        } else if ("statusCode" in result) {
+          setStatusCode(result.statusCode as number);
+        } else {
+          // Default to 200 if no status code is present but request succeeded
+          setStatusCode(200);
+        }
+      } else {
+        setStatusCode(200);
+      }
+
       setResponse(result);
     } catch (error) {
+      const endTime = performance.now();
+      setResponseTime(Math.round(endTime - startTime));
+      setStatusCode(null);
       setResponse(null);
       setError(
         error instanceof Error ? error.message : "An unknown error occurred"
@@ -346,6 +373,8 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
         grpcMetadata,
         description,
         grpcSchema,
+        responseTime,
+        statusCode,
         setMethod,
         setUrl,
         setPayload,

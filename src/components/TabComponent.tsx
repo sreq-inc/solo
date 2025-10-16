@@ -23,8 +23,8 @@ export const TabComponent = ({
           ? "bg-purple-700 text-white shadow-md"
           : "bg-purple-600 text-white shadow-md"
         : theme === "dark"
-          ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
-          : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+        ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+        : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
     );
   };
 
@@ -34,6 +34,7 @@ export const TabComponent = ({
         <button
           onClick={() => onTabChange("body")}
           className={getTabClasses(activeTab === "body")}
+          title="Request body (JSON payload)"
         >
           Body
         </button>
@@ -43,12 +44,14 @@ export const TabComponent = ({
           <button
             onClick={() => onTabChange("graphql")}
             className={getTabClasses(activeTab === "graphql")}
+            title="GraphQL query and variables"
           >
             GraphQL
           </button>
           <button
             onClick={() => onTabChange("schema")}
             className={getTabClasses(activeTab === "schema")}
+            title="View GraphQL schema"
           >
             Schema
           </button>
@@ -59,24 +62,28 @@ export const TabComponent = ({
           <button
             onClick={() => onTabChange("grpc")}
             className={getTabClasses(activeTab === "grpc")}
+            title="gRPC service and method"
           >
             gRPC
           </button>
           <button
             onClick={() => onTabChange("proto")}
             className={getTabClasses(activeTab === "proto")}
+            title="Protocol Buffer definition"
           >
             Proto
           </button>
           <button
             onClick={() => onTabChange("metadata")}
             className={getTabClasses(activeTab === "metadata")}
+            title="gRPC metadata (headers)"
           >
             Metadata
           </button>
           <button
             onClick={() => onTabChange("schema")}
             className={getTabClasses(activeTab === "schema")}
+            title="View gRPC schema"
           >
             Schema
           </button>
@@ -85,6 +92,7 @@ export const TabComponent = ({
       <button
         onClick={() => onTabChange("auth")}
         className={getTabClasses(activeTab === "auth")}
+        title="Authentication settings"
       >
         Auth
       </button>
@@ -92,6 +100,7 @@ export const TabComponent = ({
         <button
           onClick={() => onTabChange("params")}
           className={getTabClasses(activeTab === "params")}
+          title="Query parameters"
         >
           Params
         </button>
@@ -99,12 +108,14 @@ export const TabComponent = ({
       <button
         onClick={() => onTabChange("variables")}
         className={getTabClasses(activeTab === "variables")}
+        title="Environment variables"
       >
         Variables
       </button>
       <button
         onClick={() => onTabChange("description")}
         className={getTabClasses(activeTab === "description")}
+        title="Request documentation"
       >
         Docs
       </button>

@@ -5,6 +5,7 @@ import { SelectMethod } from "./SelectMethod";
 import { SmartUrlInput } from "./SmartUrlInput";
 import { useTheme } from "../context/ThemeContext";
 import { useToast } from "../hooks/useToast";
+import { Loader2, Trash2 } from "lucide-react";
 
 export const InputMethod = () => {
   const {
@@ -15,6 +16,7 @@ export const InputMethod = () => {
     setMethod,
     setUrl,
     handleRequest,
+    resetFields,
   } = useRequest();
   const { replaceVariablesInUrl } = useVariables();
   const { theme } = useTheme();
@@ -95,18 +97,35 @@ export const InputMethod = () => {
           )}
         />
       </div>
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 flex gap-2">
+        <button
+          onClick={resetFields}
+          disabled={loading}
+          title="Clear all fields"
+          className={clsx(
+            "p-2 h-10 rounded cursor-pointer w-10 flex items-center justify-center",
+            theme === "dark"
+              ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
+              : "bg-gray-300 hover:bg-gray-400 text-gray-700",
+            loading && "opacity-50 cursor-not-allowed"
+          )}
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
         <button
           onClick={handleRequestWithVariables}
           disabled={loading}
+          title={loading ? "Sending request..." : "Send request"}
           className={clsx(
-            "p-2 h-10 text-white rounded cursor-pointer w-28",
+            "p-2 h-10 text-white rounded cursor-pointer flex items-center justify-center gap-2",
+            loading ? "w-32" : "w-28",
             theme === "dark"
               ? "bg-purple-700 hover:bg-purple-800"
               : "bg-purple-600 hover:bg-purple-700",
             loading && "opacity-50 cursor-not-allowed"
           )}
         >
+          {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           {loading ? "Sending..." : "Send"}
         </button>
       </div>

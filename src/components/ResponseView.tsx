@@ -6,8 +6,14 @@ import { ShortcutsDisplay } from "./ShortcutsDisplay";
 import { useCurlGenerator } from "../hooks/useCurlGenerator";
 import { CopyIcon } from "./CopyIcon";
 import { JsonViewer } from "./JsonViewer";
+import { Maximize2, Minimize2 } from "lucide-react";
 
 type TabType = "response" | "headers" | "timeline";
+
+interface ResponseViewProps {
+  isRequestCollapsed: boolean;
+  onToggleCollapse: () => void;
+}
 
 interface TabItemProps {
   label: string;
@@ -39,13 +45,30 @@ const TabItem = ({ label, value, active, onClick }: TabItemProps) => {
   );
 };
 
-export const ResponseView = () => {
+export const ResponseView = ({ isRequestCollapsed, onToggleCollapse }: ResponseViewProps) => {
   const { theme } = useTheme();
-  const { response, error, loading, isCopied, handleCopyResponse, url } =
-    useRequest();
+  const {
+    response,
+    error,
+    loading,
+    isCopied,
+    handleCopyResponse,
+    url,
+    responseTime,
+    statusCode,
+  } = useRequest();
 
   const { generateCurl } = useCurlGenerator();
   const [activeTab, setActiveTab] = useState<TabType>("response");
+
+  // Helper function to get status code color
+  const getStatusCodeColor = (code: number | null) => {
+    if (!code) return theme === "dark" ? "text-gray-400" : "text-gray-600";
+    if (code >= 200 && code < 300) return "text-green-500";
+    if (code >= 300 && code < 400) return "text-yellow-500";
+    if (code >= 400) return "text-red-500";
+    return theme === "dark" ? "text-gray-400" : "text-gray-600";
+  };
 
   const headers = response
     ? [
@@ -194,52 +217,99 @@ export const ResponseView = () => {
   };
 
   return (
-    <div className="p-4 space-y-4 col-span-5 h-full w-full">
-      {error && (
-        <div
-          className={clsx(
-            "p-2 rounded",
-            theme === "dark"
-              ? "bg-red-900 text-red-300"
-              : "bg-red-100 text-red-800"
-          )}
-        >
-          {error}
-        </div>
-      )}
+    <div className="p-4 space-y-3 col-span-5 h-full w-full flex flex-col">
+      {/* Header Section with Tabs and Metadata */}
+      <div className="flex-shrink-0">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-wrap gap-1">
+            <TabItem
+              label="Response"
+              value="response"
+              active={activeTab === "response"}
+              onClick={setActiveTab}
+            />
+            <TabItem
+              label="Headers"
+              value="headers"
+              active={activeTab === "headers"}
+              onClick={setActiveTab}
+            />
+            <TabItem
+              label="Timeline"
+              value="timeline"
+              active={activeTab === "timeline"}
+              onClick={setActiveTab}
+            />
+          </div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex flex-wrap gap-2">
-          <TabItem
-            label="Response"
-            value="response"
-            active={activeTab === "response"}
-            onClick={setActiveTab}
-          />
-          <TabItem
-            label="Headers"
-            value="headers"
-            active={activeTab === "headers"}
-            onClick={setActiveTab}
-          />
-          <TabItem
-            label="Timeline"
-            value="timeline"
-            active={activeTab === "timeline"}
-            onClick={setActiveTab}
-          />
+          <div className="ml-auto flex items-center gap-3">
+            {responseTime !== null && (
+              <div
+                className={clsx(
+                  "flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium",
+                  theme === "dark" ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-700"
+                )}
+                title="Response time"
+              >
+                <span className="text-gray-500">Time:</span>
+                <span className="font-semibold">{responseTime}ms</span>
+              </div>
+            )}
+            {statusCode !== null && (
+              <div
+                className={clsx(
+                  "flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-bold",
+                  theme === "dark" ? "bg-gray-800" : "bg-gray-100"
+                )}
+                title={`HTTP Status Code: ${statusCode}`}
+              >
+                <span className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>Status:</span>
+                <span className={getStatusCodeColor(statusCode)}>{statusCode}</span>
+              </div>
+            )}
+            {url && (
+              <div className="flex items-center">
+                <CopyIcon content={generateCurl()} size={16} />
+              </div>
+            )}
+            <div
+              onClick={onToggleCollapse}
+              className={clsx(
+                "flex items-center p-1.5 rounded-md cursor-pointer transition-all duration-200",
+                theme === "dark"
+                  ? "text-gray-400 hover:text-purple-400 hover:bg-gray-800/50"
+                  : "text-gray-500 hover:text-purple-600 hover:bg-gray-200/50"
+              )}
+              title={isRequestCollapsed ? "Restore split view" : "Maximize response view"}
+            >
+              {isRequestCollapsed ? (
+                <Minimize2 className="w-4 h-4" />
+              ) : (
+                <Maximize2 className="w-4 h-4" />
+              )}
+            </div>
+          </div>
         </div>
 
-        {url && (
-          <div className="ml-auto">
-            <CopyIcon content={generateCurl()} size={16} className="mr-2" />
+        {/* Error Banner */}
+        {error && (
+          <div
+            className={clsx(
+              "p-3 rounded-lg mb-3 text-sm font-medium",
+              theme === "dark"
+                ? "bg-red-900/30 text-red-300 border border-red-800"
+                : "bg-red-50 text-red-800 border border-red-200"
+            )}
+          >
+            {error}
           </div>
         )}
       </div>
 
+      {/* Content Area - Flexible Height */}
       <div
         className={clsx(
-          "relative max-h-[600px] overflow-auto font-mono border rounded-xl pb-8",
+          "relative flex-1 overflow-auto font-mono border rounded-xl",
           theme === "dark"
             ? response
               ? "bg-[#10121b] border-gray-600"
@@ -252,20 +322,23 @@ export const ResponseView = () => {
         {renderContent()}
       </div>
 
+      {/* Copy Button - Fixed at Bottom */}
       {response && activeTab === "response" && (
-        <button
-          onClick={handleCopyResponse}
-          disabled={isCopied}
-          className={clsx(
-            "w-full p-2 rounded cursor-pointer",
-            theme === "dark"
-              ? "bg-purple-900 text-purple-300 hover:bg-purple-800"
-              : "bg-purple-200 text-purple-800 hover:bg-purple-300",
-            isCopied && "opacity-50 cursor-not-allowed"
-          )}
-        >
-          {isCopied ? "Copied!" : "Copy Response"}
-        </button>
+        <div className="flex-shrink-0 pt-2">
+          <button
+            onClick={handleCopyResponse}
+            disabled={isCopied}
+            className={clsx(
+              "w-full py-2.5 px-4 rounded-lg cursor-pointer font-medium text-sm transition-all duration-200",
+              theme === "dark"
+                ? "bg-purple-700 text-white hover:bg-purple-600 active:bg-purple-800"
+                : "bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800",
+              isCopied && "opacity-70 cursor-not-allowed"
+            )}
+          >
+            {isCopied ? "✓ Copied!" : "Copy Response"}
+          </button>
+        </div>
       )}
     </div>
   );
