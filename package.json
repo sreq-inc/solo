@@ -5,11 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc --project tsconfig.build.json && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
     "test:backend": "cargo test --manifest-path src-tauri/Cargo.toml",
-    "release": "chmod +x main.sh && ./main.sh"
+    "release": "chmod +x main.sh && ./main.sh",
+    "release:quick": "bun run build && bun tauri build",
+    "clean": "rm -rf node_modules dist src-tauri/target",
+    "clean:build": "rm -rf dist src-tauri/target/release"
   },
   "dependencies": {
     "@tailwindcss/vite": "4.0.0",
@@ -27,10 +34,16 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "2",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
     "@types/react": "18.3.1",
     "@types/react-dom": "18.3.1",
     "@vitejs/plugin-react": "4.3.4",
+    "@vitest/ui": "^3.2.4",
+    "jsdom": "^25.0.1",
     "typescript": "~5.6.2",
-    "vite": "6.0.3"
+    "vite": "6.0.3",
+    "vitest": "^3.2.4"
   }
 }

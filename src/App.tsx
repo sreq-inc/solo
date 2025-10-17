@@ -9,7 +9,6 @@ import { InputMethod } from "./components/InputMethod";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useState, useLayoutEffect } from "react";
-import { Maximize2, Minimize2 } from "lucide-react";
 
 function App() {
   const { theme } = useTheme();
