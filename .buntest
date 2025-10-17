@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Wrapper script for bun test to use vitest
+exec bun run test "$@"
