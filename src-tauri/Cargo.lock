@@ -4502,7 +4502,7 @@ dependencies = [
 
 [[package]]
 name = "solo"
-version = "0.0.17"
+version = "0.0.18"
 dependencies = [
  "base64 0.21.7",
  "bytes",
