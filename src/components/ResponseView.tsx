@@ -1,12 +1,11 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useRequest } from "../context/RequestContext";
 import clsx from "clsx";
 import { ShortcutsDisplay } from "./ShortcutsDisplay";
 import { useCurlGenerator } from "../hooks/useCurlGenerator";
-import { CopyIcon } from "./CopyIcon";
 import { JsonViewer } from "./JsonViewer";
-import { Maximize2, Minimize2 } from "lucide-react";
+import { Maximize2, Minimize2, Copy, ChevronDown, Check } from "lucide-react";
 
 type TabType = "response" | "headers" | "timeline";
 
@@ -45,14 +44,14 @@ const TabItem = ({ label, value, active, onClick }: TabItemProps) => {
   );
 };
 
+type ViewMode = "pretty" | "raw";
+
 export const ResponseView = ({ isRequestCollapsed, onToggleCollapse }: ResponseViewProps) => {
   const { theme } = useTheme();
   const {
     response,
     error,
     loading,
-    isCopied,
-    handleCopyResponse,
     url,
     responseTime,
     statusCode,
@@ -60,6 +59,54 @@ export const ResponseView = ({ isRequestCollapsed, onToggleCollapse }: ResponseV
 
   const { generateCurl } = useCurlGenerator();
   const [activeTab, setActiveTab] = useState<TabType>("response");
+  const [viewMode, setViewMode] = useState<ViewMode>("pretty");
+  const [isViewDropdownOpen, setIsViewDropdownOpen] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+  const viewDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (viewDropdownRef.current && !viewDropdownRef.current.contains(event.target as Node)) {
+        setIsViewDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Reset copied state after 2 seconds
+  useEffect(() => {
+    if (isCopied) {
+      const timeout = setTimeout(() => setIsCopied(false), 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [isCopied]);
+
+  const handleCopy = async () => {
+    let textToCopy = "";
+
+    if (activeTab === "response" && response) {
+      textToCopy = viewMode === "pretty"
+        ? JSON.stringify(response, null, 2)
+        : JSON.stringify(response);
+    } else if (url) {
+      textToCopy = generateCurl();
+    }
+
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      setIsCopied(true);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
+
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    setIsViewDropdownOpen(false);
+  };
 
   // Helper function to get status code color
   const getStatusCodeColor = (code: number | null) => {
@@ -119,6 +166,19 @@ export const ResponseView = ({ isRequestCollapsed, onToggleCollapse }: ResponseV
 
         if (!response) {
           return <ShortcutsDisplay />;
+        }
+
+        if (viewMode === "raw") {
+          return (
+            <div
+              className={clsx(
+                "p-4 whitespace-pre-wrap break-all font-mono text-xs",
+                theme === "dark" ? "text-gray-300" : "text-gray-800"
+              )}
+            >
+              {JSON.stringify(response)}
+            </div>
+          );
         }
 
         return <JsonViewer data={response} />;
@@ -267,10 +327,91 @@ export const ResponseView = ({ isRequestCollapsed, onToggleCollapse }: ResponseV
                 <span className={getStatusCodeColor(statusCode)}>{statusCode}</span>
               </div>
             )}
-            {url && (
-              <div className="flex items-center">
-                <CopyIcon content={generateCurl()} size={16} />
+            {/* View Mode Dropdown (Pretty/Raw) - Only for response tab */}
+            {response && activeTab === "response" && (
+              <div className="relative" ref={viewDropdownRef}>
+                <button
+                  onClick={() => setIsViewDropdownOpen(!isViewDropdownOpen)}
+                  className={clsx(
+                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium cursor-pointer transition-all duration-200 border",
+                    theme === "dark"
+                      ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700 hover:border-purple-600"
+                      : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200 hover:border-purple-500"
+                  )}
+                  title="View mode"
+                >
+                  <span className="capitalize">{viewMode}</span>
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+
+                {isViewDropdownOpen && (
+                  <div
+                    className={clsx(
+                      "absolute right-0 mt-1 w-32 rounded-lg shadow-lg border z-50",
+                      theme === "dark"
+                        ? "bg-gray-800 border-gray-700"
+                        : "bg-white border-gray-200"
+                    )}
+                  >
+                    <div className="py-1">
+                      <button
+                        onClick={() => handleViewModeChange("pretty")}
+                        className={clsx(
+                          "w-full px-4 py-2 text-left text-sm flex items-center justify-between transition-colors",
+                          theme === "dark"
+                            ? "text-gray-300 hover:bg-gray-700"
+                            : "text-gray-700 hover:bg-gray-100",
+                          viewMode === "pretty" && "font-semibold"
+                        )}
+                      >
+                        <span>Pretty</span>
+                        {viewMode === "pretty" && <Check className="w-3.5 h-3.5 text-green-500" />}
+                      </button>
+                      <button
+                        onClick={() => handleViewModeChange("raw")}
+                        className={clsx(
+                          "w-full px-4 py-2 text-left text-sm flex items-center justify-between transition-colors",
+                          theme === "dark"
+                            ? "text-gray-300 hover:bg-gray-700"
+                            : "text-gray-700 hover:bg-gray-100",
+                          viewMode === "raw" && "font-semibold"
+                        )}
+                      >
+                        <span>Raw</span>
+                        {viewMode === "raw" && <Check className="w-3.5 h-3.5 text-green-500" />}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
+            )}
+
+            {/* Copy Button */}
+            {url && (
+              <button
+                onClick={handleCopy}
+                disabled={isCopied}
+                className={clsx(
+                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium cursor-pointer transition-all duration-200 border",
+                  theme === "dark"
+                    ? "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700 hover:border-purple-600"
+                    : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200 hover:border-purple-500",
+                  isCopied && "border-green-500"
+                )}
+                title={activeTab === "response" && response ? `Copy ${viewMode} response` : "Copy cURL"}
+              >
+                {isCopied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-green-500" />
+                    <span className="text-green-500">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy</span>
+                  </>
+                )}
+              </button>
             )}
             <div
               onClick={onToggleCollapse}
@@ -321,25 +462,6 @@ export const ResponseView = ({ isRequestCollapsed, onToggleCollapse }: ResponseV
       >
         {renderContent()}
       </div>
-
-      {/* Copy Button - Fixed at Bottom */}
-      {response && activeTab === "response" && (
-        <div className="flex-shrink-0 pt-2">
-          <button
-            onClick={handleCopyResponse}
-            disabled={isCopied}
-            className={clsx(
-              "w-full py-2.5 px-4 rounded-lg cursor-pointer font-medium text-sm transition-all duration-200",
-              theme === "dark"
-                ? "bg-purple-700 text-white hover:bg-purple-600 active:bg-purple-800"
-                : "bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800",
-              isCopied && "opacity-70 cursor-not-allowed"
-            )}
-          >
-            {isCopied ? "✓ Copied!" : "Copy Response"}
-          </button>
-        </div>
-      )}
     </div>
   );
 };
