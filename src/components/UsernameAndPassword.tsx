@@ -37,7 +37,10 @@ export const UsernameAndPassword = ({
         />
         <label
           htmlFor="useBasicAuth"
-          className={clsx("text-sm font-medium cursor-pointer", theme === "dark" ? "text-white" : "text-gray-700")}
+          className={clsx(
+            "text-sm font-medium cursor-pointer",
+            theme === "dark" ? "text-white" : "text-gray-700"
+          )}
         >
           Use Basic Authentication
         </label>
@@ -77,7 +80,9 @@ export const UsernameAndPassword = ({
               onClick={() => setShowPassword(!showPassword)}
               className={clsx(
                 "absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer",
-                theme === "dark" ? "text-gray-400 hover:text-gray-300" : "text-gray-500 hover:text-gray-700"
+                theme === "dark"
+                  ? "text-gray-400 hover:text-gray-300"
+                  : "text-gray-500 hover:text-gray-700"
               )}
               title={showPassword ? "Hide password" : "Show password"}
             >

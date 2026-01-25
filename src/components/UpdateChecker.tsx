@@ -123,7 +123,7 @@ export const UpdateChecker = () => {
 
   return (
     <>
-      <div className="relative">
+      <div className="relative z-[9999]">
         <div className="flex flex-row gap-2">
           <button
             onClick={() => setShowSettings(true)}
@@ -160,7 +160,7 @@ export const UpdateChecker = () => {
         {showTooltip && updateState === "available" && updateInfo && (
           <div
             className={clsx(
-              "absolute bottom-full -left-4 mb-2 p-3 rounded-lg shadow-xl z-50 w-64",
+              "fixed bottom-20 left-4 p-3 rounded-lg shadow-xl z-[9999] w-64",
               "border transition-all duration-200",
               theme === "dark"
                 ? "bg-gray-800 border-gray-700 text-white"
@@ -210,12 +210,6 @@ export const UpdateChecker = () => {
               </button>
             </div>
 
-            <div
-              className={clsx(
-                "absolute top-full right-4 border-4 border-transparent",
-                theme === "dark" ? "border-t-gray-800" : "border-t-white"
-              )}
-            />
           </div>
         )}
       </div>
