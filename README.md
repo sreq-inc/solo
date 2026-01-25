@@ -1,6 +1,6 @@
 <div align="center">
   <img src="https://res.cloudinary.com/dje6m1lab/image/upload/v1745970240/solo_vdht4s.webp" height="200" width="200"/>
-  <h1>Solo - Your next API Client ⚡</h1>
+  <h1>Solo - Your next API Client </h1>
 </div>
 
 [![CI](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml/badge.svg)](https://github.com/sreq-inc/Solo/actions/workflows/ci.yml) [![publish](https://github.com/sreq-inc/solo/actions/workflows/publish.yml/badge.svg)](https://github.com/sreq-inc/solo/actions/workflows/publish.yml)
@@ -21,16 +21,16 @@ curl -s https://api.github.com/repos/sreq-inc/solo/releases/latest \
 
 ## Features
 
-📁 Create and manage collections
+Create and manage collections
 
-- 🌐 HTTP requests – PUT, POST, GET, DELETE, and PATCH
-- 🔐 Authentication – Bearer Token and Basic Auth
-- 🧩 Query parameters
-- 🧪 Variables
-- 📝 JSON body formatting
-- 🔎 GraphQL request support
-- 📤 Export as cURL
-- 🧑‍💻 User-friendly interface for creating and managing HTTP requests
+- HTTP requests – PUT, POST, GET, DELETE, and PATCH
+- Authentication – Bearer Token and Basic Auth
+- Query parameters
+- Variables
+- JSON body formatting
+- GraphQL request support
+- Export as cURL
+- User-friendly interface for creating and managing HTTP requests
 
 ## Running the project locally
 
