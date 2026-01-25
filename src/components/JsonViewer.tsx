@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
-import { useTheme } from "../context/ThemeContext";
 import clsx from "clsx";
+import { useMemo, useState } from "react";
+import { useTheme } from "../context/ThemeContext";
 
 interface JsonViewerProps {
   data: any;
@@ -121,9 +121,7 @@ export const JsonViewer = ({ data }: JsonViewerProps) => {
 
       // Check if we should skip this line
       if (skipUntilPath.length > 0) {
-        const shouldSkip = skipUntilPath.some((path) =>
-          line.path.startsWith(path)
-        );
+        const shouldSkip = skipUntilPath.some((path) => line.path.startsWith(path));
         if (shouldSkip && line.path !== skipUntilPath[0]) {
           continue;
         }
@@ -160,7 +158,7 @@ export const JsonViewer = ({ data }: JsonViewerProps) => {
 
     if (line.isCollapsible && isCollapsed) {
       const indent = "  ".repeat(line.level);
-      const match = line.content.match(/^(\s*)(".*?":\s*)?([\[{])/);
+      const match = line.content.match(/^(\s*)(".*?":\s*)?([[{])/);
 
       if (match) {
         const [, , keyPart, openChar] = match;
@@ -216,15 +214,13 @@ export const JsonViewer = ({ data }: JsonViewerProps) => {
     stringRegex.lastIndex = 0;
     while ((match = stringRegex.exec(content)) !== null) {
       // Check if this is not part of a key
+      const matchIndex = match.index ?? 0;
       const isKey = matches.some(
-        (m) =>
-          m.type === "key" &&
-          m.index <= match!.index &&
-          match!.index < m.index + m.length
+        (m) => m.type === "key" && m.index <= matchIndex && matchIndex < m.index + m.length
       );
       if (!isKey) {
         matches.push({
-          index: match.index,
+          index: matchIndex,
           length: match[0].length,
           type: "string",
           text: match[0],
@@ -283,11 +279,7 @@ export const JsonViewer = ({ data }: JsonViewerProps) => {
 
     matches.forEach((m, i) => {
       if (m.index > currentIndex) {
-        parts.push(
-          <span key={`text-${i}`}>
-            {content.substring(currentIndex, m.index)}
-          </span>
-        );
+        parts.push(<span key={`text-${i}`}>{content.substring(currentIndex, m.index)}</span>);
       }
       parts.push(
         <span key={`match-${i}`} className={getColorClass(m.type)}>
@@ -314,9 +306,7 @@ export const JsonViewer = ({ data }: JsonViewerProps) => {
           return (
             <tr
               key={`${line.path}-${index}`}
-              className={clsx(
-                theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-200"
-              )}
+              className={clsx(theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-200")}
             >
               <td
                 className={clsx(
@@ -332,8 +322,10 @@ export const JsonViewer = ({ data }: JsonViewerProps) => {
                     <button
                       onClick={() => toggleCollapse(line.path)}
                       className={clsx(
-                        "flex-shrink-0 cursor-pointer hover:text-purple-500 transition-colors",
-                        theme === "dark" ? "text-gray-400" : "text-gray-600"
+                        "flex-shrink-0 cursor-pointer transition-colors",
+                        theme === "dark"
+                          ? "text-gray-400 hover:text-purple-400"
+                          : "text-gray-600 hover:text-purple-600"
                       )}
                       title={isCollapsed ? "Expandir" : "Colapsar"}
                     >

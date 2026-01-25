@@ -1,5 +1,6 @@
-import React, { useState, useRef } from "react";
 import { clsx } from "clsx";
+import type React from "react";
+import { useRef, useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useVariables } from "../context/VariablesContext";
 
@@ -83,10 +84,10 @@ export const SmartUrlInput: React.FC<SmartUrlInputProps> = ({
 
       // If previous character is also '{', complete the variable syntax
       if (beforeCursor.endsWith("{")) {
-        newValue = beforeCursor + "{}" + afterCursor;
+        newValue = `${beforeCursor}{}${afterCursor}`;
         newCursorPosition = selectionStart + 1; // Position cursor between braces
       } else {
-        newValue = beforeCursor + "{}" + afterCursor;
+        newValue = `${beforeCursor}{}${afterCursor}`;
         newCursorPosition = selectionStart + 1;
       }
 
@@ -117,10 +118,7 @@ export const SmartUrlInput: React.FC<SmartUrlInputProps> = ({
   };
 
   // Get color for variable indicator dots based on variable state
-  const getVariableIndicatorColor = (
-    match: VariableMatch,
-    index: number
-  ): string => {
+  const getVariableIndicatorColor = (match: VariableMatch, index: number): string => {
     return clsx({
       "bg-red-500": !match.exists, // Red for undefined variables
       "bg-green-500": match.exists && index === 0, // Green for first existing variable
@@ -129,10 +127,7 @@ export const SmartUrlInput: React.FC<SmartUrlInputProps> = ({
   };
 
   // Get color for variable preview boxes
-  const getVariablePreviewColor = (
-    match: VariableMatch,
-    index: number
-  ): string => {
+  const getVariablePreviewColor = (match: VariableMatch, index: number): string => {
     return clsx({
       "bg-red-500 text-white": !match.exists,
       "bg-green-600 text-white": match.exists && index === 0,
@@ -161,14 +156,9 @@ export const SmartUrlInput: React.FC<SmartUrlInputProps> = ({
           {variableMatches.map((match, index) => (
             <div
               key={`${match.variable}-${index}`}
-              className={clsx(
-                "w-2 h-2 rounded-full",
-                getVariableIndicatorColor(match, index)
-              )}
+              className={clsx("w-2 h-2 rounded-full", getVariableIndicatorColor(match, index))}
               title={
-                match.exists
-                  ? `${match.variable}: ${match.value}`
-                  : `${match.variable} not found`
+                match.exists ? `${match.variable}: ${match.value}` : `${match.variable} not found`
               }
             />
           ))}

@@ -1,14 +1,17 @@
-import { useTheme } from "../context/ThemeContext";
-import { useFile } from "../context/FileContext";
-import { FolderComponent } from "./Folder";
-import { ThemeToggle } from "./ThemeToggle";
-import { useLayoutEffect, useState } from "react";
-import { Search, Plus, X, Github, ListCollapse } from "lucide-react";
 import { open } from "@tauri-apps/plugin-shell";
-import { LatestRelease } from "./LatestRelease";
 import clsx from "clsx";
-import { UpdateChecker } from "./UpdateChecker";
+import { Github, Globe, ListCollapse, Plus, Search, X } from "lucide-react";
+import { useCallback, useLayoutEffect, useState } from "react";
+import { useFile } from "../context/FileContext";
+import { useTheme } from "../context/ThemeContext";
 import { useToast } from "../hooks/useToast";
+import { EnvironmentManager } from "./EnvironmentManager";
+import { ExportModal } from "./ExportModal";
+import { FolderComponent } from "./Folder";
+import { ImportModal } from "./ImportModal";
+import { LatestRelease } from "./LatestRelease";
+import { ThemeToggle } from "./ThemeToggle";
+import { UpdateChecker } from "./UpdateChecker";
 
 export const Sidebar = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,6 +19,12 @@ export const Sidebar = () => {
   const [sidebarWidth, setSidebarWidth] = useState(320);
   const [isResizing, setIsResizing] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportFolder, setExportFolder] = useState<string | undefined>(
+    undefined
+  );
+  const [showEnvironmentManager, setShowEnvironmentManager] = useState(false);
   const { theme } = useTheme();
   const {
     folders,
@@ -130,6 +139,10 @@ export const Sidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
 
+  const handleImportToFolder = useCallback(() => {
+    setShowImportModal(true);
+  }, []);
+
   const displayWidth = isCollapsed ? 60 : sidebarWidth;
 
   return (
@@ -171,10 +184,10 @@ export const Sidebar = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search"
                   className={clsx(
-                    "w-full pl-10 pr-4 py-2 h-10 border rounded text-xs focus:outline-none ring-0",
+                    "w-full pl-10 pr-4 py-2 h-10 rounded-md border text-xs focus:outline-none",
                     theme === "dark"
-                      ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500 focus:ring-0"
-                      : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500 focus:ring-0"
+                      ? "bg-gray-800 text-gray-200 border-gray-700 hover:bg-gray-700"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                   )}
                 />
               </div>
@@ -193,7 +206,7 @@ export const Sidebar = () => {
               </button>
             </div>
 
-            <div className="flex-grow overflow-y-auto relative z-10">
+            <div className="flex-grow overflow-y-auto relative">
               <div className="space-y-2">
                 {filteredFolders.map((folder) => (
                   <FolderComponent
@@ -211,6 +224,11 @@ export const Sidebar = () => {
                     onRenameFile={renameFile}
                     onDuplicateRequest={duplicateRequest}
                     currentRequestId={currentRequestId}
+                    onExportFolder={(folderName) => {
+                      setExportFolder(folderName);
+                      setShowExportModal(true);
+                    }}
+                    onImportToFolder={handleImportToFolder}
                   />
                 ))}
               </div>
@@ -218,6 +236,19 @@ export const Sidebar = () => {
 
             <div className="flex flex-row items-center justify-between mt-4">
               <section className="flex flex-row items-center gap-2">
+                <button
+                  onClick={() => setShowEnvironmentManager(true)}
+                  className={clsx(
+                    "flex cursor-pointer items-center justify-center transition-colors duration-200",
+                    theme === "dark"
+                      ? "text-gray-500 hover:text-gray-300"
+                      : "text-gray-500 hover:text-gray-700"
+                  )}
+                  title="Manage environments"
+                  aria-label="Manage environments"
+                >
+                  <Globe className="h-4 w-4 cursor-pointer" />
+                </button>
                 <button
                   onClick={toggleSidebar}
                   className={clsx(
@@ -284,6 +315,19 @@ export const Sidebar = () => {
 
             <div className="mt-auto mb-4 flex flex-col items-center gap-2">
               <button
+                onClick={() => setShowEnvironmentManager(true)}
+                className={clsx(
+                  "flex cursor-pointer items-center justify-center transition-colors duration-200",
+                  theme === "dark"
+                    ? "text-gray-500 hover:text-gray-300"
+                    : "text-gray-500 hover:text-gray-700"
+                )}
+                title="Manage environments"
+                aria-label="Manage environments"
+              >
+                <Globe className="h-4 w-4" />
+              </button>
+              <button
                 onClick={toggleSidebar}
                 className={clsx(
                   "flex cursor-pointer items-center justify-center transition-colors duration-200",
@@ -315,6 +359,25 @@ export const Sidebar = () => {
             </div>
           </div>
         )}
+
+        <ImportModal
+          isOpen={showImportModal}
+          onClose={() => {
+            setShowImportModal(false);
+          }}
+        />
+        <ExportModal
+          isOpen={showExportModal}
+          onClose={() => {
+            setShowExportModal(false);
+            setExportFolder(undefined);
+          }}
+          preselectedFolder={exportFolder}
+        />
+        <EnvironmentManager
+          isOpen={showEnvironmentManager}
+          onClose={() => setShowEnvironmentManager(false)}
+        />
 
         {showModal && (
           <div className="fixed inset-0 bg-[rgb(0,0,0)]/50 bg-opacity-50 flex items-center justify-center z-50">
@@ -355,7 +418,6 @@ export const Sidebar = () => {
                     ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
                     : "bg-white border-gray-300 text-gray-800 placeholder-gray-500"
                 )}
-                autoFocus
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();

@@ -1,11 +1,13 @@
 import clsx from "clsx";
+import { Loader2, Trash2 } from "lucide-react";
 import { useRequest } from "../context/RequestContext";
+import { useTheme } from "../context/ThemeContext";
 import { useVariables } from "../context/VariablesContext";
+import { useEnvironment } from "../hooks/useEnvironment";
+import { useToast } from "../hooks/useToast";
+import { EnvironmentSelector } from "./EnvironmentSelector";
 import { SelectMethod } from "./SelectMethod";
 import { SmartUrlInput } from "./SmartUrlInput";
-import { useTheme } from "../context/ThemeContext";
-import { useToast } from "../hooks/useToast";
-import { Loader2, Trash2 } from "lucide-react";
 
 export const InputMethod = () => {
   const {
@@ -19,11 +21,14 @@ export const InputMethod = () => {
     resetFields,
   } = useRequest();
   const { replaceVariablesInUrl } = useVariables();
+  const { replaceEnvironmentVariables } = useEnvironment();
   const { theme } = useTheme();
   const toast = useToast();
 
   const handleRequestWithVariables = async () => {
-    const processedUrl = replaceVariablesInUrl(url);
+    // First apply environment variables, then folder variables
+    let processedUrl = replaceEnvironmentVariables(url);
+    processedUrl = replaceVariablesInUrl(processedUrl);
 
     if (processedUrl.includes("{{")) {
       const unresolvedVars = processedUrl.match(/\{\{[^}]+\}\}/g);
@@ -69,6 +74,9 @@ export const InputMethod = () => {
 
   return (
     <div className="flex items-center gap-4">
+      <div className="flex-shrink-0">
+        <EnvironmentSelector />
+      </div>
       {requestType === "http" && (
         <div className="flex-shrink-0 w-24 mr-2">
           <SelectMethod
@@ -90,10 +98,10 @@ export const InputMethod = () => {
               : "https://api.example.com/users or {{baseUrl}}/users"
           }
           className={clsx(
-            "w-full h-10 p-2 border rounded outline-none focus:ring-0",
+            "w-full h-10 p-2 rounded-md border outline-none",
             theme === "dark"
-              ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500"
-              : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500"
+              ? "bg-gray-800 text-gray-200 border-gray-700"
+              : "bg-white text-gray-700 border-gray-300"
           )}
         />
       </div>

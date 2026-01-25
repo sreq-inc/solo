@@ -1,20 +1,22 @@
+import clsx from "clsx";
 import {
+  Check,
+  ChevronDown,
+  Code,
+  Copy,
+  CopyPlus,
+  Download,
+  Edit,
   Folder,
   FolderOpen,
-  ChevronDown,
-  Edit,
-  Trash,
   MoreHorizontal,
-  Copy,
-  Code,
-  Zap,
-  Check,
+  Trash,
+  Upload,
   X,
-  CopyPlus,
+  Zap,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useTheme } from "../context/ThemeContext";
-import clsx from "clsx";
-import { useState, useEffect, useRef } from "react";
 import { generateCurl } from "../utils/curlGenerator";
 
 type FolderProps = {
@@ -34,6 +36,8 @@ type FolderProps = {
   onRenameFile: (folder: string, fileName: string, newName: string) => void;
   onDuplicateRequest: (folder: string, fileName: string) => void;
   currentRequestId: string | null;
+  onExportFolder?: (folder: string) => void;
+  onImportToFolder?: () => void;
 };
 
 export const FolderComponent = ({
@@ -50,6 +54,8 @@ export const FolderComponent = ({
   onRenameFile,
   onDuplicateRequest,
   currentRequestId,
+  onExportFolder,
+  onImportToFolder,
 }: FolderProps) => {
   const { theme } = useTheme();
   const files = JSON.parse(localStorage.getItem(folder) || "[]");
@@ -262,13 +268,18 @@ export const FolderComponent = ({
       {isDropdownOpen && !editingFolderName && (
         <div
           className={clsx(
-            "absolute right-0 mt-2 py-2 w-48 rounded-md shadow-xl border z-50",
+            "absolute right-0 mt-2 py-2 w-48 rounded-md shadow-xl border z-[100]",
             theme === "dark"
               ? "bg-gray-800 border-gray-700"
               : "bg-white border-gray-200"
           )}
         >
-          <div className="px-4 py-2 text-xs font-semibold text-gray-400">
+          <div
+            className={clsx(
+              "px-4 py-2 text-xs font-semibold",
+              theme === "dark" ? "text-gray-400" : "text-gray-500"
+            )}
+          >
             CREATE
           </div>
           <button
@@ -337,6 +348,40 @@ export const FolderComponent = ({
             <Edit className="w-4 h-4 mr-2" />
             Rename Folder
           </button>
+          {onExportFolder && (
+            <button
+              onClick={() => {
+                onExportFolder(folder);
+                setFileDropdownOpen(null);
+              }}
+              className={clsx(
+                "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
+                theme === "dark"
+                  ? "text-gray-300 hover:bg-gray-700"
+                  : "text-gray-700 hover:bg-gray-100"
+              )}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export Folder
+            </button>
+          )}
+          {onImportToFolder && (
+            <button
+              onClick={() => {
+                onImportToFolder();
+                setFileDropdownOpen(null);
+              }}
+              className={clsx(
+                "px-4 py-2 text-sm w-full text-left flex items-center cursor-pointer",
+                theme === "dark"
+                  ? "text-gray-300 hover:bg-gray-700"
+                  : "text-gray-700 hover:bg-gray-100"
+              )}
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Import Collection
+            </button>
+          )}
           <button
             onClick={() => onRemoveFolder(folder)}
             className={clsx(
@@ -383,7 +428,6 @@ export const FolderComponent = ({
                     value={newFileName}
                     onChange={(e) => setNewFileName(e.target.value)}
                     onKeyDown={(e) => handleInputKeyDown(file.fileName, e)}
-                    autoFocus
                     className={clsx(
                       "flex-1 text-xs p-1 rounded outline-none w-10",
                       theme === "dark"
