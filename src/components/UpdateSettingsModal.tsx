@@ -1,21 +1,15 @@
+import clsx from "clsx";
+import { Settings, X } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
-import {
-  useUpdateSettings,
-  UpdatePreference,
-} from "../hooks/useUpdateSettings";
-import { X, Settings } from "lucide-react";
-import clsx from "clsx";
+import { type UpdatePreference, useUpdateSettings } from "../hooks/useUpdateSettings";
 
 interface UpdateSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const UpdateSettingsModal = ({
-  isOpen,
-  onClose,
-}: UpdateSettingsModalProps) => {
+export const UpdateSettingsModal = ({ isOpen, onClose }: UpdateSettingsModalProps) => {
   const { theme } = useTheme();
   const { settings, saveSettings, clearDismissedUpdates } = useUpdateSettings();
   const [tempSettings, setTempSettings] = useState(settings);
@@ -79,9 +73,7 @@ export const UpdateSettingsModal = ({
                   )}
                 />
                 <div>
-                  <div className="text-sm font-medium">
-                    Notify (Recommended)
-                  </div>
+                  <div className="text-sm font-medium">Notify (Recommended)</div>
                   <div className="text-xs text-gray-500">
                     Shows a notification when updates are available
                   </div>
@@ -128,26 +120,37 @@ export const UpdateSettingsModal = ({
           {/* Check interval */}
           {tempSettings.preference !== "manual" && (
             <div>
-              <label className="block text-sm font-medium mb-2">
-                Check for updates every:
-              </label>
-              <select
-                value={tempSettings.checkInterval}
-                onChange={(e) => handleIntervalChange(Number(e.target.value))}
-                className={clsx(
-                  "w-full p-2 border rounded text-sm",
-                  theme === "dark"
-                    ? "bg-gray-700 border-gray-600 text-white"
-                    : "bg-white border-gray-300 text-gray-800"
-                )}
-              >
-                <option value={1}>1 hour</option>
-                <option value={6}>6 hours</option>
-                <option value={12}>12 hours</option>
-                <option value={24}>24 hours</option>
-                <option value={72}>3 days</option>
-                <option value={168}>1 week</option>
-              </select>
+              <label className="block text-sm font-medium mb-2">Check for updates every:</label>
+              <div className="relative">
+                <select
+                  value={tempSettings.checkInterval}
+                  onChange={(e) => handleIntervalChange(Number(e.target.value))}
+                  className={clsx(
+                    "block appearance-none w-full border rounded-md py-2 px-3 pr-8 leading-tight focus:outline-none cursor-pointer",
+                    theme === "dark"
+                      ? "bg-gray-800 text-gray-200 border-gray-700 hover:bg-gray-700"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                  )}
+                >
+                  <option value={1}>1 hour</option>
+                  <option value={6}>6 hours</option>
+                  <option value={12}>12 hours</option>
+                  <option value={24}>24 hours</option>
+                  <option value={72}>3 days</option>
+                  <option value={168}>1 week</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                  <svg
+                    className={clsx("w-4 h-4", theme === "dark" ? "text-gray-400" : "text-gray-500")}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
             </div>
           )}
 

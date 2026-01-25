@@ -1,6 +1,6 @@
-import { useTheme } from "../context/ThemeContext";
-import { useState } from "react";
 import clsx from "clsx";
+import { useState } from "react";
+import { useTheme } from "../context/ThemeContext";
 
 interface ProtoMessage {
   name: string;
@@ -32,17 +32,10 @@ interface GrpcSchemaViewerProps {
   messages: ProtoMessage[];
 }
 
-export const GrpcSchemaViewer = ({
-  services,
-  messages,
-}: GrpcSchemaViewerProps) => {
+export const GrpcSchemaViewer = ({ services, messages }: GrpcSchemaViewerProps) => {
   const { theme } = useTheme();
-  const [expandedMessages, setExpandedMessages] = useState<Set<string>>(
-    new Set()
-  );
-  const [expandedServices, setExpandedServices] = useState<Set<string>>(
-    new Set()
-  );
+  const [expandedMessages, setExpandedMessages] = useState<Set<string>>(new Set());
+  const [expandedServices, setExpandedServices] = useState<Set<string>>(new Set());
 
   const toggleMessage = (messageName: string) => {
     const newExpanded = new Set(expandedMessages);
@@ -66,11 +59,7 @@ export const GrpcSchemaViewer = ({
 
   const getTypeColor = (type: string) => {
     if (type.includes("string")) return "text-green-500";
-    if (
-      type.includes("int") ||
-      type.includes("float") ||
-      type.includes("double")
-    )
+    if (type.includes("int") || type.includes("float") || type.includes("double"))
       return "text-blue-500";
     if (type.includes("bool")) return "text-purple-500";
     return theme === "dark" ? "text-yellow-400" : "text-yellow-600";
@@ -82,9 +71,7 @@ export const GrpcSchemaViewer = ({
         <span
           className={clsx(
             "ml-2 px-2 py-0.5 text-xs rounded font-medium",
-            theme === "dark"
-              ? "bg-purple-900/50 text-purple-300"
-              : "bg-purple-100 text-purple-800"
+            theme === "dark" ? "bg-purple-900/50 text-purple-300" : "bg-purple-100 text-purple-800"
           )}
         >
           Bidirectional
@@ -96,9 +83,7 @@ export const GrpcSchemaViewer = ({
         <span
           className={clsx(
             "ml-2 px-2 py-0.5 text-xs rounded font-medium",
-            theme === "dark"
-              ? "bg-blue-900/50 text-blue-300"
-              : "bg-blue-100 text-blue-800"
+            theme === "dark" ? "bg-blue-900/50 text-blue-300" : "bg-blue-100 text-blue-800"
           )}
         >
           Server Stream
@@ -110,9 +95,7 @@ export const GrpcSchemaViewer = ({
         <span
           className={clsx(
             "ml-2 px-2 py-0.5 text-xs rounded font-medium",
-            theme === "dark"
-              ? "bg-green-900/50 text-green-300"
-              : "bg-green-100 text-green-800"
+            theme === "dark" ? "bg-green-900/50 text-green-300" : "bg-green-100 text-green-800"
           )}
         >
           Client Stream
@@ -123,9 +106,7 @@ export const GrpcSchemaViewer = ({
       <span
         className={clsx(
           "ml-2 px-2 py-0.5 text-xs rounded font-medium",
-          theme === "dark"
-            ? "bg-gray-700 text-gray-300"
-            : "bg-gray-200 text-gray-700"
+          theme === "dark" ? "bg-gray-700 text-gray-300" : "bg-gray-200 text-gray-700"
         )}
       >
         Unary
@@ -143,9 +124,7 @@ export const GrpcSchemaViewer = ({
             : "bg-gray-50 border-gray-300 text-gray-600"
         )}
       >
-        <p>
-          No schema available. Parse a proto file or discover services first.
-        </p>
+        <p>No schema available. Parse a proto file or discover services first.</p>
       </div>
     );
   }
@@ -182,9 +161,7 @@ export const GrpcSchemaViewer = ({
                   )}
                 >
                   <span className="font-mono">{service.name}</span>
-                  <span className="text-xs">
-                    {expandedServices.has(service.name) ? "▼" : "▶"}
-                  </span>
+                  <span className="text-xs">{expandedServices.has(service.name) ? "▼" : "▶"}</span>
                 </button>
                 {expandedServices.has(service.name) && (
                   <div
@@ -207,9 +184,7 @@ export const GrpcSchemaViewer = ({
                           <span
                             className={clsx(
                               "font-mono font-medium",
-                              theme === "dark"
-                                ? "text-purple-300"
-                                : "text-purple-700"
+                              theme === "dark" ? "text-purple-300" : "text-purple-700"
                             )}
                           >
                             {method.name}()
@@ -225,11 +200,7 @@ export const GrpcSchemaViewer = ({
                           <div>
                             <span className="opacity-70">Input: </span>
                             <span
-                              className={clsx(
-                                theme === "dark"
-                                  ? "text-blue-300"
-                                  : "text-blue-700"
-                              )}
+                              className={clsx(theme === "dark" ? "text-blue-300" : "text-blue-700")}
                             >
                               {method.input_type}
                             </span>
@@ -238,9 +209,7 @@ export const GrpcSchemaViewer = ({
                             <span className="opacity-70">Output: </span>
                             <span
                               className={clsx(
-                                theme === "dark"
-                                  ? "text-green-300"
-                                  : "text-green-700"
+                                theme === "dark" ? "text-green-300" : "text-green-700"
                               )}
                             >
                               {method.output_type}
@@ -287,16 +256,11 @@ export const GrpcSchemaViewer = ({
                   )}
                 >
                   <span className="font-mono">{message.name}</span>
-                  <span className="text-xs">
-                    {expandedMessages.has(message.name) ? "▼" : "▶"}
-                  </span>
+                  <span className="text-xs">{expandedMessages.has(message.name) ? "▼" : "▶"}</span>
                 </button>
                 {expandedMessages.has(message.name) && (
                   <div
-                    className={clsx(
-                      "px-4 py-3",
-                      theme === "dark" ? "bg-gray-900/50" : "bg-white"
-                    )}
+                    className={clsx("px-4 py-3", theme === "dark" ? "bg-gray-900/50" : "bg-white")}
                   >
                     {message.fields.length === 0 ? (
                       <p
@@ -318,18 +282,10 @@ export const GrpcSchemaViewer = ({
                                 : "border-gray-200 text-gray-600"
                             )}
                           >
-                            <th className="text-left py-2 px-2 font-medium">
-                              Field
-                            </th>
-                            <th className="text-left py-2 px-2 font-medium">
-                              Type
-                            </th>
-                            <th className="text-center py-2 px-2 font-medium">
-                              #
-                            </th>
-                            <th className="text-center py-2 px-2 font-medium">
-                              Modifier
-                            </th>
+                            <th className="text-left py-2 px-2 font-medium">Field</th>
+                            <th className="text-left py-2 px-2 font-medium">Type</th>
+                            <th className="text-center py-2 px-2 font-medium">#</th>
+                            <th className="text-center py-2 px-2 font-medium">Modifier</th>
                           </tr>
                         </thead>
                         <tbody className="font-mono">
@@ -338,35 +294,24 @@ export const GrpcSchemaViewer = ({
                               key={field.number}
                               className={clsx(
                                 "border-b",
-                                theme === "dark"
-                                  ? "border-gray-800"
-                                  : "border-gray-100"
+                                theme === "dark" ? "border-gray-800" : "border-gray-100"
                               )}
                             >
                               <td
                                 className={clsx(
                                   "py-2 px-2",
-                                  theme === "dark"
-                                    ? "text-gray-300"
-                                    : "text-gray-700"
+                                  theme === "dark" ? "text-gray-300" : "text-gray-700"
                                 )}
                               >
                                 {field.name}
                               </td>
-                              <td
-                                className={clsx(
-                                  "py-2 px-2",
-                                  getTypeColor(field.field_type)
-                                )}
-                              >
+                              <td className={clsx("py-2 px-2", getTypeColor(field.field_type))}>
                                 {field.field_type}
                               </td>
                               <td
                                 className={clsx(
                                   "py-2 px-2 text-center",
-                                  theme === "dark"
-                                    ? "text-gray-500"
-                                    : "text-gray-400"
+                                  theme === "dark" ? "text-gray-500" : "text-gray-400"
                                 )}
                               >
                                 {field.number}

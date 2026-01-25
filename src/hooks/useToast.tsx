@@ -1,4 +1,4 @@
-import { toast, ToastOptions } from "react-toastify";
+import { type ToastOptions, toast } from "react-toastify";
 import { useTheme } from "../context/ThemeContext";
 
 export const useToast = () => {

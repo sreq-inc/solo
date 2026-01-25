@@ -1,13 +1,7 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
-import { useRequest, QueryParam, RequestType } from "./RequestContext";
-import { useVariables } from "./VariablesContext";
+import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
 import { useToast } from "../hooks/useToast";
+import { type QueryParam, type RequestType, useRequest } from "./RequestContext";
+import { useVariables } from "./VariablesContext";
 
 type RequestData = {
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -35,11 +29,7 @@ type RequestData = {
   grpcService?: string;
   grpcMethod?: string;
   grpcMessage?: string;
-  grpcCallType?:
-    | "unary"
-    | "server_streaming"
-    | "client_streaming"
-    | "bidirectional";
+  grpcCallType?: "unary" | "server_streaming" | "client_streaming" | "bidirectional";
   protoContent?: string;
   description?: string;
 };
@@ -123,9 +113,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
   const toast = useToast();
 
   const [folders, setFolders] = useState<FolderStructure>({});
-  const [openFolders, setOpenFolders] = useState<{ [key: string]: boolean }>(
-    {}
-  );
+  const [openFolders, setOpenFolders] = useState<{ [key: string]: boolean }>({});
   const [showModal, setShowModal] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [currentFolder, setCurrentFolder] = useState<string>("");
@@ -170,15 +158,12 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     const loadedFolders: FolderStructure = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && !key.startsWith("solo-variables-")) {
+      // Exclude solo-variables and solo-environments from folders
+      if (key && !key.startsWith("solo-variables-") && key !== "solo-environments") {
         try {
-          const files = JSON.parse(
-            localStorage.getItem(key) || "[]"
-          ) as StoredFile[];
+          const files = JSON.parse(localStorage.getItem(key) || "[]") as StoredFile[];
           loadedFolders[key] = files.map((file) => file.fileName);
-        } catch {
-          continue;
-        }
+        } catch {}
       }
     }
     setFolders(loadedFolders);
@@ -226,9 +211,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
 
       // Get old folder data
       const oldFolderData = localStorage.getItem(oldName);
-      const oldVariablesData = localStorage.getItem(
-        `solo-variables-${oldName}`
-      );
+      const oldVariablesData = localStorage.getItem(`solo-variables-${oldName}`);
 
       if (!oldFolderData) {
         console.error(`Folder '${oldName}' not found`);
@@ -240,10 +223,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
 
       // Migrate variables if they exist
       if (oldVariablesData) {
-        localStorage.setItem(
-          `solo-variables-${trimmedNewName}`,
-          oldVariablesData
-        );
+        localStorage.setItem(`solo-variables-${trimmedNewName}`, oldVariablesData);
       }
 
       // Update folders state
@@ -274,9 +254,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem(oldName);
       localStorage.removeItem(`solo-variables-${oldName}`);
 
-      console.log(
-        `Folder renamed from '${oldName}' to '${trimmedNewName}' successfully`
-      );
+      console.log(`Folder renamed from '${oldName}' to '${trimmedNewName}' successfully`);
     } catch (error) {
       console.error("Error renaming folder:", error);
       toast.error("Error renaming folder. Please try again.");
@@ -317,8 +295,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       useBasicAuth: false,
       username: "",
       password: "",
-      activeTab:
-        type === "graphql" ? "graphql" : type === "grpc" ? "grpc" : "body",
+      activeTab: type === "graphql" ? "graphql" : type === "grpc" ? "grpc" : "body",
       bearerToken: "",
       queryParams: [{ key: "", value: "", enabled: true }],
       requestType: type,
@@ -336,9 +313,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     setCurrentRequestId(newRequestId);
 
     try {
-      const files = JSON.parse(
-        localStorage.getItem(folder) || "[]"
-      ) as StoredFile[];
+      const files = JSON.parse(localStorage.getItem(folder) || "[]") as StoredFile[];
       files.push({
         fileName: newRequestId,
         fileData: defaultRequest,
@@ -360,9 +335,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       setPassword(defaultRequest.password || "");
       setActiveTab(defaultRequest.activeTab || "body");
       setBearerToken(defaultRequest.bearerToken || "");
-      setQueryParams(
-        defaultRequest.queryParams || [{ key: "", value: "", enabled: true }]
-      );
+      setQueryParams(defaultRequest.queryParams || [{ key: "", value: "", enabled: true }]);
       setDescription(defaultRequest.description || "");
 
       if (type === "graphql") {
@@ -382,13 +355,9 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     requestId: string,
     displayName?: string
   ) => {
-    const files = JSON.parse(
-      localStorage.getItem(folder) || "[]"
-    ) as StoredFile[];
+    const files = JSON.parse(localStorage.getItem(folder) || "[]") as StoredFile[];
 
-    const existingIndex = files.findIndex(
-      (file) => file.fileName === requestId
-    );
+    const existingIndex = files.findIndex((file) => file.fileName === requestId);
 
     if (existingIndex !== -1) {
       const existingDisplayName = files[existingIndex].displayName;
@@ -402,8 +371,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
         fileName: requestId,
         fileData: request,
         displayName:
-          displayName ||
-          `${request.requestType === "grpc" ? "gRPC" : request.method} Request`,
+          displayName || `${request.requestType === "grpc" ? "gRPC" : request.method} Request`,
       });
     }
 
@@ -416,12 +384,8 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
 
   const saveCurrentRequest = () => {
     if (currentRequestId && currentFolder) {
-      const files = JSON.parse(
-        localStorage.getItem(currentFolder) || "[]"
-      ) as StoredFile[];
-      const currentFile = files.find(
-        (file) => file.fileName === currentRequestId
-      );
+      const files = JSON.parse(localStorage.getItem(currentFolder) || "[]") as StoredFile[];
+      const currentFile = files.find((file) => file.fileName === currentRequestId);
       const currentDisplayName = currentFile?.displayName;
 
       saveRequest(
@@ -457,9 +421,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       let folderContainingFile = currentFolder;
       if (!folderContainingFile) {
         for (const folderName in folders) {
-          const files = JSON.parse(
-            localStorage.getItem(folderName) || "[]"
-          ) as StoredFile[];
+          const files = JSON.parse(localStorage.getItem(folderName) || "[]") as StoredFile[];
           if (files.some((file) => file.fileName === fileName)) {
             folderContainingFile = folderName;
             break;
@@ -472,10 +434,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
           localStorage.getItem(folderContainingFile) || "[]"
         ) as StoredFile[];
         const updatedFiles = files.filter((file) => file.fileName !== fileName);
-        localStorage.setItem(
-          folderContainingFile,
-          JSON.stringify(updatedFiles)
-        );
+        localStorage.setItem(folderContainingFile, JSON.stringify(updatedFiles));
 
         setFolders((prev) => ({
           ...prev,
@@ -500,9 +459,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
 
   const renameFile = (folder: string, fileName: string, newName: string) => {
     if (folder && fileName && newName.trim()) {
-      const files = JSON.parse(
-        localStorage.getItem(folder) || "[]"
-      ) as StoredFile[];
+      const files = JSON.parse(localStorage.getItem(folder) || "[]") as StoredFile[];
       const updatedFiles = files.map((file) => {
         if (file.fileName === fileName) {
           return {
@@ -528,9 +485,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
       const folderName = localStorage.key(i);
       if (folderName && !folderName.startsWith("solo-variables-")) {
         try {
-          const files = JSON.parse(
-            localStorage.getItem(folderName) || "[]"
-          ) as StoredFile[];
+          const files = JSON.parse(localStorage.getItem(folderName) || "[]") as StoredFile[];
           const file = files.find((f) => f.fileName === fileName);
           if (file) {
             return {
@@ -539,9 +494,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
               displayName: file.displayName,
             };
           }
-        } catch {
-          continue;
-        }
+        } catch {}
       }
     }
     return null;
@@ -570,13 +523,11 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
           (data.requestType === "graphql"
             ? "graphql"
             : data.requestType === "grpc"
-            ? "grpc"
-            : "body")
+              ? "grpc"
+              : "body")
       );
       setBearerToken(data.bearerToken || "");
-      setQueryParams(
-        data.queryParams || [{ key: "", value: "", enabled: true }]
-      );
+      setQueryParams(data.queryParams || [{ key: "", value: "", enabled: true }]);
       setDescription(data.description || "");
 
       if (data.requestType === "graphql") {
@@ -600,9 +551,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
 
   const duplicateRequest = (folder: string, fileName: string) => {
     try {
-      const files = JSON.parse(
-        localStorage.getItem(folder) || "[]"
-      ) as StoredFile[];
+      const files = JSON.parse(localStorage.getItem(folder) || "[]") as StoredFile[];
 
       const originalFile = files.find((file) => file.fileName === fileName);
 

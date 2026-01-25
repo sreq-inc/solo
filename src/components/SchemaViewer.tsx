@@ -1,20 +1,9 @@
-import { useState } from "react";
-import { useTheme } from "../context/ThemeContext";
-import { useRequest } from "../context/RequestContext";
-import {
-  useIntrospection,
-  GraphQLType,
-  GraphQLTypeRef,
-} from "../hooks/useIntrospection";
-import {
-  ChevronDown,
-  ChevronRight,
-  Type,
-  Database,
-  Zap,
-  RefreshCw,
-} from "lucide-react";
 import clsx from "clsx";
+import { ChevronDown, ChevronRight, Database, RefreshCw, Type, Zap } from "lucide-react";
+import { useState } from "react";
+import { useRequest } from "../context/RequestContext";
+import { useTheme } from "../context/ThemeContext";
+import { type GraphQLType, type GraphQLTypeRef, useIntrospection } from "../hooks/useIntrospection";
 
 const TypeExplorer = ({ type }: { type: GraphQLType }) => {
   const { theme } = useTheme();
@@ -24,9 +13,9 @@ const TypeExplorer = ({ type }: { type: GraphQLType }) => {
     if (typeRef.ofType) {
       switch (typeRef.kind) {
         case "NON_NULL":
-          return renderTypeRef(typeRef.ofType) + "!";
+          return `${renderTypeRef(typeRef.ofType)}!`;
         case "LIST":
-          return "[" + renderTypeRef(typeRef.ofType) + "]";
+          return `[${renderTypeRef(typeRef.ofType)}]`;
         default:
           return typeRef.name || "Unknown";
       }
@@ -35,10 +24,7 @@ const TypeExplorer = ({ type }: { type: GraphQLType }) => {
   };
 
   const getTypeIcon = (kind: string) => {
-    const iconClass = clsx(
-      "w-4 h-4",
-      theme === "dark" ? "text-gray-300" : "text-gray-600"
-    );
+    const iconClass = clsx("w-4 h-4", theme === "dark" ? "text-gray-300" : "text-gray-600");
 
     switch (kind) {
       case "OBJECT":
@@ -57,39 +43,27 @@ const TypeExplorer = ({ type }: { type: GraphQLType }) => {
       <div
         className={clsx(
           "p-3 border rounded-lg",
-          theme === "dark"
-            ? "bg-gray-800 border-gray-700"
-            : "bg-gray-50 border-gray-200"
+          theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"
         )}
       >
         <div className="flex items-center gap-2 mb-2">
           {getTypeIcon(type.kind)}
           <span
-            className={clsx(
-              "font-medium",
-              theme === "dark" ? "text-gray-100" : "text-gray-900"
-            )}
+            className={clsx("font-medium", theme === "dark" ? "text-gray-100" : "text-gray-900")}
           >
             {type.name}
           </span>
           <span
             className={clsx(
               "text-xs px-2 py-1 rounded font-medium",
-              theme === "dark"
-                ? "bg-gray-700 text-gray-200"
-                : "bg-gray-200 text-gray-700"
+              theme === "dark" ? "bg-gray-700 text-gray-200" : "bg-gray-200 text-gray-700"
             )}
           >
             {type.kind}
           </span>
         </div>
         {type.description && (
-          <p
-            className={clsx(
-              "text-sm mb-2",
-              theme === "dark" ? "text-gray-300" : "text-gray-600"
-            )}
-          >
+          <p className={clsx("text-sm mb-2", theme === "dark" ? "text-gray-300" : "text-gray-600")}>
             {type.description}
           </p>
         )}
@@ -105,16 +79,11 @@ const TypeExplorer = ({ type }: { type: GraphQLType }) => {
             </div>
             <div className="space-y-1">
               {type.enumValues.map((enumValue) => (
-                <div
-                  key={enumValue.name}
-                  className="flex items-center gap-2 flex-wrap"
-                >
+                <div key={enumValue.name} className="flex items-center gap-2 flex-wrap">
                   <code
                     className={clsx(
                       "px-2 py-1 rounded text-xs font-medium",
-                      theme === "dark"
-                        ? "bg-gray-700 text-green-300"
-                        : "bg-gray-200 text-green-700"
+                      theme === "dark" ? "bg-gray-700 text-green-300" : "bg-gray-200 text-green-700"
                     )}
                   >
                     {enumValue.name}
@@ -142,9 +111,7 @@ const TypeExplorer = ({ type }: { type: GraphQLType }) => {
     <div
       className={clsx(
         "border rounded-lg",
-        theme === "dark"
-          ? "bg-gray-800 border-gray-700"
-          : "bg-gray-50 border-gray-200"
+        theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"
       )}
     >
       <button
@@ -156,34 +123,21 @@ const TypeExplorer = ({ type }: { type: GraphQLType }) => {
       >
         {expanded ? (
           <ChevronDown
-            className={clsx(
-              "w-4 h-4",
-              theme === "dark" ? "text-gray-300" : "text-gray-600"
-            )}
+            className={clsx("w-4 h-4", theme === "dark" ? "text-gray-300" : "text-gray-600")}
           />
         ) : (
           <ChevronRight
-            className={clsx(
-              "w-4 h-4",
-              theme === "dark" ? "text-gray-300" : "text-gray-600"
-            )}
+            className={clsx("w-4 h-4", theme === "dark" ? "text-gray-300" : "text-gray-600")}
           />
         )}
         {getTypeIcon(type.kind)}
-        <span
-          className={clsx(
-            "font-medium",
-            theme === "dark" ? "text-gray-100" : "text-gray-900"
-          )}
-        >
+        <span className={clsx("font-medium", theme === "dark" ? "text-gray-100" : "text-gray-900")}>
           {type.name}
         </span>
         <span
           className={clsx(
             "text-xs px-2 py-1 rounded ml-auto font-medium",
-            theme === "dark"
-              ? "bg-gray-700 text-gray-200"
-              : "bg-gray-200 text-gray-700"
+            theme === "dark" ? "bg-gray-700 text-gray-200" : "bg-gray-200 text-gray-700"
           )}
         >
           {type.kind}
@@ -194,10 +148,7 @@ const TypeExplorer = ({ type }: { type: GraphQLType }) => {
         <div className="px-3 pb-3">
           {type.description && (
             <p
-              className={clsx(
-                "text-sm mb-3",
-                theme === "dark" ? "text-gray-300" : "text-gray-600"
-              )}
+              className={clsx("text-sm mb-3", theme === "dark" ? "text-gray-300" : "text-gray-600")}
             >
               {type.description}
             </p>
@@ -283,9 +234,9 @@ export const SchemaViewer = () => {
     getSubscriptionType,
   } = useIntrospection();
 
-  const [activeTab, setActiveTab] = useState<
-    "queries" | "mutations" | "subscriptions" | "types"
-  >("queries");
+  const [activeTab, setActiveTab] = useState<"queries" | "mutations" | "subscriptions" | "types">(
+    "queries"
+  );
 
   const handleRunIntrospection = () => {
     runIntrospection(url, useBasicAuth, username, password, bearerToken);
@@ -294,10 +245,7 @@ export const SchemaViewer = () => {
   if (loading) {
     return (
       <div
-        className={clsx(
-          "p-4 text-center",
-          theme === "dark" ? "text-gray-300" : "text-gray-600"
-        )}
+        className={clsx("p-4 text-center", theme === "dark" ? "text-gray-300" : "text-gray-600")}
       >
         <RefreshCw
           className={clsx(
@@ -315,9 +263,7 @@ export const SchemaViewer = () => {
       <div
         className={clsx(
           "p-4 rounded-lg",
-          theme === "dark"
-            ? "bg-red-900 text-red-300"
-            : "bg-red-100 text-red-800"
+          theme === "dark" ? "bg-red-900 text-red-300" : "bg-red-100 text-red-800"
         )}
       >
         <div className="font-medium mb-2">Introspection Error</div>
@@ -340,10 +286,7 @@ export const SchemaViewer = () => {
   if (!schema) {
     return (
       <div
-        className={clsx(
-          "p-8 text-center",
-          theme === "dark" ? "text-gray-300" : "text-gray-600"
-        )}
+        className={clsx("p-8 text-center", theme === "dark" ? "text-gray-300" : "text-gray-600")}
       >
         <Database
           className={clsx(
@@ -352,9 +295,7 @@ export const SchemaViewer = () => {
           )}
         />
         <h3 className="font-medium mb-2">No Schema Loaded</h3>
-        <p className="text-sm mb-4">
-          Run introspection to explore the GraphQL schema
-        </p>
+        <p className="text-sm mb-4">Run introspection to explore the GraphQL schema</p>
         <button
           onClick={handleRunIntrospection}
           className={clsx(
@@ -403,26 +344,24 @@ export const SchemaViewer = () => {
           theme === "dark" ? "border-gray-600" : "border-gray-300"
         )}
       >
-        {(["queries", "mutations", "subscriptions", "types"] as const).map(
-          (tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={clsx(
-                "px-3 py-2 text-sm font-medium capitalize border-b-2 transition-colors",
-                activeTab === tab
-                  ? theme === "dark"
-                    ? "border-purple-400 text-purple-300"
-                    : "border-purple-600 text-purple-600"
-                  : theme === "dark"
-                    ? "border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500"
-                    : "border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-400"
-              )}
-            >
-              {tab}
-            </button>
-          )
-        )}
+        {(["queries", "mutations", "subscriptions", "types"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={clsx(
+              "px-3 py-2 text-sm font-medium capitalize border-b-2 transition-colors",
+              activeTab === tab
+                ? theme === "dark"
+                  ? "border-purple-400 text-purple-300"
+                  : "border-purple-600 text-purple-600"
+                : theme === "dark"
+                  ? "border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500"
+                  : "border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-400"
+            )}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
 
       <div

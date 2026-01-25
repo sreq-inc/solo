@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
 import { check } from "@tauri-apps/plugin-updater";
+import clsx from "clsx";
+import { Download, RefreshCw, Settings, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useUpdateSettings } from "../hooks/useUpdateSettings";
 import { UpdateSettingsModal } from "./UpdateSettingsModal";
-import clsx from "clsx";
-import { Settings, Download, X, RefreshCw } from "lucide-react";
 
 type UpdateState =
   | "checking"
@@ -17,13 +17,8 @@ type UpdateState =
 
 export const UpdateChecker = () => {
   const { theme } = useTheme();
-  const {
-    settings,
-    shouldCheckForUpdates,
-    markUpdateCheckTime,
-    isUpdateDismissed,
-    dismissUpdate,
-  } = useUpdateSettings();
+  const { settings, shouldCheckForUpdates, markUpdateCheckTime, isUpdateDismissed, dismissUpdate } =
+    useUpdateSettings();
 
   const [updateState, setUpdateState] = useState<UpdateState>("none");
   const [updateInfo, setUpdateInfo] = useState<any>(null);
@@ -156,10 +151,7 @@ export const UpdateChecker = () => {
               title="Check for updates"
             >
               <RefreshCw
-                className={clsx(
-                  "w-4 h-4",
-                  updateState === "checking" && "animate-spin"
-                )}
+                className={clsx("w-4 h-4", updateState === "checking" && "animate-spin")}
               />
             </button>
           )}
@@ -178,12 +170,9 @@ export const UpdateChecker = () => {
             <div className="flex items-start gap-2">
               <Download className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
               <div className="flex-1">
-                <h4 className="font-medium text-sm mb-1">
-                  New version available
-                </h4>
+                <h4 className="font-medium text-sm mb-1">New version available</h4>
                 <p className="text-xs mb-3 opacity-80">
-                  Version {updateInfo.version} is available. Do you want to
-                  download now?
+                  Version {updateInfo.version} is available. Do you want to download now?
                 </p>
                 <div className="flex gap-2">
                   <button
@@ -244,9 +233,7 @@ export const UpdateChecker = () => {
             <div className="w-3 h-3 rounded-full bg-green-500 flex-shrink-0 mt-1" />
             <div className="flex-1">
               <h3 className="font-medium text-sm mb-1">Ready to install</h3>
-              <p className="text-xs mb-3 opacity-80">
-                The update was downloaded successfully.
-              </p>
+              <p className="text-xs mb-3 opacity-80">The update was downloaded successfully.</p>
               <div className="flex gap-2">
                 <button
                   onClick={() => installUpdate()}
@@ -291,29 +278,21 @@ export const UpdateChecker = () => {
         <div
           className={clsx(
             "fixed bottom-4 right-4 p-3 rounded-lg shadow-lg z-50",
-            theme === "dark"
-              ? "bg-gray-800 text-white"
-              : "bg-white text-gray-900",
+            theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-900",
             updateState === "error" && "border-l-4 border-red-500"
           )}
         >
           <div className="flex items-center gap-2">
-            {(updateState === "downloading" ||
-              updateState === "installing") && (
+            {(updateState === "downloading" || updateState === "installing") && (
               <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse" />
             )}
-            {updateState === "error" && (
-              <div className="w-3 h-3 rounded-full bg-red-500" />
-            )}
+            {updateState === "error" && <div className="w-3 h-3 rounded-full bg-red-500" />}
             <span className="text-sm">{getStateMessage()}</span>
           </div>
         </div>
       )}
 
-      <UpdateSettingsModal
-        isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
-      />
+      <UpdateSettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
     </>
   );
 };

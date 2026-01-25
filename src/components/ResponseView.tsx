@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect } from "react";
-import { useTheme } from "../context/ThemeContext";
-import { useRequest } from "../context/RequestContext";
 import clsx from "clsx";
-import { ShortcutsDisplay } from "./ShortcutsDisplay";
+import { Check, ChevronDown, Copy, Maximize2, Minimize2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useRequest } from "../context/RequestContext";
+import { useTheme } from "../context/ThemeContext";
 import { useCurlGenerator } from "../hooks/useCurlGenerator";
 import { JsonViewer } from "./JsonViewer";
-import { Maximize2, Minimize2, Copy, ChevronDown, Check } from "lucide-react";
+import { ShortcutsDisplay } from "./ShortcutsDisplay";
 
 type TabType = "response" | "headers" | "timeline";
 
@@ -32,8 +32,8 @@ const TabItem = ({ label, value, active, onClick }: TabItemProps) => {
           ? "bg-purple-700 text-white shadow-md"
           : "bg-purple-600 text-white shadow-md"
         : theme === "dark"
-        ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
-        : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+          ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+          : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
     );
   };
 
@@ -48,14 +48,7 @@ type ViewMode = "pretty" | "raw";
 
 export const ResponseView = ({ isRequestCollapsed, onToggleCollapse }: ResponseViewProps) => {
   const { theme } = useTheme();
-  const {
-    response,
-    error,
-    loading,
-    url,
-    responseTime,
-    statusCode,
-  } = useRequest();
+  const { response, error, loading, url, responseTime, statusCode } = useRequest();
 
   const { generateCurl } = useCurlGenerator();
   const [activeTab, setActiveTab] = useState<TabType>("response");
@@ -88,9 +81,8 @@ export const ResponseView = ({ isRequestCollapsed, onToggleCollapse }: ResponseV
     let textToCopy = "";
 
     if (activeTab === "response" && response) {
-      textToCopy = viewMode === "pretty"
-        ? JSON.stringify(response, null, 2)
-        : JSON.stringify(response);
+      textToCopy =
+        viewMode === "pretty" ? JSON.stringify(response, null, 2) : JSON.stringify(response);
     } else if (url) {
       textToCopy = generateCurl();
     }
@@ -153,12 +145,7 @@ export const ResponseView = ({ isRequestCollapsed, onToggleCollapse }: ResponseV
       case "response":
         if (loading) {
           return (
-            <div
-              className={clsx(
-                "p-4",
-                theme === "dark" ? "text-gray-300" : "text-gray-800"
-              )}
-            >
+            <div className={clsx("p-4", theme === "dark" ? "text-gray-300" : "text-gray-800")}>
               Loading...
             </div>
           );
@@ -185,12 +172,7 @@ export const ResponseView = ({ isRequestCollapsed, onToggleCollapse }: ResponseV
 
       case "headers":
         return (
-          <div
-            className={clsx(
-              "p-4",
-              theme === "dark" ? "text-gray-300" : "text-gray-800"
-            )}
-          >
+          <div className={clsx("p-4", theme === "dark" ? "text-gray-300" : "text-gray-800")}>
             {headers.length > 0 ? (
               <div className="space-y-2">
                 {headers.map((header, index) => (
@@ -208,9 +190,7 @@ export const ResponseView = ({ isRequestCollapsed, onToggleCollapse }: ResponseV
                 ))}
               </div>
             ) : (
-              <div
-                className={theme === "dark" ? "text-gray-400" : "text-gray-600"}
-              >
+              <div className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
                 No headers available
               </div>
             )}
@@ -219,12 +199,7 @@ export const ResponseView = ({ isRequestCollapsed, onToggleCollapse }: ResponseV
 
       case "timeline":
         return (
-          <div
-            className={clsx(
-              "p-4",
-              theme === "dark" ? "text-gray-300" : "text-gray-800"
-            )}
-          >
+          <div className={clsx("p-4", theme === "dark" ? "text-gray-300" : "text-gray-800")}>
             {timeline.length > 0 ? (
               <div className="space-y-4">
                 {timeline.map((event, index) => (
@@ -237,26 +212,16 @@ export const ResponseView = ({ isRequestCollapsed, onToggleCollapse }: ResponseV
                       <span
                         className={clsx(
                           "font-medium",
-                          theme === "dark"
-                            ? "text-purple-300"
-                            : "text-purple-700"
+                          theme === "dark" ? "text-purple-300" : "text-purple-700"
                         )}
                       >
                         {event.name}
                       </span>
-                      <span
-                        className={
-                          theme === "dark" ? "text-gray-400" : "text-gray-600"
-                        }
-                      >
+                      <span className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
                         {new Date(event.timestamp).toLocaleTimeString()}
                       </span>
                       {event.duration && (
-                        <span
-                          className={
-                            theme === "dark" ? "text-gray-400" : "text-gray-600"
-                          }
-                        >
+                        <span className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
                           Duration: {event.duration}ms
                         </span>
                       )}
@@ -265,9 +230,7 @@ export const ResponseView = ({ isRequestCollapsed, onToggleCollapse }: ResponseV
                 ))}
               </div>
             ) : (
-              <div
-                className={theme === "dark" ? "text-gray-400" : "text-gray-600"}
-              >
+              <div className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
                 No timeline data available
               </div>
             )}
@@ -323,7 +286,9 @@ export const ResponseView = ({ isRequestCollapsed, onToggleCollapse }: ResponseV
                 )}
                 title={`HTTP Status Code: ${statusCode}`}
               >
-                <span className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>Status:</span>
+                <span className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
+                  Status:
+                </span>
                 <span className={getStatusCodeColor(statusCode)}>{statusCode}</span>
               </div>
             )}
@@ -348,9 +313,7 @@ export const ResponseView = ({ isRequestCollapsed, onToggleCollapse }: ResponseV
                   <div
                     className={clsx(
                       "absolute right-0 mt-1 w-32 rounded-lg shadow-lg border z-50",
-                      theme === "dark"
-                        ? "bg-gray-800 border-gray-700"
-                        : "bg-white border-gray-200"
+                      theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
                     )}
                   >
                     <div className="py-1">
@@ -398,7 +361,9 @@ export const ResponseView = ({ isRequestCollapsed, onToggleCollapse }: ResponseV
                     : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200 hover:border-purple-500",
                   isCopied && "border-green-500"
                 )}
-                title={activeTab === "response" && response ? `Copy ${viewMode} response` : "Copy cURL"}
+                title={
+                  activeTab === "response" && response ? `Copy ${viewMode} response` : "Copy cURL"
+                }
               >
                 {isCopied ? (
                   <>
@@ -456,8 +421,8 @@ export const ResponseView = ({ isRequestCollapsed, onToggleCollapse }: ResponseV
               ? "bg-[#10121b] border-gray-600"
               : "bg-transparent border-transparent"
             : response
-            ? "bg-gray-100 border-gray-300"
-            : "bg-transparent border-transparent"
+              ? "bg-gray-100 border-gray-300"
+              : "bg-transparent border-transparent"
         )}
       >
         {renderContent()}

@@ -1,9 +1,9 @@
+import clsx from "clsx";
+import { Folder, Trash2Icon } from "lucide-react";
+import { useEffect } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useVariables } from "../context/VariablesContext";
-import { Trash2Icon, Folder } from "lucide-react";
 import { Checkbox } from "./Checkbox";
-import { useEffect } from "react";
-import clsx from "clsx";
 
 export const VariablesTab = () => {
   const { theme } = useTheme();
@@ -27,10 +27,7 @@ export const VariablesTab = () => {
     <div>
       <div className="flex items-center gap-2 mb-4">
         <label
-          className={clsx(
-            "block text-sm",
-            theme === "dark" ? "text-gray-300" : "text-gray-700"
-          )}
+          className={clsx("block text-sm", theme === "dark" ? "text-gray-300" : "text-gray-700")}
         >
           Environment Variables
         </label>
@@ -38,9 +35,7 @@ export const VariablesTab = () => {
           <div
             className={clsx(
               "flex items-center gap-1 px-2 py-1 rounded text-xs",
-              theme === "dark"
-                ? "bg-purple-900 text-purple-200"
-                : "bg-purple-100 text-purple-800"
+              theme === "dark" ? "bg-purple-900 text-purple-200" : "bg-purple-100 text-purple-800"
             )}
           >
             <Folder className="w-3 h-3" />
@@ -69,9 +64,7 @@ export const VariablesTab = () => {
           <div
             className={clsx(
               "mt-4 p-4 border rounded-xl space-y-2",
-              theme === "dark"
-                ? "bg-[#10121b] border-gray-700"
-                : "bg-white border-gray-300"
+              theme === "dark" ? "bg-[#10121b] border-gray-700" : "bg-white border-gray-300"
             )}
           >
             {variables.map((variable, index) => (
@@ -84,30 +77,26 @@ export const VariablesTab = () => {
                   className={clsx(
                     "flex-1 min-w-0 px-2 py-1 border rounded text-xs ring-0 focus:outline-0",
                     theme === "dark"
-                      ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500"
-                      : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500"
+                      ? "bg-[#10121b] text-white border-gray-700"
+                      : "bg-white text-gray-800 border-gray-300"
                   )}
                 />
                 <input
                   type="text"
                   value={variable.value}
-                  onChange={(e) =>
-                    updateVariable(index, "value", e.target.value)
-                  }
+                  onChange={(e) => updateVariable(index, "value", e.target.value)}
                   placeholder="Value (e.g., https://api.example.com)"
                   className={clsx(
                     "flex-1 min-w-0 px-2 py-1 border rounded text-xs ring-0 focus:outline-0",
                     theme === "dark"
-                      ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500"
-                      : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500"
+                      ? "bg-[#10121b] text-white border-gray-700"
+                      : "bg-white text-gray-800 border-gray-300"
                   )}
                 />
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <Checkbox
                     checked={variable.enabled}
-                    onChange={(checked) =>
-                      updateVariable(index, "enabled", checked)
-                    }
+                    onChange={(checked) => updateVariable(index, "enabled", checked)}
                   />
                   <button
                     onClick={() => removeVariable(index)}
@@ -151,56 +140,38 @@ export const VariablesTab = () => {
             <div
               className={clsx(
                 "mt-2 p-4 border rounded-xl",
-                theme === "dark"
-                  ? "bg-[#10121b] border-gray-700"
-                  : "bg-white border-gray-300"
+                theme === "dark" ? "bg-[#10121b] border-gray-700" : "bg-white border-gray-300"
               )}
             >
               <div className="space-y-2 text-xs">
                 <div>
-                  <span
-                    className={
-                      theme === "dark" ? "text-gray-400" : "text-gray-600"
-                    }
-                  >
+                  <span className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
                     Define variable:
                   </span>
                   <code
                     className={clsx(
                       "ml-2 px-2 py-1 rounded",
-                      theme === "dark"
-                        ? "bg-gray-800 text-green-400"
-                        : "bg-gray-100 text-green-600"
+                      theme === "dark" ? "bg-gray-800 text-green-400" : "bg-gray-100 text-green-600"
                     )}
                   >
                     baseUrl = https://api.example.com
                   </code>
                 </div>
                 <div>
-                  <span
-                    className={
-                      theme === "dark" ? "text-gray-400" : "text-gray-600"
-                    }
-                  >
+                  <span className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
                     Use in URL:
                   </span>
                   <code
                     className={clsx(
                       "ml-2 px-2 py-1 rounded",
-                      theme === "dark"
-                        ? "bg-gray-800 text-blue-400"
-                        : "bg-gray-100 text-blue-600"
+                      theme === "dark" ? "bg-gray-800 text-blue-400" : "bg-gray-100 text-blue-600"
                     )}
                   >
                     {"{{baseUrl}}/users"}
                   </code>
                 </div>
                 <div>
-                  <span
-                    className={
-                      theme === "dark" ? "text-gray-400" : "text-gray-600"
-                    }
-                  >
+                  <span className={theme === "dark" ? "text-gray-400" : "text-gray-600"}>
                     Result:
                   </span>
                   <code
@@ -226,9 +197,7 @@ export const VariablesTab = () => {
               >
                 <div className="flex items-center gap-1">
                   <Folder className="w-3 h-3" />
-                  <span>
-                    Variables are saved per collection: {currentFolder}
-                  </span>
+                  <span>Variables are saved per collection: {currentFolder}</span>
                 </div>
               </div>
             </div>

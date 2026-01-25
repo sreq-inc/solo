@@ -1,5 +1,5 @@
-import { useTheme } from "../context/ThemeContext";
 import clsx from "clsx";
+import { useTheme } from "../context/ThemeContext";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 
 interface ShortcutsModalProps {
@@ -25,18 +25,13 @@ export const ShortcutsModal = ({ isOpen, onClose }: ShortcutsModalProps) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Overlay */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
       <div
         className={clsx(
           "relative w-full max-w-md mx-4 rounded-lg shadow-xl border",
-          theme === "dark"
-            ? "bg-gray-900 border-gray-700"
-            : "bg-white border-gray-200"
+          theme === "dark" ? "bg-gray-900 border-gray-700" : "bg-white border-gray-200"
         )}
       >
         {/* Header */}
@@ -63,12 +58,7 @@ export const ShortcutsModal = ({ isOpen, onClose }: ShortcutsModalProps) => {
                 : "hover:bg-gray-100 text-gray-600 hover:text-gray-900"
             )}
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -91,10 +81,7 @@ export const ShortcutsModal = ({ isOpen, onClose }: ShortcutsModalProps) => {
                 )}
               >
                 <span
-                  className={clsx(
-                    "text-sm",
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
-                  )}
+                  className={clsx("text-sm", theme === "dark" ? "text-gray-300" : "text-gray-700")}
                 >
                   {shortcut.description}
                 </span>
@@ -117,18 +104,14 @@ export const ShortcutsModal = ({ isOpen, onClose }: ShortcutsModalProps) => {
         <div
           className={clsx(
             "p-4 border-t text-center text-xs",
-            theme === "dark"
-              ? "border-gray-700 text-gray-500"
-              : "border-gray-200 text-gray-600"
+            theme === "dark" ? "border-gray-700 text-gray-500" : "border-gray-200 text-gray-600"
           )}
         >
           Press{" "}
           <kbd
             className={clsx(
               "px-1 py-0.5 rounded text-xs font-mono",
-              theme === "dark"
-                ? "bg-gray-800 text-gray-400"
-                : "bg-gray-100 text-gray-600"
+              theme === "dark" ? "bg-gray-800 text-gray-400" : "bg-gray-100 text-gray-600"
             )}
           >
             ESC

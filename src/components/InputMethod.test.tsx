@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { EnvironmentProvider } from "../context/EnvironmentContext";
 import { FileProvider } from "../context/FileContext";
 import { RequestProvider } from "../context/RequestContext";
 import { ThemeProvider } from "../context/ThemeContext";
@@ -30,13 +31,15 @@ const renderInputMethod = (
 
   return render(
     <ThemeProvider>
-      <VariablesProvider>
-        <RequestProvider>
-          <FileProvider>
-            <InputMethod />
-          </FileProvider>
-        </RequestProvider>
-      </VariablesProvider>
+      <EnvironmentProvider>
+        <VariablesProvider>
+          <RequestProvider>
+            <FileProvider>
+              <InputMethod />
+            </FileProvider>
+          </RequestProvider>
+        </VariablesProvider>
+      </EnvironmentProvider>
     </ThemeProvider>
   );
 };

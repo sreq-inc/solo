@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { Eye, EyeOff } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 
 export type UsernameAndPasswordProps = {
@@ -26,7 +27,7 @@ export const UsernameAndPassword = ({
 
   return (
     <section>
-      <div className="flex items-center mb-4">
+      <div className="flex items-center mb-6">
         <input
           type="checkbox"
           id="useBasicAuth"
@@ -36,10 +37,7 @@ export const UsernameAndPassword = ({
         />
         <label
           htmlFor="useBasicAuth"
-          className={clsx(
-            "text-sm font-medium",
-            theme === "dark" ? "text-white" : "text-gray-700"
-          )}
+          className={clsx("text-sm font-medium cursor-pointer", theme === "dark" ? "text-white" : "text-gray-700")}
         >
           Use Basic Authentication
         </label>
@@ -47,59 +45,47 @@ export const UsernameAndPassword = ({
 
       <div className="space-y-4">
         <div>
-          <label
-            className={clsx(
-              "block text-sm mb-1",
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
-            )}
-          >
-            Username
-          </label>
           <input
             type="text"
             value={username}
             onChange={(e) => onUsernameChange(e.target.value)}
             placeholder="Username"
             className={clsx(
-              "w-full p-2 border rounded text-sm",
+              "w-full h-10 p-2 border rounded-md outline-none",
               theme === "dark"
-                ? "bg-gray-700 border-gray-600 text-white"
-                : "bg-white border-gray-300 text-gray-800"
+                ? "bg-gray-800 text-gray-200 border-gray-700"
+                : "bg-white text-gray-700 border-gray-300"
             )}
           />
         </div>
         <div>
-          <label
-            className={clsx(
-              "block text-sm mb-1",
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
-            )}
-          >
-            Password
-          </label>
-          <div className="flex flex-col gap-4 justify-start">
+          <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => onPasswordChange(e.target.value)}
               placeholder="Password"
               className={clsx(
-                "w-full p-2 border rounded text-sm",
+                "w-full h-10 p-2 pr-10 border rounded-md outline-none",
                 theme === "dark"
-                  ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-white border-gray-300 text-gray-800"
+                  ? "bg-gray-800 text-gray-200 border-gray-700"
+                  : "bg-white text-gray-700 border-gray-300"
               )}
             />
             <button
-              className={clsx(
-                "cursor-pointer text-left",
-                theme === "dark"
-                  ? "text-gray-400 hover:text-gray-300"
-                  : "text-gray-500 hover:text-gray-700"
-              )}
+              type="button"
               onClick={() => setShowPassword(!showPassword)}
+              className={clsx(
+                "absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer",
+                theme === "dark" ? "text-gray-400 hover:text-gray-300" : "text-gray-500 hover:text-gray-700"
+              )}
+              title={showPassword ? "Hide password" : "Show password"}
             >
-              <span className="text-sm">{showPassword ? "Hide" : "Show"}</span>
+              {showPassword ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
             </button>
           </div>
         </div>

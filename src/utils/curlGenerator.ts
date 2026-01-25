@@ -1,4 +1,4 @@
-import { QueryParam } from "../context/RequestContext";
+import type { QueryParam } from "../context/RequestContext";
 
 interface RequestData {
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -17,7 +17,7 @@ interface RequestData {
 // Function to replace variables in URL
 const replaceVariablesInUrl = (url: string): string => {
   // Get variables from localStorage for the current folder
-  const currentFolder = sessionStorage.getItem('current-request-folder');
+  const currentFolder = sessionStorage.getItem("current-request-folder");
   if (!currentFolder) return url;
 
   const storageKey = `solo-variables-${currentFolder}`;
@@ -32,10 +32,7 @@ const replaceVariablesInUrl = (url: string): string => {
     // Replace each enabled variable
     variables.forEach((variable: any) => {
       if (variable.enabled && variable.key && variable.value) {
-        const pattern = new RegExp(
-          `\\{\\{\\s*${variable.key.trim()}\\s*\\}\\}`,
-          "g"
-        );
+        const pattern = new RegExp(`\\{\\{\\s*${variable.key.trim()}\\s*\\}\\}`, "g");
         processedUrl = processedUrl.replace(pattern, variable.value.trim());
       }
     });
@@ -66,12 +63,7 @@ export const generateCurl = (requestData: RequestData): string => {
     if (enabledParams.length > 0) {
       const baseUrl = finalUrl.split("?")[0];
       const queryString = enabledParams
-        .map(
-          (param) =>
-            `${encodeURIComponent(param.key)}=${encodeURIComponent(
-              param.value
-            )}`
-        )
+        .map((param) => `${encodeURIComponent(param.key)}=${encodeURIComponent(param.value)}`)
         .join("&");
       finalUrl = `${baseUrl}?${queryString}`;
     }
@@ -84,16 +76,12 @@ export const generateCurl = (requestData: RequestData): string => {
     curl += ` -u "${requestData.username}:${requestData.password || ""}"`;
   }
 
-  if (requestData.bearerToken && requestData.bearerToken.trim()) {
+  if (requestData.bearerToken?.trim()) {
     curl += ` -H "Authorization: Bearer ${requestData.bearerToken}"`;
   }
 
   // Add payload for methods that support it
-  if (
-    requestData.payload &&
-    requestData.payload.trim() &&
-    ["POST", "PUT", "PATCH"].includes(requestData.method)
-  ) {
+  if (requestData.payload?.trim() && ["POST", "PUT", "PATCH"].includes(requestData.method)) {
     curl += ` -H "Content-Type: application/json"`;
     const escapedPayload = requestData.payload.replace(/"/g, '\\"');
     curl += ` -d "${escapedPayload}"`;
@@ -106,7 +94,7 @@ const generateGraphQLCurl = (requestData: RequestData): string => {
   let curl = `curl -X POST`;
 
   // Process variables in URL for GraphQL
-  let finalUrl = replaceVariablesInUrl(requestData.url || "");
+  const finalUrl = replaceVariablesInUrl(requestData.url || "");
   curl += ` "${finalUrl}"`;
 
   curl += ` -H "Content-Type: application/json"`;
@@ -116,7 +104,7 @@ const generateGraphQLCurl = (requestData: RequestData): string => {
     curl += ` -u "${requestData.username}:${requestData.password || ""}"`;
   }
 
-  if (requestData.bearerToken && requestData.bearerToken.trim()) {
+  if (requestData.bearerToken?.trim()) {
     curl += ` -H "Authorization: Bearer ${requestData.bearerToken}"`;
   }
 
@@ -125,12 +113,12 @@ const generateGraphQLCurl = (requestData: RequestData): string => {
     query: requestData.graphqlQuery || "",
     variables: requestData.graphqlVariables
       ? (() => {
-        try {
-          return JSON.parse(requestData.graphqlVariables);
-        } catch {
-          return {};
-        }
-      })()
+          try {
+            return JSON.parse(requestData.graphqlVariables);
+          } catch {
+            return {};
+          }
+        })()
       : {},
   };
 

@@ -1,6 +1,6 @@
-import { RequestType, Tab } from "../context/RequestContext";
-import { useTheme } from "../context/ThemeContext";
 import clsx from "clsx";
+import type { RequestType, Tab } from "../context/RequestContext";
+import { useTheme } from "../context/ThemeContext";
 
 type TabComponentProps = {
   activeTab: Tab;
@@ -8,11 +8,7 @@ type TabComponentProps = {
   onTabChange: (tab: Tab) => void;
 };
 
-export const TabComponent = ({
-  activeTab,
-  request,
-  onTabChange,
-}: TabComponentProps) => {
+export const TabComponent = ({ activeTab, request, onTabChange }: TabComponentProps) => {
   const { theme } = useTheme();
 
   const getTabClasses = (isActive: boolean) => {
@@ -23,8 +19,8 @@ export const TabComponent = ({
           ? "bg-purple-700 text-white shadow-md"
           : "bg-purple-600 text-white shadow-md"
         : theme === "dark"
-        ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
-        : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+          ? "text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+          : "text-gray-600 hover:text-gray-800 hover:bg-gray-100"
     );
   };
 

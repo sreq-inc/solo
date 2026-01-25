@@ -1,7 +1,7 @@
-import React from "react";
-import { useLatestRelease } from "../hooks/useLatestRelease";
-import { useTheme } from "../context/ThemeContext";
 import clsx from "clsx";
+import type React from "react";
+import { useTheme } from "../context/ThemeContext";
+import { useLatestRelease } from "../hooks/useLatestRelease";
 
 type Props = {
   owner: string;
@@ -15,24 +15,14 @@ export const LatestRelease: React.FC<Props> = ({ owner, repo, className }) => {
 
   if (error)
     return (
-      <div
-        className={clsx(
-          "text-xs",
-          theme === "dark" ? "text-red-400" : "text-red-600"
-        )}
-      >
+      <div className={clsx("text-xs", theme === "dark" ? "text-red-400" : "text-red-600")}>
         Error: {error}
       </div>
     );
 
   if (loading || !release)
     return (
-      <div
-        className={clsx(
-          "text-xs",
-          theme === "dark" ? "text-gray-400" : "text-gray-600"
-        )}
-      >
+      <div className={clsx("text-xs", theme === "dark" ? "text-gray-400" : "text-gray-600")}>
         Loading...
       </div>
     );

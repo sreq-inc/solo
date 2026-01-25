@@ -1,8 +1,8 @@
-import { useTheme } from "../context/ThemeContext";
 import clsx from "clsx";
+import { useEffect, useState } from "react";
+import { useTheme } from "../context/ThemeContext";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { ShortcutsModal } from "./ShortcutsModal";
-import { useState, useEffect } from "react";
 
 export const ShortcutsDisplay = () => {
   const { theme } = useTheme();
@@ -31,12 +31,7 @@ export const ShortcutsDisplay = () => {
   }, [isModalOpen]);
 
   return (
-    <div
-      className={clsx(
-        "p-8",
-        theme === "dark" ? "text-gray-300" : "text-gray-700"
-      )}
-    >
+    <div className={clsx("p-8", theme === "dark" ? "text-gray-300" : "text-gray-700")}>
       <div className="mb-6 flex flex-row items-center justify-center w-ful">
         <img src="/solo_preview.png" className="h-40" />
       </div>
@@ -68,12 +63,7 @@ export const ShortcutsDisplay = () => {
         ))}
       </div>
 
-      <div
-        className={clsx(
-          "mt-8 text-sm",
-          theme === "dark" ? "text-gray-500" : "text-gray-600"
-        )}
-      >
+      <div className={clsx("mt-8 text-sm", theme === "dark" ? "text-gray-500" : "text-gray-600")}>
         <div className="flex items-center justify-center gap-2 mb-2">
           <button
             onClick={() => setIsModalOpen(true)}
@@ -88,15 +78,10 @@ export const ShortcutsDisplay = () => {
             View all shortcuts
           </button>
         </div>
-        <p className="italic text-center">
-          Tip: Press any shortcut to quickly perform actions
-        </p>
+        <p className="italic text-center">Tip: Press any shortcut to quickly perform actions</p>
       </div>
 
-      <ShortcutsModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
+      <ShortcutsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 };

@@ -1,24 +1,15 @@
-import { Variable } from "../context/VariablesContext";
+import type { Variable } from "../context/VariablesContext";
 
 export const useVariableSubstitution = () => {
-  const replaceVariablesInUrl = (
-    url: string,
-    variables: Variable[]
-  ): string => {
+  const replaceVariablesInUrl = (url: string, variables: Variable[]): string => {
     let processedUrl = url;
 
     const enabledVariables = variables.filter(
-      (variable) =>
-        variable.enabled &&
-        variable.key.trim() !== "" &&
-        variable.value.trim() !== ""
+      (variable) => variable.enabled && variable.key.trim() !== "" && variable.value.trim() !== ""
     );
 
     enabledVariables.forEach((variable) => {
-      const pattern = new RegExp(
-        `\\{\\{\\s*${variable.key.trim()}\\s*\\}\\}`,
-        "g"
-      );
+      const pattern = new RegExp(`\\{\\{\\s*${variable.key.trim()}\\s*\\}\\}`, "g");
       processedUrl = processedUrl.replace(pattern, variable.value.trim());
     });
 

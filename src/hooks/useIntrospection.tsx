@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { useState } from "react";
 
 export interface GraphQLType {
   kind: string;
@@ -92,20 +92,12 @@ export const useIntrospection = () => {
       if (result.success && result.data?.data?.__schema) {
         setSchema(result.data.data.__schema);
       } else if (result.data?.data?.errors) {
-        setError(
-          `GraphQL Error: ${
-            result.data.data.errors[0]?.message || "Unknown error"
-          }`
-        );
+        setError(`GraphQL Error: ${result.data.data.errors[0]?.message || "Unknown error"}`);
       } else if (result.data?.errors) {
-        setError(
-          `GraphQL Error: ${result.data.errors[0]?.message || "Unknown error"}`
-        );
+        setError(`GraphQL Error: ${result.data.errors[0]?.message || "Unknown error"}`);
       }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An unknown error occurred"
-      );
+      setError(err instanceof Error ? err.message : "An unknown error occurred");
     } finally {
       setLoading(false);
     }

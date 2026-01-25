@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useState } from "react";
 
 export type Variable = {
   key: string;
@@ -11,11 +11,7 @@ type VariablesContextType = {
   setVariables: (variables: Variable[]) => void;
   addVariable: () => void;
   removeVariable: (index: number) => void;
-  updateVariable: (
-    index: number,
-    field: keyof Variable,
-    value: string | boolean
-  ) => void;
+  updateVariable: (index: number, field: keyof Variable, value: string | boolean) => void;
   replaceVariablesInUrl: (url: string) => string;
   currentFolder: string | null;
   loadVariablesForFolder: (folderName: string) => void;
@@ -23,9 +19,7 @@ type VariablesContextType = {
   detectAndLoadCurrentFolder: () => string | null;
 };
 
-const VariablesContext = createContext<VariablesContextType | undefined>(
-  undefined
-);
+const VariablesContext = createContext<VariablesContextType | undefined>(undefined);
 
 interface VariablesProviderProps {
   children: ReactNode;
@@ -42,7 +36,7 @@ function VariablesProvider({ children }: VariablesProviderProps) {
   const loadVariablesForFolder = useCallback((folderName: string) => {
     setCurrentFolder(folderName);
     // Store current folder in sessionStorage for persistence
-    sessionStorage.setItem('current-request-folder', folderName);
+    sessionStorage.setItem("current-request-folder", folderName);
 
     const storageKey = getVariablesStorageKey(folderName);
     const saved = localStorage.getItem(storageKey);
@@ -62,7 +56,7 @@ function VariablesProvider({ children }: VariablesProviderProps) {
   // Auto-detect current folder from localStorage
   const detectAndLoadCurrentFolder = useCallback((): string | null => {
     // Get current request ID from sessionStorage if available
-    const currentRequestKey = sessionStorage.getItem('current-request-folder');
+    const currentRequestKey = sessionStorage.getItem("current-request-folder");
     if (currentRequestKey) {
       loadVariablesForFolder(currentRequestKey);
       return currentRequestKey;
@@ -71,16 +65,19 @@ function VariablesProvider({ children }: VariablesProviderProps) {
     // Fallback: scan all folders to find any with files
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && !key.startsWith('solo-variables-') && !key.startsWith('update-')) {
+      if (
+        key &&
+        !key.startsWith("solo-variables-") &&
+        !key.startsWith("update-") &&
+        key !== "solo-environments"
+      ) {
         try {
           const files = JSON.parse(localStorage.getItem(key) || "[]");
           if (files.length > 0) {
             loadVariablesForFolder(key);
             return key;
           }
-        } catch {
-          continue;
-        }
+        } catch {}
       }
     }
 
@@ -94,7 +91,7 @@ function VariablesProvider({ children }: VariablesProviderProps) {
 
   const clearVariables = () => {
     setCurrentFolder(null);
-    sessionStorage.removeItem('current-request-folder');
+    sessionStorage.removeItem("current-request-folder");
     setVariables([{ key: "", value: "", enabled: true }]);
   };
 
@@ -124,11 +121,7 @@ function VariablesProvider({ children }: VariablesProviderProps) {
     }
   };
 
-  const updateVariable = (
-    index: number,
-    field: keyof Variable,
-    value: string | boolean
-  ) => {
+  const updateVariable = (index: number, field: keyof Variable, value: string | boolean) => {
     const updated = variables.map((variable, i) =>
       i === index ? { ...variable, [field]: value } : variable
     );
@@ -137,18 +130,14 @@ function VariablesProvider({ children }: VariablesProviderProps) {
 
   const replaceVariablesInUrl = (url: string): string => {
     let processedUrl = url;
+
+    // First, replace with folder-scoped variables
     const enabledVariables = variables.filter(
-      (variable) =>
-        variable.enabled &&
-        variable.key.trim() !== "" &&
-        variable.value.trim() !== ""
+      (variable) => variable.enabled && variable.key.trim() !== "" && variable.value.trim() !== ""
     );
 
     enabledVariables.forEach((variable) => {
-      const pattern = new RegExp(
-        `\\{\\{\\s*${variable.key.trim()}\\s*\\}\\}`,
-        "g"
-      );
+      const pattern = new RegExp(`\\{\\{\\s*${variable.key.trim()}\\s*\\}\\}`, "g");
       processedUrl = processedUrl.replace(pattern, variable.value.trim());
     });
 
@@ -168,11 +157,7 @@ function VariablesProvider({ children }: VariablesProviderProps) {
     detectAndLoadCurrentFolder,
   };
 
-  return (
-    <VariablesContext.Provider value={contextValue}>
-      {children}
-    </VariablesContext.Provider>
-  );
+  return <VariablesContext.Provider value={contextValue}>{children}</VariablesContext.Provider>;
 }
 
 function useVariables(): VariablesContextType {

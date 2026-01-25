@@ -44,17 +44,9 @@ export const useRequestStorage = () => {
     });
   };
 
-  const saveRequest = (
-    folder: string,
-    request: RequestData,
-    requestId: string
-  ) => {
-    const files = JSON.parse(
-      localStorage.getItem(folder) || "[]"
-    ) as StoredFile[];
-    const existingIndex = files.findIndex(
-      (file) => file.fileName === requestId
-    );
+  const saveRequest = (folder: string, request: RequestData, requestId: string) => {
+    const files = JSON.parse(localStorage.getItem(folder) || "[]") as StoredFile[];
+    const existingIndex = files.findIndex((file) => file.fileName === requestId);
 
     if (existingIndex !== -1) {
       files[existingIndex] = {
@@ -76,9 +68,7 @@ export const useRequestStorage = () => {
   };
 
   const removeRequest = (folder: string, fileName: string) => {
-    const files = JSON.parse(
-      localStorage.getItem(folder) || "[]"
-    ) as StoredFile[];
+    const files = JSON.parse(localStorage.getItem(folder) || "[]") as StoredFile[];
     const updatedFiles = files.filter((file) => file.fileName !== fileName);
 
     localStorage.setItem(folder, JSON.stringify(updatedFiles));
@@ -93,29 +83,20 @@ export const useRequestStorage = () => {
       const folderName = localStorage.key(i);
       if (folderName) {
         try {
-          const files = JSON.parse(
-            localStorage.getItem(folderName) || "[]"
-          ) as StoredFile[];
+          const files = JSON.parse(localStorage.getItem(folderName) || "[]") as StoredFile[];
           const file = files.find((f) => f.fileName === fileName);
           if (file) {
             return file.fileData;
           }
-        } catch {
-          continue;
-        }
+        } catch {}
       }
     }
     return null;
   };
 
-  const loadRequest = (
-    folder: string | null,
-    fileName: string
-  ): RequestData | null => {
+  const loadRequest = (folder: string | null, fileName: string): RequestData | null => {
     if (folder) {
-      const files = JSON.parse(
-        localStorage.getItem(folder) || "[]"
-      ) as StoredFile[];
+      const files = JSON.parse(localStorage.getItem(folder) || "[]") as StoredFile[];
       const file = files.find((f) => f.fileName === fileName);
       return file?.fileData || null;
     } else {
@@ -130,13 +111,9 @@ export const useRequestStorage = () => {
       const key = localStorage.key(i);
       if (key) {
         try {
-          const files = JSON.parse(
-            localStorage.getItem(key) || "[]"
-          ) as StoredFile[];
+          const files = JSON.parse(localStorage.getItem(key) || "[]") as StoredFile[];
           loadedFolders[key] = files.map((file) => file.fileName);
-        } catch {
-          continue;
-        }
+        } catch {}
       }
     }
 

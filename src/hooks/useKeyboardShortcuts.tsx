@@ -41,9 +41,7 @@ export const useKeyboardShortcuts = () => {
       cmd: true,
       description: "Focus URL input",
       action: () => {
-        const urlInput = document.querySelector<HTMLInputElement>(
-          'input[placeholder*="https://"]'
-        );
+        const urlInput = document.querySelector<HTMLInputElement>('input[placeholder*="https://"]');
         if (urlInput) {
           urlInput.focus();
           urlInput.select();
@@ -91,9 +89,7 @@ export const useKeyboardShortcuts = () => {
       description: "Send request",
       action: () => {
         const buttons = Array.from(document.querySelectorAll("button"));
-        const targetButton = buttons.find(
-          (btn) => btn.textContent === "Send" && !btn.disabled
-        );
+        const targetButton = buttons.find((btn) => btn.textContent === "Send" && !btn.disabled);
         if (targetButton) {
           targetButton.click();
         }
@@ -104,9 +100,7 @@ export const useKeyboardShortcuts = () => {
       cmd: true,
       description: "Focus search",
       action: () => {
-        const searchInput = document.querySelector<HTMLInputElement>(
-          'input[placeholder="Search"]'
-        );
+        const searchInput = document.querySelector<HTMLInputElement>('input[placeholder="Search"]');
         if (searchInput) {
           searchInput.focus();
           searchInput.select();

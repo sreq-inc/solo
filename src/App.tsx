@@ -1,14 +1,14 @@
 import clsx from "clsx";
-import { useTheme } from "./context/ThemeContext";
-import { Sidebar } from "./components/Sidebar";
 import { RequestForm } from "./components/RequestForm";
 import { ResponseView } from "./components/ResponseView";
+import { Sidebar } from "./components/Sidebar";
+import { useTheme } from "./context/ThemeContext";
 import "./App.css";
-import Titlebar from "./components/TitleBar";
-import { InputMethod } from "./components/InputMethod";
 import { ToastContainer } from "react-toastify";
+import { InputMethod } from "./components/InputMethod";
+import Titlebar from "./components/TitleBar";
 import "react-toastify/dist/ReactToastify.css";
-import { useState, useLayoutEffect } from "react";
+import { useLayoutEffect, useState } from "react";
 
 function App() {
   const { theme } = useTheme();
@@ -23,7 +23,7 @@ function App() {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing) return;
 
-      const container = document.getElementById('split-container');
+      const container = document.getElementById("split-container");
       if (!container) return;
 
       const containerRect = container.getBoundingClientRect();
@@ -40,13 +40,13 @@ function App() {
     };
 
     if (isResizing) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
     }
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isResizing]);
 
@@ -54,18 +54,8 @@ function App() {
     <div className="flex flex-col h-screen">
       <Titlebar />
       <ToastContainer />
-      <div
-        className={clsx(
-          "flex-1 flex transition-colors duration-200 overflow-hidden",
-          appBg
-        )}
-      >
-        <div
-          className={clsx(
-            "w-full flex rounded-xl shadow-lg overflow-hidden",
-            cardBg
-          )}
-        >
+      <div className={clsx("flex-1 flex transition-colors duration-200 overflow-hidden", appBg)}>
+        <div className={clsx("w-full flex rounded-xl shadow-lg overflow-hidden", cardBg)}>
           <div className="flex w-full overflow-hidden">
             <Sidebar />
             <section className="flex flex-col w-full px-4 overflow-hidden">
@@ -82,7 +72,7 @@ function App() {
                     isRequestCollapsed ? "w-0 opacity-0" : ""
                   )}
                   style={{
-                    width: isRequestCollapsed ? '0%' : `${splitPosition}%`,
+                    width: isRequestCollapsed ? "0%" : `${splitPosition}%`,
                   }}
                 >
                   {!isRequestCollapsed && <RequestForm />}
@@ -110,7 +100,7 @@ function App() {
                 <div
                   className="flex flex-col overflow-y-auto flex-1 relative"
                   style={{
-                    width: isRequestCollapsed ? '100%' : `${100 - splitPosition}%`,
+                    width: isRequestCollapsed ? "100%" : `${100 - splitPosition}%`,
                   }}
                 >
                   <ResponseView

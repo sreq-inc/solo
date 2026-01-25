@@ -1,7 +1,7 @@
-import { Copy, Check } from "lucide-react";
+import clsx from "clsx";
+import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
-import clsx from "clsx";
 
 interface CopyIconProps {
   content: string;
@@ -9,11 +9,7 @@ interface CopyIconProps {
   className?: string;
 }
 
-export const CopyIcon = ({
-  content,
-  size = 16,
-  className = "",
-}: CopyIconProps) => {
+export const CopyIcon = ({ content, size = 16, className = "" }: CopyIconProps) => {
   const { theme } = useTheme();
   const [copied, setCopied] = useState(false);
 
@@ -30,21 +26,18 @@ export const CopyIcon = ({
 
   return (
     <button
+      type="button"
       onClick={handleCopy}
       className={clsx(
         "p-1 rounded transition-colors cursor-pointer",
         theme === "dark"
           ? "hover:bg-gray-600 text-gray-400 hover:text-gray-200"
           : "hover:bg-gray-200 text-gray-600 hover:text-gray-800",
-        className,
+        className
       )}
       title="Copy as cURL"
     >
-      {copied ? (
-        <Check size={size} className="text-green-500" />
-      ) : (
-        <Copy size={size} />
-      )}
+      {copied ? <Check size={size} className="text-green-500" /> : <Copy size={size} />}
     </button>
   );
 };

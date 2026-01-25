@@ -1,27 +1,20 @@
-import { TabComponent } from "./TabComponent";
+import clsx from "clsx";
+import { AlertCircle, Check, CheckCircle, Copy, Loader2, Trash2Icon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { type QueryParam, useRequest } from "../context/RequestContext";
+import { useTheme } from "../context/ThemeContext";
+import { BearerToken } from "./BearerToken";
+import { Checkbox } from "./Checkbox";
+import { DescriptionTab } from "./DescriptionTab";
 import { GraphQLEditor } from "./GraphQLEditor";
 import { GrpcEditor } from "./GrpcEditor";
-import { DescriptionTab } from "./DescriptionTab";
-import { useEffect, useState, useRef } from "react";
-import { useTheme } from "../context/ThemeContext";
-import { useRequest, QueryParam } from "../context/RequestContext";
-import clsx from "clsx";
-import { SelectAuth } from "./SelectAuth";
-import { UsernameAndPassword } from "./UsernameAndPassword";
-import { BearerToken } from "./BearerToken";
-import {
-  Trash2Icon,
-  Copy,
-  Check,
-  AlertCircle,
-  CheckCircle,
-  Loader2,
-} from "lucide-react";
-import { Checkbox } from "./Checkbox";
-import { VariablesTab } from "./VariablesTab";
-import { SchemaViewer } from "./SchemaViewer";
-import { MetadataTab } from "./MetadataTab";
 import { GrpcSchemaViewer } from "./GrpcSchemaViewer";
+import { MetadataTab } from "./MetadataTab";
+import { SchemaViewer } from "./SchemaViewer";
+import { SelectAuth } from "./SelectAuth";
+import { TabComponent } from "./TabComponent";
+import { UsernameAndPassword } from "./UsernameAndPassword";
+import { VariablesTab } from "./VariablesTab";
 
 export const RequestForm = () => {
   const { theme } = useTheme();
@@ -60,9 +53,7 @@ export const RequestForm = () => {
   const isInternalUpdate = useRef(false);
   const isLoadingParams = useRef(false);
   const [isFormattingJson, setIsFormattingJson] = useState(false);
-  const [jsonValidationError, setJsonValidationError] = useState<string | null>(
-    null
-  );
+  const [jsonValidationError, setJsonValidationError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isInternalUpdate.current || isLoadingParams.current) {
@@ -91,8 +82,7 @@ export const RequestForm = () => {
         params.push({ key: "", value: "", enabled: true });
       }
 
-      const paramsChanged =
-        JSON.stringify(params) !== JSON.stringify(queryParams);
+      const paramsChanged = JSON.stringify(params) !== JSON.stringify(queryParams);
 
       if (paramsChanged && url.includes("?")) {
         isLoadingParams.current = true;
@@ -101,7 +91,7 @@ export const RequestForm = () => {
           isLoadingParams.current = false;
         }, 100);
       }
-    } catch (error) {
+    } catch (_error) {
       console.warn("Invalid URL format:", url);
     }
   }, [url, requestType]);
@@ -147,11 +137,7 @@ export const RequestForm = () => {
     updateUrlWithParams(newParams);
   };
 
-  const updateQueryParam = (
-    index: number,
-    field: keyof QueryParam,
-    value: string | boolean
-  ) => {
+  const updateQueryParam = (index: number, field: keyof QueryParam, value: string | boolean) => {
     const updated = queryParams.map((param, i) =>
       i === index ? { ...param, [field]: value } : param
     );
@@ -165,9 +151,7 @@ export const RequestForm = () => {
     }
 
     const baseUrl = url.split("?")[0] || "";
-    const enabledParams = params.filter(
-      (p) => p.enabled && p.key.trim() && p.value.trim()
-    );
+    const enabledParams = params.filter((p) => p.enabled && p.key.trim() && p.value.trim());
 
     isInternalUpdate.current = true;
 
@@ -184,322 +168,279 @@ export const RequestForm = () => {
   };
 
   return (
-    <>
-      <div className="p-4 space-y-4 col-span-5 h-full w-full">
-        <TabComponent
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          request={requestType}
-        />
+    <div className="p-4 space-y-4 col-span-5 h-full w-full">
+      <TabComponent activeTab={activeTab} onTabChange={setActiveTab} request={requestType} />
 
-        {activeTab === "graphql" && requestType === "graphql" && (
-          <GraphQLEditor />
-        )}
+      {activeTab === "graphql" && requestType === "graphql" && <GraphQLEditor />}
 
-        {activeTab === "grpc" && requestType === "grpc" && <GrpcEditor />}
+      {activeTab === "grpc" && requestType === "grpc" && <GrpcEditor />}
 
-        {activeTab === "body" && requestType === "http" && (
-          <div className="mt-4">
-            <div className="flex items-center justify-between mb-2">
-              <label
-                className={clsx(
-                  "block text-sm",
-                  theme === "dark" ? "text-gray-300" : "text-gray-700"
-                )}
-              >
-                JSON Payload (optional)
-              </label>
-              {payload.trim() !== "" && payload.trim() !== "{}" && (
-                <div className="flex items-center gap-1.5 text-xs">
-                  {jsonValidationError ? (
-                    <>
-                      <AlertCircle className="w-3.5 h-3.5 text-red-500" />
-                      <span className="text-red-500">Invalid JSON</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-                      <span className="text-green-500">Valid JSON</span>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-            <div
+      {activeTab === "body" && requestType === "http" && (
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <label
               className={clsx(
-                "border rounded-xl min-h-[492px] max-h-[492px] overflow-hidden",
-                theme === "dark"
-                  ? "bg-[#10121b] border-gray-600"
-                  : "bg-white border-gray-300"
+                "block text-sm",
+                theme === "dark" ? "text-gray-300" : "text-gray-700"
               )}
             >
-              <div className="flex h-full">
-                <div
-                  className={clsx(
-                    "select-none border-r w-12 flex flex-col text-right text-xs overflow-y-auto",
-                    theme === "dark"
-                      ? "border-gray-700 bg-gray-900 text-gray-500"
-                      : "border-gray-300 bg-gray-100 text-gray-500"
-                  )}
-                >
-                  {lines.map((_, index) => (
-                    <div
-                      key={index}
-                      className="leading-6 min-h-[24px] text-center text-sm"
-                    >
-                      {index + 1}
-                    </div>
-                  ))}
-                </div>
-                <textarea
-                  value={payload}
-                  onChange={(e) => setPayload(e.target.value)}
-                  placeholder='{"key": "value"}'
-                  className={clsx(
-                    "flex-1 px-4 pb-4 text-xs focus:outline-0 ring-0 resize-none border-0 bg-transparent leading-6 overflow-y-auto",
-                    theme === "dark" ? "text-white" : "text-gray-800"
-                  )}
-                  style={{ lineHeight: "24px" }}
-                />
-              </div>
-            </div>
-            {jsonValidationError && (
-              <div
-                className={clsx(
-                  "mt-2 p-2 rounded text-xs flex items-start gap-2",
-                  theme === "dark"
-                    ? "bg-red-900/20 text-red-400"
-                    : "bg-red-100 text-red-700"
+              JSON Payload (optional)
+            </label>
+            {payload.trim() !== "" && payload.trim() !== "{}" && (
+              <div className="flex items-center gap-1.5 text-xs">
+                {jsonValidationError ? (
+                  <>
+                    <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+                    <span className="text-red-500">Invalid JSON</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                    <span className="text-green-500">Valid JSON</span>
+                  </>
                 )}
-              >
-                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                <span>{jsonValidationError}</span>
               </div>
             )}
-            <button
-              onClick={handleFormatJson}
-              disabled={isFormattingJson || !!jsonValidationError}
-              title={
-                jsonValidationError
-                  ? "Fix JSON errors before formatting"
-                  : "Format JSON"
-              }
-              className={clsx(
-                "mt-2 py-2 rounded text-xs font-semibold cursor-pointer flex items-center gap-2",
-                theme === "dark" ? "text-gray-600" : "text-gray-500",
-                (isFormattingJson || jsonValidationError) &&
-                  "opacity-50 cursor-not-allowed"
-              )}
-            >
-              {isFormattingJson && <Loader2 className="w-3 h-3 animate-spin" />}
-              Format JSON
-            </button>
           </div>
-        )}
-
-        {/* Auth Tab */}
-        {activeTab === "auth" && (
           <div
             className={clsx(
-              "mt-4 p-4 border rounded-xl",
-              theme === "dark"
-                ? "bg-[#10121b] border-gray-700"
-                : "bg-white border-gray-300"
+              "border rounded-xl min-h-[492px] max-h-[492px] overflow-hidden",
+              theme === "dark" ? "bg-[#10121b] border-gray-600" : "bg-white border-gray-300"
             )}
           >
-            <div className="mb-8 mt-4">
-              <SelectAuth
-                value={selectAuth}
-                options={options}
-                onChange={(value) => setSelectAuth(value)}
-              />
-            </div>
-
-            {selectAuth === "basic" && (
-              <UsernameAndPassword
-                username={username}
-                password={password}
-                useBasicAuth={useBasicAuth}
-                onUsernameChange={setUsername}
-                onPasswordChange={setPassword}
-                onUseBasicAuthChange={setUseBasicAuth}
-                showPassword={showPassword}
-                setShowPassword={setShowPassword}
-              />
-            )}
-
-            {selectAuth === "bearer" && (
-              <BearerToken
-                bearerToken={bearerToken}
-                onTokenChange={setBearerToken}
-              />
-            )}
-          </div>
-        )}
-
-        {activeTab === "params" && requestType === "http" && (
-          <div>
-            <label
-              className={clsx(
-                "block text-sm mb-2",
-                theme === "dark" ? "text-gray-300" : "text-gray-700"
-              )}
-            >
-              Query Parameters
-            </label>
-            <div
-              className={clsx(
-                "mt-4 p-4 border rounded-xl space-y-2",
-                theme === "dark"
-                  ? "bg-[#10121b] border-gray-700"
-                  : "bg-white border-gray-300"
-              )}
-            >
-              {queryParams.map((param, index) => (
-                <div key={index} className="flex gap-2 items-center min-w-0">
-                  <input
-                    type="text"
-                    value={param.key}
-                    onChange={(e) =>
-                      updateQueryParam(index, "key", e.target.value)
-                    }
-                    placeholder="Key"
-                    className={clsx(
-                      "flex-1 min-w-0 px-2 py-1 border rounded text-xs ring-0 focus:outline-0",
-                      theme === "dark"
-                        ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500"
-                        : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500"
-                    )}
-                  />
-                  <input
-                    type="text"
-                    value={param.value}
-                    onChange={(e) =>
-                      updateQueryParam(index, "value", e.target.value)
-                    }
-                    placeholder="Value"
-                    className={clsx(
-                      "flex-1 min-w-0 px-2 py-1 border rounded text-xs ring-0 focus:outline-0",
-                      theme === "dark"
-                        ? "bg-[#10121b] text-white border-2 border-purple-500 focus:border-purple-500"
-                        : "bg-white text-gray-800 border-2 border-purple-500 focus:border-purple-500"
-                    )}
-                  />
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <Checkbox
-                      checked={param.enabled}
-                      onChange={(checked) =>
-                        updateQueryParam(index, "enabled", checked)
-                      }
-                    />
-                    <button
-                      onClick={() => removeQueryParam(index)}
-                      className={clsx(
-                        "h-5 w-5 flex items-center justify-center rounded cursor-pointer",
-                        theme === "dark"
-                          ? "text-gray-400 hover:text-gray-200"
-                          : "text-gray-600 hover:text-gray-800"
-                      )}
-                      type="button"
-                      aria-label="Remove Parameter"
-                      title="Remove Parameter"
-                    >
-                      <Trash2Icon className="h-5 w-5" />
-                    </button>
+            <div className="flex h-full">
+              <div
+                className={clsx(
+                  "select-none border-r w-12 flex flex-col text-right text-xs overflow-y-auto",
+                  theme === "dark"
+                    ? "border-gray-700 bg-gray-900 text-gray-500"
+                    : "border-gray-300 bg-gray-100 text-gray-500"
+                )}
+              >
+                {lines.map((_, index) => (
+                  <div key={index} className="leading-6 min-h-[24px] text-center text-sm">
+                    {index + 1}
                   </div>
-                </div>
-              ))}
-              <button
-                onClick={addQueryParam}
+                ))}
+              </div>
+              <textarea
+                value={payload}
+                onChange={(e) => setPayload(e.target.value)}
+                placeholder='{"key": "value"}'
                 className={clsx(
-                  "mt-2 px-3 py-1 text-xs rounded border-2 cursor-pointer",
-                  theme === "dark"
-                    ? "border-gray-600 text-gray-400 hover:border-gray-500"
-                    : "border-gray-300 text-gray-600 hover:border-gray-400"
+                  "flex-1 px-4 pb-4 text-xs focus:outline-0 ring-0 resize-none border-0 bg-transparent leading-6 overflow-y-auto",
+                  theme === "dark" ? "text-white" : "text-gray-800"
                 )}
-              >
-                + Add Parameter
-              </button>
-            </div>
-
-            <label
-              className={clsx(
-                "block text-sm mb-2 mt-6",
-                theme === "dark" ? "text-gray-300" : "text-gray-700"
-              )}
-            >
-              URL Preview
-            </label>
-            <div
-              className={clsx(
-                "mt-2 p-4 border rounded-xl h-28 relative group",
-                theme === "dark"
-                  ? "bg-[#10121b] border-gray-700"
-                  : "bg-white border-gray-300"
-              )}
-            >
-              <p className="text-sm text-gray-500 break-all pr-8">{url}</p>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(url);
-                  setUrlCopied(true);
-                  setTimeout(() => setUrlCopied(false), 2000);
-                }}
-                className={clsx(
-                  "absolute top-3 right-3 p-1 rounded transition-opacity cursor-pointer",
-                  theme === "dark"
-                    ? "hover:bg-gray-700 text-gray-400"
-                    : "hover:bg-gray-200 text-gray-600"
-                )}
-                title="Copy URL"
-              >
-                {urlCopied ? (
-                  <Check className="w-4 h-4 text-green-500" />
-                ) : (
-                  <Copy className="w-4 h-4" />
-                )}
-              </button>
+                style={{ lineHeight: "24px" }}
+              />
             </div>
           </div>
-        )}
+          {jsonValidationError && (
+            <div
+              className={clsx(
+                "mt-2 p-2 rounded text-xs flex items-start gap-2",
+                theme === "dark" ? "bg-red-900/20 text-red-400" : "bg-red-100 text-red-700"
+              )}
+            >
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <span>{jsonValidationError}</span>
+            </div>
+          )}
+          <button
+            onClick={handleFormatJson}
+            disabled={isFormattingJson || !!jsonValidationError}
+            title={jsonValidationError ? "Fix JSON errors before formatting" : "Format JSON"}
+            className={clsx(
+              "mt-2 py-2 rounded text-xs font-semibold cursor-pointer flex items-center gap-2",
+              theme === "dark" ? "text-gray-600" : "text-gray-500",
+              (isFormattingJson || jsonValidationError) && "opacity-50 cursor-not-allowed"
+            )}
+          >
+            {isFormattingJson && <Loader2 className="w-3 h-3 animate-spin" />}
+            Format JSON
+          </button>
+        </div>
+      )}
 
-        {activeTab === "variables" && <VariablesTab />}
-
-        {activeTab === "metadata" && requestType === "grpc" && (
-          <div className="mt-4">
-            <MetadataTab
-              metadata={grpcMetadata}
-              onMetadataChange={setGrpcMetadata}
+      {/* Auth Tab */}
+      {activeTab === "auth" && (
+        <div
+          className={clsx(
+            "mt-4 p-4 border rounded-xl",
+            theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-300"
+          )}
+        >
+          <div className="mb-6">
+            <SelectAuth
+              value={selectAuth}
+              options={options}
+              onChange={(value) => setSelectAuth(value)}
             />
           </div>
-        )}
 
-        {activeTab === "description" && <DescriptionTab />}
+          {selectAuth === "basic" && (
+            <UsernameAndPassword
+              username={username}
+              password={password}
+              useBasicAuth={useBasicAuth}
+              onUsernameChange={setUsername}
+              onPasswordChange={setPassword}
+              onUseBasicAuthChange={setUseBasicAuth}
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
+            />
+          )}
 
-        {activeTab === "schema" && requestType === "graphql" && (
-          <div className="mt-4">
-            <SchemaViewer />
-          </div>
-        )}
+          {selectAuth === "bearer" && (
+            <BearerToken bearerToken={bearerToken} onTokenChange={setBearerToken} />
+          )}
+        </div>
+      )}
 
-        {activeTab === "schema" && requestType === "grpc" && (
-          <div className="mt-4">
-            <div
+      {activeTab === "params" && requestType === "http" && (
+        <div>
+          <label
+            className={clsx(
+              "block text-sm mb-2",
+              theme === "dark" ? "text-gray-300" : "text-gray-700"
+            )}
+          >
+            Query Parameters
+          </label>
+          <div
+            className={clsx(
+              "mt-4 p-4 border rounded-xl space-y-2",
+              theme === "dark" ? "bg-[#10121b] border-gray-700" : "bg-white border-gray-300"
+            )}
+          >
+            {queryParams.map((param, index) => (
+              <div key={index} className="flex gap-2 items-center min-w-0">
+                <input
+                  type="text"
+                  value={param.key}
+                  onChange={(e) => updateQueryParam(index, "key", e.target.value)}
+                  placeholder="Key"
+                  className={clsx(
+                    "flex-1 min-w-0 px-2 py-1 border rounded text-xs ring-0 focus:outline-0",
+                    theme === "dark"
+                      ? "bg-[#10121b] text-white border-gray-700"
+                      : "bg-white text-gray-800 border-gray-300"
+                  )}
+                />
+                <input
+                  type="text"
+                  value={param.value}
+                  onChange={(e) => updateQueryParam(index, "value", e.target.value)}
+                  placeholder="Value"
+                  className={clsx(
+                    "flex-1 min-w-0 px-2 py-1 border rounded text-xs ring-0 focus:outline-0",
+                    theme === "dark"
+                      ? "bg-[#10121b] text-white border-gray-700"
+                      : "bg-white text-gray-800 border-gray-300"
+                  )}
+                />
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <Checkbox
+                    checked={param.enabled}
+                    onChange={(checked) => updateQueryParam(index, "enabled", checked)}
+                  />
+                  <button
+                    onClick={() => removeQueryParam(index)}
+                    className={clsx(
+                      "h-5 w-5 flex items-center justify-center rounded cursor-pointer",
+                      theme === "dark"
+                        ? "text-gray-400 hover:text-gray-200"
+                        : "text-gray-600 hover:text-gray-800"
+                    )}
+                    type="button"
+                    aria-label="Remove Parameter"
+                    title="Remove Parameter"
+                  >
+                    <Trash2Icon className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+            <button
+              onClick={addQueryParam}
               className={clsx(
-                "p-4 border rounded-xl",
+                "mt-2 px-3 py-1 text-xs rounded border-2 cursor-pointer",
                 theme === "dark"
-                  ? "bg-[#10121b] border-gray-700"
-                  : "bg-white border-gray-300"
+                  ? "border-gray-600 text-gray-400 hover:border-gray-500"
+                  : "border-gray-300 text-gray-600 hover:border-gray-400"
               )}
             >
-              <GrpcSchemaViewer
-                services={grpcSchema.services}
-                messages={grpcSchema.messages}
-              />
-            </div>
+              + Add Parameter
+            </button>
           </div>
-        )}
-      </div>
-    </>
+
+          <label
+            className={clsx(
+              "block text-sm mb-2 mt-6",
+              theme === "dark" ? "text-gray-300" : "text-gray-700"
+            )}
+          >
+            URL Preview
+          </label>
+          <div
+            className={clsx(
+              "mt-2 p-4 border rounded-xl h-28 relative group",
+              theme === "dark" ? "bg-[#10121b] border-gray-700" : "bg-white border-gray-300"
+            )}
+          >
+            <p className="text-sm text-gray-500 break-all pr-8">{url}</p>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(url);
+                setUrlCopied(true);
+                setTimeout(() => setUrlCopied(false), 2000);
+              }}
+              className={clsx(
+                "absolute top-3 right-3 p-1 rounded transition-opacity cursor-pointer",
+                theme === "dark"
+                  ? "hover:bg-gray-700 text-gray-400"
+                  : "hover:bg-gray-200 text-gray-600"
+              )}
+              title="Copy URL"
+            >
+              {urlCopied ? (
+                <Check className="w-4 h-4 text-green-500" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "variables" && <VariablesTab />}
+
+      {activeTab === "metadata" && requestType === "grpc" && (
+        <div className="mt-4">
+          <MetadataTab metadata={grpcMetadata} onMetadataChange={setGrpcMetadata} />
+        </div>
+      )}
+
+      {activeTab === "description" && <DescriptionTab />}
+
+      {activeTab === "schema" && requestType === "graphql" && (
+        <div className="mt-4">
+          <SchemaViewer />
+        </div>
+      )}
+
+      {activeTab === "schema" && requestType === "grpc" && (
+        <div className="mt-4">
+          <div
+            className={clsx(
+              "p-4 border rounded-xl",
+              theme === "dark" ? "bg-[#10121b] border-gray-700" : "bg-white border-gray-300"
+            )}
+          >
+            <GrpcSchemaViewer services={grpcSchema.services} messages={grpcSchema.messages} />
+          </div>
+        </div>
+      )}
+    </div>
   );
 };

@@ -3,9 +3,11 @@
 pub mod auth;
 pub mod client;
 pub mod error;
+pub mod export;
 pub mod graphql;
 pub mod grpc;
 pub mod http;
+pub mod import;
 
 fn main() {
     tauri::Builder::default()
@@ -27,6 +29,10 @@ fn main() {
             grpc::commands::grpc_get_service_info,
             grpc::commands::grpc_get_method_info,
             grpc::commands::grpc_test_connection,
+            import::import_postman_collection,
+            import::import_insomnia_workspace,
+            export::export_collection,
+            export::export_all_collections,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

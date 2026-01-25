@@ -1,6 +1,6 @@
-import { useTheme } from "../context/ThemeContext";
-import { useState, useEffect } from "react";
 import clsx from "clsx";
+import { useEffect, useState } from "react";
+import { useTheme } from "../context/ThemeContext";
 
 interface MetadataEntry {
   key: string;
@@ -13,14 +13,9 @@ interface MetadataTabProps {
   onMetadataChange: (metadata: string) => void;
 }
 
-export const MetadataTab = ({
-  metadata,
-  onMetadataChange,
-}: MetadataTabProps) => {
+export const MetadataTab = ({ metadata, onMetadataChange }: MetadataTabProps) => {
   const { theme } = useTheme();
-  const [entries, setEntries] = useState<MetadataEntry[]>([
-    { key: "", value: "", enabled: true },
-  ]);
+  const [entries, setEntries] = useState<MetadataEntry[]>([{ key: "", value: "", enabled: true }]);
   const [jsonError, setJsonError] = useState<string>("");
 
   // Parse metadata JSON into entries on mount and when metadata changes externally
@@ -28,13 +23,11 @@ export const MetadataTab = ({
     try {
       if (metadata && metadata.trim() !== "" && metadata.trim() !== "{}") {
         const parsed = JSON.parse(metadata);
-        const newEntries: MetadataEntry[] = Object.entries(parsed).map(
-          ([key, value]) => ({
-            key,
-            value: String(value),
-            enabled: true,
-          })
-        );
+        const newEntries: MetadataEntry[] = Object.entries(parsed).map(([key, value]) => ({
+          key,
+          value: String(value),
+          enabled: true,
+        }));
         if (newEntries.length > 0) {
           setEntries([...newEntries, { key: "", value: "", enabled: true }]);
         }
@@ -62,7 +55,7 @@ export const MetadataTab = ({
       });
       setJsonError("");
       onMetadataChange(JSON.stringify(metadataObj));
-    } catch (error) {
+    } catch (_error) {
       setJsonError("Failed to build metadata");
     }
   }, [entries, onMetadataChange]);
@@ -129,9 +122,7 @@ export const MetadataTab = ({
             <input
               type="checkbox"
               checked={entry.enabled}
-              onChange={(e) =>
-                handleUpdateEntry(index, "enabled", e.target.checked)
-              }
+              onChange={(e) => handleUpdateEntry(index, "enabled", e.target.checked)}
               title="Enable or disable this header"
               className={clsx(
                 "w-4 h-4",
@@ -141,9 +132,7 @@ export const MetadataTab = ({
             <input
               type="text"
               value={entry.key}
-              onChange={(e) =>
-                handleUpdateEntry(index, "key", e.target.value.toLowerCase())
-              }
+              onChange={(e) => handleUpdateEntry(index, "key", e.target.value.toLowerCase())}
               placeholder="header-key"
               className={clsx(
                 "flex-1 p-2 border rounded text-sm font-mono",
@@ -155,9 +144,7 @@ export const MetadataTab = ({
             <input
               type="text"
               value={entry.value}
-              onChange={(e) =>
-                handleUpdateEntry(index, "value", e.target.value)
-              }
+              onChange={(e) => handleUpdateEntry(index, "value", e.target.value)}
               placeholder="header-value"
               className={clsx(
                 "flex-1 p-2 border rounded text-sm font-mono",

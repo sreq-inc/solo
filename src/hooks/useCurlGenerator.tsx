@@ -37,12 +37,7 @@ export const useCurlGenerator = () => {
       if (enabledParams.length > 0) {
         const baseUrl = finalUrl.split("?")[0];
         const queryString = enabledParams
-          .map(
-            (param) =>
-              `${encodeURIComponent(param.key)}=${encodeURIComponent(
-                param.value
-              )}`
-          )
+          .map((param) => `${encodeURIComponent(param.key)}=${encodeURIComponent(param.value)}`)
           .join("&");
         finalUrl = `${baseUrl}?${queryString}`;
       }
@@ -55,16 +50,12 @@ export const useCurlGenerator = () => {
       curl += ` -u "${username}:${password || ""}"`;
     }
 
-    if (bearerToken && bearerToken.trim()) {
+    if (bearerToken?.trim()) {
       curl += ` -H "Authorization: Bearer ${bearerToken}"`;
     }
 
     // Add payload for methods that support it
-    if (
-      payload &&
-      payload.trim() &&
-      ["POST", "PUT", "PATCH"].includes(method)
-    ) {
+    if (payload?.trim() && ["POST", "PUT", "PATCH"].includes(method)) {
       curl += ` -H "Content-Type: application/json"`;
       const escapedPayload = payload.replace(/"/g, '\\"');
       curl += ` -d "${escapedPayload}"`;
@@ -77,7 +68,7 @@ export const useCurlGenerator = () => {
     let curl = `curl -X POST`;
 
     // Process variables in URL for GraphQL
-    let finalUrl = replaceVariablesInUrl(url || "");
+    const finalUrl = replaceVariablesInUrl(url || "");
     curl += ` "${finalUrl}"`;
 
     curl += ` -H "Content-Type: application/json"`;
@@ -87,7 +78,7 @@ export const useCurlGenerator = () => {
       curl += ` -u "${username}:${password || ""}"`;
     }
 
-    if (bearerToken && bearerToken.trim()) {
+    if (bearerToken?.trim()) {
       curl += ` -H "Authorization: Bearer ${bearerToken}"`;
     }
 
@@ -96,12 +87,12 @@ export const useCurlGenerator = () => {
       query: graphqlQuery || "",
       variables: graphqlVariables
         ? (() => {
-          try {
-            return JSON.parse(graphqlVariables);
-          } catch {
-            return {};
-          }
-        })()
+            try {
+              return JSON.parse(graphqlVariables);
+            } catch {
+              return {};
+            }
+          })()
         : {},
     };
 

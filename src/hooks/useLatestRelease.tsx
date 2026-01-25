@@ -12,15 +12,12 @@ export function useLatestRelease(owner: string, repo: string) {
   useEffect(() => {
     const fetchLatestRelease = async () => {
       try {
-        const res = await fetch(
-          `https://api.github.com/repos/${owner}/${repo}/releases/latest`,
-          {
-            headers: {
-              Accept: "application/vnd.github+json",
-              "User-Agent": "latest-release-component",
-            },
-          }
-        );
+        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/latest`, {
+          headers: {
+            Accept: "application/vnd.github+json",
+            "User-Agent": "latest-release-component",
+          },
+        });
 
         if (!res.ok) {
           throw new Error(`Error fetching release: ${res.status}`);

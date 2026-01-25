@@ -1,8 +1,8 @@
-import { useTheme } from "../context/ThemeContext";
-import { useRequest } from "../context/RequestContext";
-import clsx from "clsx";
-import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import clsx from "clsx";
+import { useEffect, useState } from "react";
+import { useRequest } from "../context/RequestContext";
+import { useTheme } from "../context/ThemeContext";
 import { useToast } from "../hooks/useToast";
 
 interface ProtoSchema {
@@ -127,7 +127,9 @@ export const GrpcEditor = () => {
           if (schema.services.length === 0) {
             toast.warning("No services found in proto file");
           } else {
-            toast.success(`Found ${schema.services.length} service${schema.services.length !== 1 ? "s" : ""}`);
+            toast.success(
+              `Found ${schema.services.length} service${schema.services.length !== 1 ? "s" : ""}`
+            );
           }
         }
       } else {
@@ -136,8 +138,7 @@ export const GrpcEditor = () => {
         }
       }
     } catch (error) {
-      const errorMsg =
-        error instanceof Error ? error.message : "Failed to parse proto file";
+      const errorMsg = error instanceof Error ? error.message : "Failed to parse proto file";
       if (showToast) {
         toast.error(errorMsg);
       }
@@ -175,14 +176,15 @@ export const GrpcEditor = () => {
         if (schema.services.length === 0) {
           toast.warning("No services found at this URL");
         } else {
-          toast.success(`Discovered ${schema.services.length} service${schema.services.length !== 1 ? "s" : ""} via reflection`);
+          toast.success(
+            `Discovered ${schema.services.length} service${schema.services.length !== 1 ? "s" : ""} via reflection`
+          );
         }
       } else {
         toast.error(result?.error || "Failed to discover services");
       }
     } catch (error) {
-      const errorMsg =
-        error instanceof Error ? error.message : "Failed to discover services";
+      const errorMsg = error instanceof Error ? error.message : "Failed to discover services";
       toast.error(errorMsg);
       console.error("Failed to discover services:", error);
     } finally {
@@ -210,8 +212,7 @@ export const GrpcEditor = () => {
         toast.error(result.message);
       }
     } catch (error) {
-      const errorMsg =
-        error instanceof Error ? error.message : "Failed to test connection";
+      const errorMsg = error instanceof Error ? error.message : "Failed to test connection";
       toast.error(errorMsg);
     } finally {
       setTestingConnection(false);
@@ -223,7 +224,7 @@ export const GrpcEditor = () => {
       const sanitized = grpcMessage.replace(/[""]/g, '"').replace(/['']/g, "'");
       const parsed = JSON.parse(sanitized);
       setGrpcMessage(JSON.stringify(parsed, null, 2));
-    } catch (error) {
+    } catch (_error) {
       console.error("Invalid JSON");
       toast.error("Invalid JSON format. Please correct it before formatting.");
     }
@@ -278,10 +279,10 @@ export const GrpcEditor = () => {
               disabled={!protoContent.trim() || isParsing}
               title="Parse proto file content to extract services and methods"
               className={clsx(
-                "px-3 py-1 text-xs rounded font-medium transition-colors",
+                "px-3 py-1 text-xs rounded font-medium transition-colors cursor-pointer",
                 theme === "dark"
-                  ? "bg-purple-700 hover:bg-purple-800 text-white disabled:bg-gray-700 disabled:text-gray-400"
-                  : "bg-purple-600 hover:bg-purple-700 text-white disabled:bg-gray-400 disabled:text-gray-600"
+                  ? "bg-purple-700 hover:bg-purple-800 text-white disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  : "bg-purple-600 hover:bg-purple-700 text-white disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
               )}
             >
               {isParsing ? "Parsing..." : "Parse Proto"}
@@ -291,10 +292,10 @@ export const GrpcEditor = () => {
               disabled={isDiscovering || !url}
               title="Automatically discover services via gRPC reflection (server must support reflection)"
               className={clsx(
-                "px-3 py-1 text-xs rounded font-medium transition-colors",
+                "px-3 py-1 text-xs rounded font-medium transition-colors cursor-pointer",
                 theme === "dark"
-                  ? "bg-blue-700 hover:bg-blue-800 text-white disabled:bg-gray-700 disabled:text-gray-400"
-                  : "bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-400 disabled:text-gray-600"
+                  ? "bg-blue-700 hover:bg-blue-800 text-white disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
               )}
             >
               {isDiscovering ? "Discovering..." : "Discover Services"}
@@ -304,10 +305,10 @@ export const GrpcEditor = () => {
               disabled={testingConnection || !url}
               title="Test connectivity to gRPC server and measure latency"
               className={clsx(
-                "px-3 py-1 text-xs rounded font-medium transition-colors",
+                "px-3 py-1 text-xs rounded font-medium transition-colors cursor-pointer",
                 theme === "dark"
-                  ? "bg-green-700 hover:bg-green-800 text-white disabled:bg-gray-700 disabled:text-gray-400"
-                  : "bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-400 disabled:text-gray-600"
+                  ? "bg-green-700 hover:bg-green-800 text-white disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
               )}
             >
               {testingConnection ? "Testing..." : "Test Connection"}
@@ -319,12 +320,12 @@ export const GrpcEditor = () => {
           onChange={(e) => setProtoContent(e.target.value)}
           placeholder="Paste your .proto file content here..."
           rows={8}
-          className={clsx(
-            "w-full p-3 border rounded-xl text-sm resize-none focus:outline-none focus:ring-2 font-mono",
-            theme === "dark"
-              ? "bg-[#10121b] text-white border-gray-600 focus:ring-purple-500 focus:border-purple-500 placeholder-gray-400"
-              : "bg-white text-gray-800 border-gray-300 focus:ring-purple-500 focus:border-purple-500 placeholder-gray-500"
-          )}
+            className={clsx(
+              "w-full p-3 border rounded-xl text-sm resize-none focus:outline-none font-mono",
+              theme === "dark"
+                ? "bg-[#10121b] text-white border-gray-600 placeholder-gray-400"
+                : "bg-white text-gray-800 border-gray-300 placeholder-gray-500"
+            )}
         />
       </div>
 
@@ -401,57 +402,52 @@ export const GrpcEditor = () => {
           Call Type
         </label>
         <div className="grid grid-cols-2 gap-2">
-          {(
-            [
-              "unary",
-              "server_streaming",
-              "client_streaming",
-              "bidirectional",
-            ] as const
-          ).map((type) => (
-            <label
-              key={type}
-              className={clsx(
-                "flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors",
-                grpcCallType === type
-                  ? theme === "dark"
-                    ? "border-purple-500 bg-purple-900/20"
-                    : "border-purple-500 bg-purple-50"
-                  : theme === "dark"
-                    ? "border-gray-600 hover:border-gray-500"
-                    : "border-gray-300 hover:border-gray-400"
-              )}
-            >
-              <input
-                type="radio"
-                name="callType"
-                checked={grpcCallType === type}
-                onChange={() => setGrpcCallType(type)}
+          {(["unary", "server_streaming", "client_streaming", "bidirectional"] as const).map(
+            (type) => (
+              <label
+                key={type}
                 className={clsx(
-                  "text-purple-600",
-                  theme === "dark" ? "accent-purple-500" : "accent-purple-600"
+                  "flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors",
+                  grpcCallType === type
+                    ? theme === "dark"
+                      ? "border-purple-500 bg-purple-900/20"
+                      : "border-purple-500 bg-purple-50"
+                    : theme === "dark"
+                      ? "border-gray-600 hover:border-gray-500"
+                      : "border-gray-300 hover:border-gray-400"
                 )}
-              />
-              <div>
-                <div
+              >
+                <input
+                  type="radio"
+                  name="callType"
+                  checked={grpcCallType === type}
+                  onChange={() => setGrpcCallType(type)}
                   className={clsx(
-                    "text-sm font-medium",
-                    theme === "dark" ? "text-gray-100" : "text-gray-900"
+                    "text-purple-600",
+                    theme === "dark" ? "accent-purple-500" : "accent-purple-600"
                   )}
-                >
-                  {getCallTypeLabel(type)}
+                />
+                <div>
+                  <div
+                    className={clsx(
+                      "text-sm font-medium",
+                      theme === "dark" ? "text-gray-100" : "text-gray-900"
+                    )}
+                  >
+                    {getCallTypeLabel(type)}
+                  </div>
+                  <div
+                    className={clsx(
+                      "text-xs",
+                      theme === "dark" ? "text-gray-400" : "text-gray-500"
+                    )}
+                  >
+                    {getCallTypeDescription(type)}
+                  </div>
                 </div>
-                <div
-                  className={clsx(
-                    "text-xs",
-                    theme === "dark" ? "text-gray-400" : "text-gray-500"
-                  )}
-                >
-                  {getCallTypeDescription(type)}
-                </div>
-              </div>
-            </label>
-          ))}
+              </label>
+            )
+          )}
         </div>
       </div>
 
@@ -459,10 +455,7 @@ export const GrpcEditor = () => {
       <div>
         <div className="flex items-center justify-between mb-2">
           <label
-            className={clsx(
-              "block text-sm",
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
-            )}
+            className={clsx("block text-sm", theme === "dark" ? "text-gray-300" : "text-gray-700")}
           >
             Message (JSON)
             {grpcMessage.trim() && (
@@ -479,7 +472,9 @@ export const GrpcEditor = () => {
                 ? theme === "dark"
                   ? "text-gray-400 hover:text-gray-300"
                   : "text-gray-500 hover:text-gray-700"
-                : "text-gray-600 cursor-not-allowed"
+                : theme === "dark"
+                  ? "text-gray-600 cursor-not-allowed"
+                  : "text-gray-500 cursor-not-allowed opacity-50"
             )}
           >
             Format JSON
@@ -491,14 +486,14 @@ export const GrpcEditor = () => {
           placeholder='{"id": "123", "name": "example"}'
           rows={6}
           className={clsx(
-            "w-full p-3 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 font-mono",
+            "w-full p-3 rounded-xl text-sm resize-none focus:outline-none font-mono",
             !isJsonValid && grpcMessage.trim()
               ? theme === "dark"
-                ? "border-2 border-red-500 bg-[#10121b] text-white focus:ring-red-500"
-                : "border-2 border-red-500 bg-white text-gray-800 focus:ring-red-500"
+                ? "border-2 border-red-500 bg-[#10121b] text-white"
+                : "border-2 border-red-500 bg-white text-gray-800"
               : theme === "dark"
-                ? "border border-gray-600 bg-[#10121b] text-white focus:ring-purple-500 focus:border-purple-500 placeholder-gray-400"
-                : "border border-gray-300 bg-white text-gray-800 focus:ring-purple-500 focus:border-purple-500 placeholder-gray-500"
+                ? "border border-gray-600 bg-[#10121b] text-white placeholder-gray-400"
+                : "border border-gray-300 bg-white text-gray-800 placeholder-gray-500"
           )}
         />
         {jsonError && (
@@ -520,9 +515,7 @@ export const GrpcEditor = () => {
         <div
           className={clsx(
             "p-3 rounded-lg border",
-            theme === "dark"
-              ? "bg-gray-800/30 border-gray-600"
-              : "bg-gray-50 border-gray-300"
+            theme === "dark" ? "bg-gray-800/30 border-gray-600" : "bg-gray-50 border-gray-300"
           )}
         >
           <div
@@ -538,56 +531,29 @@ export const GrpcEditor = () => {
             .map((method) => (
               <div key={method.name} className="text-xs space-y-1">
                 <div>
-                  <span
-                    className={clsx(
-                      theme === "dark" ? "text-gray-400" : "text-gray-500"
-                    )}
-                  >
+                  <span className={clsx(theme === "dark" ? "text-gray-400" : "text-gray-500")}>
                     Input Type:
                   </span>{" "}
-                  <span
-                    className={clsx(
-                      theme === "dark" ? "text-gray-200" : "text-gray-700"
-                    )}
-                  >
+                  <span className={clsx(theme === "dark" ? "text-gray-200" : "text-gray-700")}>
                     {method.input_type}
                   </span>
                 </div>
                 <div>
-                  <span
-                    className={clsx(
-                      theme === "dark" ? "text-gray-400" : "text-gray-500"
-                    )}
-                  >
+                  <span className={clsx(theme === "dark" ? "text-gray-400" : "text-gray-500")}>
                     Output Type:
                   </span>{" "}
-                  <span
-                    className={clsx(
-                      theme === "dark" ? "text-gray-200" : "text-gray-700"
-                    )}
-                  >
+                  <span className={clsx(theme === "dark" ? "text-gray-200" : "text-gray-700")}>
                     {method.output_type}
                   </span>
                 </div>
                 <div>
-                  <span
-                    className={clsx(
-                      theme === "dark" ? "text-gray-400" : "text-gray-500"
-                    )}
-                  >
+                  <span className={clsx(theme === "dark" ? "text-gray-400" : "text-gray-500")}>
                     Streaming:
                   </span>{" "}
-                  <span
-                    className={clsx(
-                      theme === "dark" ? "text-gray-200" : "text-gray-700"
-                    )}
-                  >
+                  <span className={clsx(theme === "dark" ? "text-gray-200" : "text-gray-700")}>
                     {method.is_client_streaming || method.is_server_streaming
                       ? `${method.is_client_streaming ? "Client" : ""}${
-                          method.is_client_streaming &&
-                          method.is_server_streaming
-                            ? " + "
-                            : ""
+                          method.is_client_streaming && method.is_server_streaming ? " + " : ""
                         }${method.is_server_streaming ? "Server" : ""}`
                       : "None"}
                   </span>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export type UpdatePreference = "auto" | "notify" | "manual";
 
@@ -46,8 +46,7 @@ export const useUpdateSettings = () => {
 
     const lastCheckTime = new Date(lastCheck);
     const now = new Date();
-    const hoursSinceLastCheck =
-      (now.getTime() - lastCheckTime.getTime()) / (1000 * 60 * 60);
+    const hoursSinceLastCheck = (now.getTime() - lastCheckTime.getTime()) / (1000 * 60 * 60);
 
     return hoursSinceLastCheck >= settings.checkInterval;
   };

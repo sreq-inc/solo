@@ -1,6 +1,6 @@
-import React from "react";
-import { useTheme } from "../context/ThemeContext";
 import clsx from "clsx";
+import type React from "react";
+import { useTheme } from "../context/ThemeContext";
 
 interface SelectMethodProps {
   value: string;
@@ -8,11 +8,7 @@ interface SelectMethodProps {
   onChange: (value: string) => void;
 }
 
-export const SelectMethod: React.FC<SelectMethodProps> = ({
-  value,
-  options,
-  onChange,
-}) => {
+export const SelectMethod: React.FC<SelectMethodProps> = ({ value, options, onChange }) => {
   const { theme } = useTheme();
 
   return (
@@ -23,10 +19,10 @@ export const SelectMethod: React.FC<SelectMethodProps> = ({
           onChange={(e) => onChange(e.target.value)}
           title={`HTTP Method: ${value}`}
           className={clsx(
-            "block appearance-none w-full border rounded-lg py-2 px-4 pr-8 leading-tight focus:outline-none focus:ring-1 cursor-pointer",
+            "block appearance-none w-full border rounded-md py-2 px-4 pr-8 leading-tight focus:outline-none cursor-pointer",
             theme === "dark"
-              ? "text-white bg-[#10121b] border-purple-500 ring-purple-500 border-2"
-              : " text-gray-700 bg-white border-purple-500 ring-purple-500 border-2"
+              ? "text-gray-200 bg-gray-800 border-gray-700 hover:bg-gray-700"
+              : "text-gray-700 bg-white border-gray-300 hover:bg-gray-50"
           )}
         >
           {options.map((option) => (
@@ -37,21 +33,13 @@ export const SelectMethod: React.FC<SelectMethodProps> = ({
         </select>
         <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
           <svg
-            className={clsx(
-              "w-4 h-4",
-              theme === "dark" ? "text-gray-400" : "text-gray-500"
-            )}
+            className={clsx("w-4 h-4", theme === "dark" ? "text-gray-400" : "text-gray-500")}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M19 9l-7 7-7-7"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
           </svg>
         </div>
       </div>

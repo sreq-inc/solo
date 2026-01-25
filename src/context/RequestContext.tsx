@@ -1,7 +1,7 @@
-import { createContext, useContext, useState, ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { useVariables } from "./VariablesContext";
+import { createContext, type ReactNode, useContext, useState } from "react";
 import { useToast } from "../hooks/useToast";
+import { useVariables } from "./VariablesContext";
 
 export type Tab =
   | "body"
@@ -43,11 +43,7 @@ type RequestContextType = {
   grpcService: string;
   grpcMethod: string;
   grpcMessage: string;
-  grpcCallType:
-    | "unary"
-    | "server_streaming"
-    | "client_streaming"
-    | "bidirectional";
+  grpcCallType: "unary" | "server_streaming" | "client_streaming" | "bidirectional";
   grpcMetadata: string;
   protoContent: string;
   description: string;
@@ -133,13 +129,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
     setUsername("");
     setPassword("");
     setUseBasicAuth(false);
-    setActiveTab(
-      requestType === "graphql"
-        ? "graphql"
-        : requestType === "grpc"
-        ? "grpc"
-        : "body"
-    );
+    setActiveTab(requestType === "graphql" ? "graphql" : requestType === "grpc" ? "grpc" : "body");
     setResponse(null);
     setError(null);
     setBearerToken("");
@@ -164,7 +154,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
       const sanitized = payload.replace(/[""]/g, '"').replace(/['']/g, "'");
       const parsed = JSON.parse(sanitized);
       setPayload(JSON.stringify(parsed, null, 2));
-    } catch (error) {
+    } catch (_error) {
       console.error("Invalid JSON");
       toast.error("Invalid JSON format. Please correct it before formatting.");
     }
@@ -172,12 +162,10 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
 
   const formatGraphqlVariables = () => {
     try {
-      const sanitized = graphqlVariables
-        .replace(/[""]/g, '"')
-        .replace(/['']/g, "'");
+      const sanitized = graphqlVariables.replace(/[""]/g, '"').replace(/['']/g, "'");
       const parsed = JSON.parse(sanitized);
       setGraphqlVariables(JSON.stringify(parsed, null, 2));
-    } catch (error) {
+    } catch (_error) {
       console.error("Invalid JSON");
       toast.error("Invalid JSON format. Please correct it before formatting.");
     }
@@ -195,9 +183,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
       let result;
 
       if (requestType === "graphql") {
-        const variables = graphqlVariables.trim()
-          ? JSON.parse(graphqlVariables)
-          : {};
+        const variables = graphqlVariables.trim() ? JSON.parse(graphqlVariables) : {};
 
         if (useBasicAuth) {
           result = await invoke("graphql_basic_auth_request", {
@@ -224,9 +210,9 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
       } else if (requestType === "grpc") {
         const message = grpcMessage.trim() ? JSON.parse(grpcMessage) : {};
         // Parse custom metadata if provided (JSON object)
-        let customMetadata: Record<string, string> | undefined = undefined;
+        let customMetadata: Record<string, string> | undefined;
         try {
-          if (grpcMetadata && grpcMetadata.trim()) {
+          if (grpcMetadata?.trim()) {
             const parsed = JSON.parse(grpcMetadata);
             if (parsed && typeof parsed === "object") {
               customMetadata = Object.entries(parsed).reduce(
@@ -257,9 +243,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
             service: grpcService,
             method: grpcMethod,
             message,
-            metadata: Object.keys(mergedMetadata || {}).length
-              ? mergedMetadata
-              : undefined,
+            metadata: Object.keys(mergedMetadata || {}).length ? mergedMetadata : undefined,
           });
         } else if (grpcCallType === "server_streaming") {
           result = await invoke("grpc_server_streaming_request", {
@@ -267,9 +251,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
             service: grpcService,
             method: grpcMethod,
             message,
-            metadata: Object.keys(mergedMetadata || {}).length
-              ? mergedMetadata
-              : undefined,
+            metadata: Object.keys(mergedMetadata || {}).length ? mergedMetadata : undefined,
           });
         } else {
           // For now, handle other streaming types as unary
@@ -278,9 +260,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
             service: grpcService,
             method: grpcMethod,
             message,
-            metadata: Object.keys(mergedMetadata || {}).length
-              ? mergedMetadata
-              : undefined,
+            metadata: Object.keys(mergedMetadata || {}).length ? mergedMetadata : undefined,
           });
         }
       } else {
@@ -333,9 +313,7 @@ export const RequestProvider = ({ children }: { children: ReactNode }) => {
       setResponseTime(Math.round(endTime - startTime));
       setStatusCode(null);
       setResponse(null);
-      setError(
-        error instanceof Error ? error.message : "An unknown error occurred"
-      );
+      setError(error instanceof Error ? error.message : "An unknown error occurred");
     } finally {
       setLoading(false);
     }

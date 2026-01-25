@@ -1,6 +1,6 @@
+import clsx from "clsx";
 import { Check } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
-import clsx from "clsx";
 
 interface CheckboxProps {
   checked: boolean;
@@ -9,21 +9,11 @@ interface CheckboxProps {
   className?: string;
 }
 
-export const Checkbox = ({
-  checked,
-  onChange,
-  label,
-  className = "",
-}: CheckboxProps) => {
+export const Checkbox = ({ checked, onChange, label, className = "" }: CheckboxProps) => {
   const { theme } = useTheme();
 
   return (
-    <label
-      className={clsx(
-        "flex items-center gap-3 cursor-pointer group",
-        className
-      )}
-    >
+    <label className={clsx("flex items-center gap-3 cursor-pointer group", className)}>
       <div className="relative">
         <input
           type="checkbox"
@@ -48,11 +38,7 @@ export const Checkbox = ({
         </div>
       </div>
       {label && (
-        <span
-          className={clsx(theme === "dark" ? "text-gray-200" : "text-gray-700")}
-        >
-          {label}
-        </span>
+        <span className={clsx(theme === "dark" ? "text-gray-200" : "text-gray-700")}>{label}</span>
       )}
     </label>
   );
