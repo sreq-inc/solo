@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
+import { createContext, type ReactNode, useContext, useEffect, useRef, useState } from "react";
 import { useToast } from "../hooks/useToast";
 import { type QueryParam, type RequestType, useRequest } from "./RequestContext";
 import { useVariables } from "./VariablesContext";
@@ -67,6 +67,15 @@ type FileContextType = {
 
 const FileContext = createContext<FileContextType | undefined>(undefined);
 
+const SOLO_SCHEMA_VERSION_KEY = "solo-schema-version";
+const SOLO_SCHEMA_VERSION = "1";
+const AUTO_SAVE_DEBOUNCE_MS = 400;
+
+const isReservedKey = (key: string): boolean =>
+  key.startsWith("solo-variables-") ||
+  key === "solo-environments" ||
+  key === SOLO_SCHEMA_VERSION_KEY;
+
 export const FileProvider = ({ children }: { children: ReactNode }) => {
   const {
     method,
@@ -119,16 +128,54 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
   const [currentFolder, setCurrentFolder] = useState<string>("");
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
 
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingSaveRef = useRef<(() => void) | null>(null);
+
+  const flushPendingSave = () => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    if (pendingSaveRef.current) {
+      pendingSaveRef.current();
+      pendingSaveRef.current = null;
+    }
+  };
+
   useEffect(() => {
+    if (localStorage.getItem(SOLO_SCHEMA_VERSION_KEY) === null) {
+      localStorage.setItem(SOLO_SCHEMA_VERSION_KEY, SOLO_SCHEMA_VERSION);
+    }
     loadAllFolders();
     document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
+    window.addEventListener("beforeunload", flushPendingSave);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+      window.removeEventListener("beforeunload", flushPendingSave);
+      flushPendingSave();
+    };
   }, []);
 
   useEffect(() => {
-    if (currentRequestId && currentFolder) {
-      saveCurrentRequest();
+    if (!currentRequestId || !currentFolder) return;
+
+    pendingSaveRef.current = saveCurrentRequest;
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
     }
+    saveTimerRef.current = setTimeout(() => {
+      saveTimerRef.current = null;
+      const save = pendingSaveRef.current;
+      pendingSaveRef.current = null;
+      save?.();
+    }, AUTO_SAVE_DEBOUNCE_MS);
+
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = null;
+      }
+    };
   }, [
     method,
     url,
@@ -158,8 +205,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
     const loadedFolders: FolderStructure = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      // Exclude solo-variables and solo-environments from folders
-      if (key && !key.startsWith("solo-variables-") && key !== "solo-environments") {
+      if (key && !isReservedKey(key)) {
         try {
           const files = JSON.parse(localStorage.getItem(key) || "[]") as StoredFile[];
           loadedFolders[key] = files.map((file) => file.fileName);
@@ -483,7 +529,7 @@ export const FileProvider = ({ children }: { children: ReactNode }) => {
   ): { folder: string; data: RequestData; displayName?: string } | null => {
     for (let i = 0; i < localStorage.length; i++) {
       const folderName = localStorage.key(i);
-      if (folderName && !folderName.startsWith("solo-variables-")) {
+      if (folderName && !isReservedKey(folderName)) {
         try {
           const files = JSON.parse(localStorage.getItem(folderName) || "[]") as StoredFile[];
           const file = files.find((f) => f.fileName === fileName);

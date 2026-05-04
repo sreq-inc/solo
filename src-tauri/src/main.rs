@@ -20,6 +20,7 @@ fn main() {
             http::bearer_auth_request,
             http::graphql_request,
             http::graphql_basic_auth_request,
+            http::graphql_bearer_auth_request,
             http::graphql_introspection,
             http::graphql_introspection_with_auth,
             grpc::commands::grpc_unary_request,
