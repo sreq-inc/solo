@@ -8,11 +8,31 @@ on:
   workflow_dispatch:
 
 jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Biome
+        run: bunx biome ci .
+
+      - name: TypeScript typecheck
+        run: bunx tsc --project tsconfig.build.json --noEmit
+
+      - name: Build frontend
+        run: bun run build
+
   test-rust:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest]
+        platform: [macos-latest, ubuntu-22.04, windows-latest]
 
     runs-on: ${{ matrix.platform }}
     steps:
